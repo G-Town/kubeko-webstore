@@ -1,0 +1,121 @@
+<div class="px-[18px] flex flex-col sm:grid sm:grid-cols-6 gap-[18px] pb-[72px] pt-[72px] sm:pt-0">
+  <!-- Sidebar with filters -->
+  <div class="relative sm:sticky top-0 -mx-[18px] sm:mx-0 w-screen sm:w-auto sm:h-screen flex flex-col sm:justify-center ">
+    <form class="w-full sm:w-auto overflow-x-scroll hide-scrollbar">
+      <div class="sm:mb-[15px] gap-[12px] sm:gap-[6px] flex flex-col sm:pt-0 w-fit sm:mx-auto  px-[18px] sm:px-0 sm:ml-0 ">
+        <p class="cta flex-shrink-0">Please execute a search</p>
+        <search-widget class="cursor-pointer flex flex-col">
+          <p class="flex cta transition-all page-title duration-300 ease-in-out opacity-80" id="search-placeholder">Search...</p>
+          <input
+            type="text"
+            id="search"
+            class="hidden cta black page-title focus:outline-none !rounded-none "
+            placeholder="Search...">
+        </search-widget>
+
+      </div>
+      <div class="break hidden sm:block"></div>
+
+    </form>
+  </div>
+
+  {% if !search.performed %}
+    {% if search.results.size == 0 %}
+      <p class="sm:my-auto sm:relative page-title">Sorry, there are no results for your search.
+      </p>
+    {% endif %}
+  {% endif %}
+  <!-- Product Grid -->
+  {% if search.performed %}
+    {% comment %} if no results {% endcomment %}
+
+    {% paginate search.results by 24 %}
+      <div
+        class="col-span-5 md:mt-[36px] grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[9px] sm:gap-[18px] items-center  duration-300 transform-gpu"
+        id="product-grid"
+        data-current-page="{{ paginate.current_page }}"
+        data-total-pages="{{ paginate.pages }}">
+        {% for result in search.results %}
+          <div id="product-{{ forloop.index }}-{{ paginate.current_page }}">
+            {% render 'product-card'
+              , product: result %}
+          </div>
+        {% endfor %}
+      </div>
+    {% endpaginate %}
+  {% else %}
+    <div class="col-span-5 md:mt-[36px] opacity-0 transition-opacity duration-300 transform-gpu">
+      <p>No search results found. Try a different query.</p>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  // Infinite Scroll (same as collection page)
+  const productGrid = document.getElementById('product-grid');
+  let currentPage = parseInt(productGrid.dataset.currentPage);
+  const totalPages = parseInt(productGrid.dataset.totalPages);
+
+  // Function to get the current URL with the correct page query
+  const getPaginatedUrl = (page) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('page', page); // Set the URL page parameter
+    return url.toString();
+  };
+
+  // Function to fetch and append products from a specific page
+  const fetchAndAppendProducts = (page, appendBefore = false) => {
+    return fetch(getPaginatedUrl(page))
+      .then((response) => response.text())
+      .then((html) => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newProducts = doc.querySelectorAll('#product-grid > *'); // Select individual products
+
+        // Option to insert products before the current ones
+        if (appendBefore) {
+          Array.from(newProducts)
+            .reverse()
+            .forEach((product) => {
+              productGrid.insertBefore(product, productGrid.firstChild);
+            });
+        } else {
+          newProducts.forEach((product) => {
+            productGrid.appendChild(product); // Append each product to the grid
+          });
+        }
+      });
+  };
+
+  // Load all previous pages' products
+  const loadPreviousPages = async (currentPage) => {
+    for (let page = currentPage - 1; page >= 1; page--) {
+      await fetchAndAppendProducts(page, true);
+    }
+  };
+
+  // Infinite scroll event listener
+  let isLoading = false;
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 300 && !isLoading) {
+      if (currentPage < totalPages) {
+        isLoading = true;
+        currentPage++;
+        fetchAndAppendProducts(currentPage).then(() => {
+          isLoading = false;
+
+          // Update URL history for pagination
+          if (currentPage > 1) {
+            window.history.pushState({ page: currentPage }, '', getPaginatedUrl(currentPage));
+          }
+        });
+      }
+    }
+  });
+
+  // Load previous pages' products on initial load
+  loadPreviousPages(currentPage).then(() => {
+    document.getElementById('product-grid').classList.remove('opacity-0');
+  });
+</script>

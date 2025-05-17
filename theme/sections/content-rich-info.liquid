@@ -1,0 +1,349 @@
+<div class="flex flex-col md:flex-row md:h-full bg-[#EFEFEF] w-full mb-16 md:mb-0">
+  <!-- Left side - Video or Image -->
+  <div class="w-full md:w-1/2 h-[100vw] sm:h-[100vw] md:h-full relative flex-shrink-0">
+    {% if section.settings.video != blank %}
+      <video 
+        class="w-full h-full object-cover"
+        autoplay
+        loop
+        muted
+        playsinline
+      >
+        {% for source in section.settings.video.sources %}
+          <source src="{{ source.url }}" type="video/{{ source.format }}">
+        {% endfor %}
+        {% if section.settings.image %}
+          <img
+            class="w-full h-full object-cover"
+            src="{{ section.settings.image | img_url: 'master' }}"
+            alt="{{ section.settings.image.alt | default: 'Privacy Policy' }}"
+            width="{{ section.settings.image.width }}"
+            height="{{ section.settings.image.height }}"
+            loading="lazy"
+            srcset="{{ section.settings.image | img_url: '400x' }} 400w,
+                    {{ section.settings.image | img_url: '600x' }} 600w,
+                    {{ section.settings.image | img_url: '800x' }} 800w,
+                    {{ section.settings.image | img_url: '1200x' }} 1200w,
+                    {{ section.settings.image | img_url: '1600x' }} 1600w,
+                    {{ section.settings.image | img_url: 'master' }} {{ section.settings.image.width }}w"
+            sizes="(max-width: 767px) 100vw, 50vw"
+          >
+        {% endif %}
+      </video>
+    {% elsif section.settings.image %}
+      <img
+        class="w-full h-full object-cover"
+        src="{{ section.settings.image | img_url: 'master' }}"
+        alt="{{ section.settings.image.alt | default: 'Privacy Policy' }}"
+        width="{{ section.settings.image.width }}"
+        height="{{ section.settings.image.height }}"
+        loading="lazy"
+        srcset="{{ section.settings.image | img_url: '400x' }} 400w,
+                {{ section.settings.image | img_url: '600x' }} 600w,
+                {{ section.settings.image | img_url: '800x' }} 800w,
+                {{ section.settings.image | img_url: '1200x' }} 1200w,
+                {{ section.settings.image | img_url: '1600x' }} 1600w,
+                {{ section.settings.image | img_url: 'master' }} {{ section.settings.image.width }}w"
+        sizes="(max-width: 767px) 100vw, 50vw"
+      >
+    {% endif %}
+  </div>
+
+  <!-- Right side - Policy Content -->
+  <div class="w-full md:w-1/2 md:h-full pb-2 flex flex-col md:overflow-y-auto bg-[#EFEFEF] flex-shrink-0">
+    <!-- Policy Header and Introduction in two columns -->
+    <div class="bg-white px-[30px] flex flex-row w-full pt-20 pb-[30px] mb-1">
+      <div class="flex flex-col w-1/2">
+        <h1 class="text-[#444444] uppercase text-sm mb-2 font-helvetica">{{ section.settings.title }}</h1>
+        <p class="text-black/50 uppercase text-xs mb-6 font-helvetica">UPDATED {{ section.settings.last_updated }}</p>
+      </div>
+      
+      <div class="flex w-1/2 justify-end flex-col">
+        <p class="text-[#444444] text-base leading-relaxed font-garamond">
+          {{ section.settings.introduction }}
+        </p>
+        
+        {% if section.settings.list_intro_items != blank %}
+          <ul class="list-disc pl-5 mt-4 space-y-2 text-base font-garamond text-[#444444]">
+            {% assign intro_list_lines = section.settings.list_intro_items | newline_to_br | split: '<br />' %}
+            {% for line in intro_list_lines %}
+              {% assign trimmed_line = line | strip %}
+              {% if trimmed_line != "" %}
+                <li class="font-garamond">{{ trimmed_line }}</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- Policy Sections -->
+    {% for block in section.blocks %}
+      {% case block.type %}
+        {% when 'policy_section' %}
+          <div class="bg-white px-[30px] flex flex-row w-full py-[30px] mb-1" {{ block.shopify_attributes }}>
+            <div class="flex flex-col w-1/2">
+              <h2 class="text-[#444444] uppercase text-sm font-medium mb-3 font-helvetica">
+                {% if block.settings.section_number != blank %}
+                  {{ block.settings.section_number }}. 
+                {% endif %}
+                {{ block.settings.section_title }}
+              </h2>
+              {% if block.settings.section_subtitle != blank %}
+                <h3 class="uppercase text-xs text-black/50 mb-3 font-helvetica">{{ block.settings.section_subtitle }}</h3>
+              {% endif %}
+            </div>
+            
+            <div class="flex w-1/2 flex-col">
+              <div class="text-[#444444] policy-content font-garamond" style="font-family: 'adobe-garamond-pro', serif !important; font-size: 16px !important;">
+                {{ block.settings.section_content }}
+              </div>
+              
+              {% if block.settings.list_items != blank %}
+                <ul class="list-disc pl-5 mt-4 space-y-2 font-garamond text-[#444444]" style="font-family: 'adobe-garamond-pro', serif !important; font-size: 16px !important;">
+                  {% assign list_lines = block.settings.list_items | newline_to_br | split: '<br />' %}
+                  {% for line in list_lines %}
+                    {% assign trimmed_line = line | strip %}
+                    {% if trimmed_line != "" %}
+                      <li class="font-garamond" style="font-family: 'adobe-garamond-pro', serif !important; font-size: 16px !important;">{{ trimmed_line }}</li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+          </div>
+        {% when 'list_section' %}
+          <div class="bg-white px-[30px] flex flex-row w-full py-[30px] mb-1" {{ block.shopify_attributes }}>
+            <div class="flex flex-col w-1/2">
+              <h2 class="text-[#444444] uppercase text-sm font-medium mb-3 font-helvetica">
+                {% if block.settings.section_number != blank %}
+                  {{ block.settings.section_number }}. 
+                {% endif %}
+                {{ block.settings.section_title }}
+              </h2>
+            </div>
+            
+            <div class="flex w-1/2 flex-col">
+              <div class="text-[#444444] policy-content font-garamond" style="font-family: 'adobe-garamond-pro', serif !important; font-size: 16px !important;">
+                <p style="font-family: 'adobe-garamond-pro', serif !important; font-size: 16px !important;">{{ block.settings.section_intro }}</p>
+                
+                <ul class="list-disc pl-5 mt-4 space-y-2 font-garamond text-[#444444]" style="font-family: 'adobe-garamond-pro', serif !important; font-size: 16px !important;">
+                  {% assign list_lines = block.settings.list_items | newline_to_br | split: '<br />' %}
+                  {% for line in list_lines %}
+                    {% assign trimmed_line = line | strip %}
+                    {% if trimmed_line != "" %}
+                      <li class="font-garamond" style="font-family: 'adobe-garamond-pro', serif !important; font-size: 16px !important;">{{ trimmed_line }}</li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          </div>
+      {% endcase %}
+    {% endfor %}
+  
+    <!-- Continue Shopping Button -->
+    <a href="{{ section.settings.button_link | default: '/collections/all' }}" class="block bg-white px-[20px] py-[15px] mt-auto text-center hover:bg-[#D9D9D9] transition-colors">
+      <span class="text-[#444444] uppercase text-sm font-helvetica">
+        {{ section.settings.button_text | default: 'Continue Shopping' }}
+      </span>
+    </a>
+  </div>
+</div>
+
+<style>
+  /* The site uses adobe-garamond-pro from Typekit */
+  
+  .policy-content {
+    font-family: 'adobe-garamond-pro', serif !important;
+    font-size: 16px !important;
+  }
+  
+  .policy-content p {
+    margin-bottom: 1rem;
+    font-family: 'adobe-garamond-pro', serif !important;
+    font-size: 16px !important;
+  }
+  
+  .policy-content p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .policy-content ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin: 1rem 0;
+    font-family: 'adobe-garamond-pro', serif !important;
+    font-size: 16px !important;
+  }
+  
+  .policy-content ol {
+    list-style-type: decimal;
+    padding-left: 1.5rem;
+    margin: 1rem 0;
+    font-family: 'adobe-garamond-pro', serif !important;
+    font-size: 16px !important;
+  }
+  
+  .policy-content li {
+    font-family: 'adobe-garamond-pro', serif !important;
+    font-size: 16px !important;
+  }
+  
+  .font-helvetica {
+    font-family: Helvetica, Arial, sans-serif;
+    text-transform: uppercase;
+  }
+  
+  .font-garamond {
+    font-family: 'adobe-garamond-pro', serif !important;
+    font-size: 16px !important;
+  }
+  
+  /* Ensure all content text uses Garamond font and proper size */
+  .text-[#444444].policy-content *,
+  .policy-content p,
+  .policy-content ul,
+  .policy-content ol,
+  .policy-content li,
+  .section_intro {
+    font-family: 'adobe-garamond-pro', serif !important;
+    font-size: 16px !important;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Content Rich Info",
+  "settings": [
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Video"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Fallback Image (shown if video can't play)"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Policy Title",
+      "default": "PRIVACY POLICY"
+    },
+    {
+      "type": "text",
+      "id": "last_updated",
+      "label": "Last Updated Date",
+      "default": "APRIL 10, 2023"
+    },
+    {
+      "type": "textarea",
+      "id": "introduction",
+      "label": "Introduction Text",
+      "default": "Thank you for shopping at kubeko. We value your privacy, and this section describes how and why we might access, collect, store and use your personal information when you use our services, including when you:"
+    },
+    {
+      "type": "textarea",
+      "id": "list_intro_items",
+      "label": "Introduction List Items",
+      "info": "Enter one item per line.",
+      "default": "Visit our website\nEngage with us in other related ways, including sales, marketing, or events"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link",
+      "default": "/collections/all"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text",
+      "default": "CONTINUE SHOPPING"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "policy_section",
+      "name": "Policy Section",
+      "settings": [
+        {
+          "type": "text",
+          "id": "section_number",
+          "label": "Section Number",
+          "default": "1"
+        },
+        {
+          "type": "text",
+          "id": "section_title",
+          "label": "Section Title",
+          "default": "WHAT INFORMATION DO WE COLLECT?"
+        },
+        {
+          "type": "text",
+          "id": "section_subtitle",
+          "label": "Section Subtitle",
+          "default": "PERSONAL INFORMATION YOU DISCLOSE TO USE"
+        },
+        {
+          "type": "richtext",
+          "id": "section_content",
+          "label": "Section Content",
+          "default": "<p>We collect personal information that you voluntarily provide to us when you register on the Services, express an interest in obtaining information about us or our products and services, when you participate in activities on the Services, the choices you make, and the products and features you use. The personal information we collect may include the following:</p>"
+        },
+        {
+          "type": "textarea",
+          "id": "list_items",
+          "label": "List Items",
+          "info": "Enter one item per line.",
+          "default": "Names\nPhone numbers\nEmail addresses\nMailing addresses\nUsernames\nPasswords\nBilling addresses\nDebit/credit card numbers"
+        }
+      ]
+    },
+    {
+      "type": "list_section",
+      "name": "List Section",
+      "settings": [
+        {
+          "type": "text",
+          "id": "section_number",
+          "label": "Section Number",
+          "default": "2"
+        },
+        {
+          "type": "text",
+          "id": "section_title",
+          "label": "Section Title",
+          "default": "HOW DO WE PROCESS YOUR INFORMATION?"
+        },
+        {
+          "type": "textarea",
+          "id": "section_intro",
+          "label": "Section Introduction",
+          "default": "We process your personal information for a variety of reasons, depending on how you interact with our services, including:"
+        },
+        {
+          "type": "textarea",
+          "id": "list_items",
+          "label": "List Items",
+          "info": "Enter one item per line. Use tabs at the beginning of lines for indentation.",
+          "default": "To facilitate account creation and authentication and otherwise manage user accounts. We may process your information so you can create and log in to your account, as well as keep your account in working order.\nTo deliver and facilitate delivery of services to the user. We may process your information to provide you with the requested service.\nTo respond to user inquiries/offer support to users. We may process your information to provide you with the requested service.\nTo fulfill and manage your orders. We may process your information to respond to your inquiries and solve any potential issues you might have with the requested service.\nTo save or protect an individual's vital interest. We may process your information when necessary to save or protect an individual's vital interest, such as prevention of harm."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Privacy Policy",
+      "blocks": [
+        {
+          "type": "policy_section"
+        },
+
+      ]
+    }
+  ]
+}
+{% endschema %} 

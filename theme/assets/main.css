@@ -1,0 +1,257 @@
+@import url("https://use.typekit.net/tqu1csq.css");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.pswp__bg {
+  background: white !important;
+}
+
+.pswp__counter,
+.pswp__button--zoom {
+  display: none !important;
+}
+
+@font-face {
+  font-family: "Helvetica Now";
+  src: url("./font.woff2") format("woff2"),
+    url("./font.woff") format("woff");
+  font-weight: 300;
+  font-style: normal;
+  line-height: normal;
+}
+
+/* TEXT */
+@view-transition {
+  navigation: auto;
+}
+/* Optimize  */
+
+* {
+  font-family: "Helvetica Now", Helvetica, Arial, sans-serif;
+  font-style: normal;
+  line-height: normal;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+}
+
+p,
+div {
+  font-size: 12px;
+  letter-spacing: -0.24px;
+}
+
+.break {
+  @apply h-[0.5px] bg-black;
+}
+
+.variant-option.selected {
+  @apply !bg-black !text-white;
+}
+
+.variant-option {
+  @apply uppercase px-[10px] py-[7.5px] rounded-[4px] hover:bg-black/5 transition-colors;
+}
+
+details summary {
+  list-style-type: none;
+} /* Firefox */
+details summary::-webkit-details-marker {
+  display: none;
+} /* Chrome */
+details summary::marker {
+  display: none;
+}
+
+form {
+  margin: 0;
+}
+.shopify-challenge__container {
+  height: 100%;
+  margin-top: auto;
+  margin-bottom: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+
+.selected {
+  @apply !text-black bg-black;
+}
+
+.swiper-slide {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.svh-full {
+  height: 100vh;
+  height: 100svh;
+}
+
+.dvh-full {
+  height: 100vh;
+  height: 100dvh;
+}
+
+#password-input,
+#email-input {
+  @apply min-w-[53vw] md:min-w-[25vw];
+}
+
+.recently-viewed > *:nth-child(n + 5) {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+.swiper-horizontal {
+  touch-action: pan-y pinch-zoom !important;
+}
+
+.pw-route-protection {
+  padding: 0px !important;
+  justify-content: space-between !important;
+}
+.pw-route-protection .pw-container:not(.legacy) {
+  max-width: 100% !important;
+}
+
+.pw-quote:not(.pw-quote .pw-quote)::after {
+  content: " USD";
+  margin-left: 3px; /* Optional: Adjust this to control spacing */
+}
+.pw-variant-optimal-container {
+  max-width: 100% !important;
+}
+
+.pw-quote,
+.pw-title {
+  font-size: 10px !important;
+}
+
+.pw-checkout-box-label:before {
+  height: 12px !important;
+  width: 12px !important;
+}
+
+shopify-accelerated-checkout {
+  --shopify-accelerated-checkout-button-block-size: 30px;
+  --shopify-accelerated-checkout-button-border-radius: 0px;
+  --shopify-accelerated-checkout-button-box-shadow: none;
+  --shopify-accelerated-checkout-skeleton-background-color: #dedede;
+  --shopify-accelerated-checkout-skeleton-animation-opacity-start: 1;
+  --shopify-accelerated-checkout-skeleton-animation-opacity-end: 0.5;
+  --shopify-accelerated-checkout-skeleton-animation-duration: 4s;
+  --shopify-accelerated-checkout-skeleton-animation-timing-function: ease;
+}
+
+shopify-accelerated-checkout-cart {
+  --shopify-accelerated-checkout-button-block-size: 30px;
+  --shopify-accelerated-checkout-button-inline-size: 30px;
+  --shopify-accelerated-checkout-button-border-radius: 0px;
+  --shopify-accelerated-checkout-button-box-shadow: none;
+  --shopify-accelerated-checkout-inline-alignment: flex-start;
+  --shopify-accelerated-checkout-row-gap: 8px;
+  --shopify-accelerated-checkout-skeleton-background-color: #dedede;
+  --shopify-accelerated-checkout-skeleton-animation-opacity-start: 1;
+  --shopify-accelerated-checkout-skeleton-animation-opacity-end: 0.5;
+  --shopify-accelerated-checkout-skeleton-animation-duration: 4s;
+  --shopify-accelerated-checkout-skeleton-animation-timing-function: ease;
+}
+.centered {
+  position: fixed;
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 640px) {
+  shopify-accelerated-checkout {
+    --shopify-accelerated-checkout-button-block-size: 38px !important ;
+  }
+
+  shopify-accelerated-checkout-cart {
+    --shopify-accelerated-checkout-button-block-size: 38px !important;
+  }
+}
+
+.big-btn {
+  @apply w-full text-left rounded-[8px] p-[15px] py-[11px] border border-black;
+}
+
+.bold-body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: -0.24px;
+}
+
+.body {
+  color: #000;
+  text-align: center;
+  leading-trim: both;
+  text-edge: cap;
+  font-family: "Helvetica Neue";
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 400 !important;
+  line-height: 107%; /* 10.7px */
+  letter-spacing: -0.2px;
+  text-transform: capitalize;
+}
+
+.page-title {
+  font-size: 23px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 107%; /* 24.61px */
+  letter-spacing: -0.46px;
+  text-transform: capitalize;
+}
+
+.ad-card-title {
+  color: #fff;
+  leading-trim: both;
+  text-edge: cap;
+  font-family: "Helvetica Neue";
+  font-size: 23px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 107%; /* 24.61px */
+  letter-spacing: -0.46px;
+  text-transform: capitalize;
+  margin-bottom: -18px;
+  margin-top: -4px;
+}
+
+.card-image {
+  @apply flex justify-center items-center;
+}
+
+.card {
+  @apply bg-black text-white p-[30px] gap-[30px] rounded-[8px] grid sm:grid-cols-2 items-center;
+}
+
+.card-content {
+  @apply flex flex-col gap-[28px];
+}
+
+#collections-listing {
+  display: none;
+}
+
+shopify-payment-terms {
+  @apply !text-[12px] opacity-80;
+}
+
+.active {
+  @apply !text-black !opacity-100;
+}

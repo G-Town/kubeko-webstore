@@ -1,0 +1,24 @@
+<div class="flex flex-col sm:grid grid-cols-2 md:grid-cols-8 mx-[18px] gap-[18px]">
+  <!-- Left Column (Product Info) -->
+  <div class="flex flex-col sm:order-2 md:order-1 md:col-span-2 sm:h-screen gap-[15px] justify-center sm:sticky top-0">
+  <h1>{{ section.settings.name }}</h1>
+  <a class="cta" href="/">Return to Home</a>
+</div>
+</div>
+{% schema %}
+{
+  "settings": [
+    {
+      "type": "text",
+      "id": "name",
+      "label": "Name",
+      "default": "Page Not Found"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Not found"
+    }
+  ]
+}
+{% endschema %}

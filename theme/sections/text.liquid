@@ -1,0 +1,100 @@
+{% style %}
+  #{{section.id}}
+{
+  padding-top: {{ section.settings.margin_top_desktop }};
+  padding-bottom: {{ section.settings.margin_bottom_desktop }};
+  {% if section.settings.background_color %}
+    background-color: {{ section.settings.background_color }};
+  {% endif %}
+}
+
+{% endstyle %}
+<div id={{section.id}}>
+<div class="base-padding" >
+<div class="flex flex-col gap-[20px]" >
+{% for block in section.blocks %}
+    {% if block.type == 'heading' %}
+        <h2 class="text-3xl font-bold">{{ block.settings.heading_text }}</h2>
+    {% endif %}
+    {% if block.type == 'body' %}
+       <div class="flex flex-col gap-[20px] w-3/4"> {{ block.settings.heading_text }}</div>
+    {% endif %}
+{% endfor %}
+</div>
+</div>
+</div>
+
+{% schema %}
+  {
+    "name": "Text",
+    "presets": [
+    {
+      "name": "Text section"
+    }
+  ],
+    "settings": [
+      {
+        "type": "header",
+        "content": "Style"
+      },
+      {
+        "type": "color",
+        "id": "background_color",
+        "label": "Background color"
+      },
+      {
+        "type": "header",
+        "content": "Margin"
+      }, {
+        "info": "Units (vw)(px)(rem)",
+        "type": "text",
+        "id": "margin_top_desktop",
+        "label": "Section margin top (desktop)",
+        "default": "2rem"
+      }, {
+        "info": "Units (vw)(px)(rem)",
+        "type": "text",
+        "id": "margin_bottom_desktop",
+        "label": "Section margin bottom (desktop)",
+        "default": "2rem"
+      }, {
+        "info": "Units (vw)(px)(rem)",
+        "type": "text",
+        "id": "margin_top_mobile",
+        "label": "Section margin top (mobile)",
+        "default": "2rem"
+      }, {
+        "info": "Units (vw)(px)(rem)",
+        "type": "text",
+        "id": "margin_bottom_mobile",
+        "label": "Section margin bottom (mobile)",
+        "default": "2rem"
+      }
+
+    ],
+    "blocks": [
+      {
+        "type": "heading",
+        "name": "Heading",
+        "settings": [
+          {
+            "type": "richtext",
+            "id": "heading_text",
+            "label": "Heading",
+            "default": "<p>Lorem Ipsum Dolor.</p>"
+          }
+]},
+{
+        "type": "body",
+        "name": "Body",
+        "settings": [
+          {
+            "type": "richtext",
+            "id": "heading_text",
+            "label": "Body",
+            "default": "<p>Lorem Ipsum Dolor.</p>"
+          }
+]}
+]
+  }
+{% endschema %}

@@ -1,0 +1,164 @@
+{% comment %}
+  Side by Side Assets Section
+  - Displays two full-height columns side-by-side on desktop (flex-row)
+  - Stacks vertically on mobile (flex-col)
+  - Each column can display either a product or an image
+  - Products are rendered using the product-card snippet
+{% endcomment %}
+
+<div class="side-by-side-assets flex flex-col md:flex-row w-full">
+  {%- comment -%} Left Column {%- endcomment -%}
+  <div class="side-by-side-column w-full md:w-1/2 h-screen max-h-screen relative">
+    {% assign product_1 = all_products[section.settings.product_1] %}
+    {% assign image_1 = section.settings.image_1 %}
+    
+    {% if image_1 %}
+      <img
+        class="w-full h-screen min-h-screen object-cover"
+        alt="{{ product_1.title | default: section.settings.image_1_alt | default: 'Left column image' }}"
+        src="{{ image_1 | image_url }}"
+        width="{{ image_1.width }}"
+        height="{{ image_1.height }}"
+        loading="eager"
+        srcset="{{ image_1 | img_url: '400x' }} 400w,
+                {{ image_1 | img_url: '600x' }} 600w,
+                {{ image_1 | img_url: '800x' }} 800w,
+                {{ image_1 | img_url: '1200x' }} 1200w,
+                {{ image_1 | img_url: '1600x' }} 1600w,
+                {{ image_1 | img_url: 'master' }} {{ image_1.width }}w"
+        sizes="(max-width: 767px) 100vw, 50vw"
+      >
+    {% elsif product_1 %}
+      <div class="h-screen w-full">
+        {% render 'product-card', product: product_1 %}
+      </div>
+    {% endif %}
+  </div>
+  
+  {%- comment -%} Right Column {%- endcomment -%}
+  <div class="side-by-side-column w-full md:w-1/2 h-screen max-h-screen relative">
+    {% assign product_2 = all_products[section.settings.product_2] %}
+    {% assign image_2 = section.settings.image_2 %}
+    
+    {% if image_2 %}
+      <img
+        class="w-full h-screen min-h-screen object-cover"
+        alt="{{ product_2.title | default: section.settings.image_2_alt | default: 'Right column image' }}"
+        src="{{ image_2 | image_url }}"
+        width="{{ image_2.width }}"
+        height="{{ image_2.height }}"
+        loading="eager"
+        srcset="{{ image_2 | img_url: '400x' }} 400w,
+                {{ image_2 | img_url: '600x' }} 600w,
+                {{ image_2 | img_url: '800x' }} 800w,
+                {{ image_2 | img_url: '1200x' }} 1200w,
+                {{ image_2 | img_url: '1600x' }} 1600w,
+                {{ image_2 | img_url: 'master' }} {{ image_2.width }}w"
+        sizes="(max-width: 767px) 100vw, 50vw"
+      >
+    {% elsif product_2 %}
+      <div class="w-full">
+        {% render 'product-card', product: product_2 %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  /* Make sure the side-by-side section maintains full height */
+  .side-by-side-assets {
+    min-height: 100vh;
+  }
+  
+  /* Custom mobile styling */
+  @media (max-width: 767px) {
+
+    
+    .side-by-side-column {
+      height: 100vh;
+    }
+    
+    /* Update to use the click-based dropdown behavior */
+    .side-by-side-column .product-dropdown {
+      /* Remove styles that force visibility */
+      max-height: 0 !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
+    
+    /* Only show dropdown when mobile-expanded class is present */
+    .side-by-side-column .group.mobile-expanded .product-dropdown.mobile-dropdown-visible {
+      max-height: 500px !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    
+    /* Hide the product thumbnail toggle by default */
+    .side-by-side-column .product-thumbnail-toggle {
+      display: none !important;
+    }
+    
+    /* Show the thumbnail toggle when mobile-expanded class is present */
+    .side-by-side-column .group.mobile-expanded .product-thumbnail-toggle {
+      display: block !important;
+      position: absolute !important;
+      top: 12px !important;
+      right: 12px !important;
+      z-index: 30 !important;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Side by Side Assets",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Left Column"
+    },
+    {
+      "type": "product",
+      "id": "product_1",
+      "label": "Product"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_1",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "image_1_alt",
+      "label": "Image alt text",
+      "info": "Optional alt text for the image (for accessibility)"
+    },
+    {
+      "type": "header",
+      "content": "Right Column"
+    },
+    {
+      "type": "product",
+      "id": "product_2",
+      "label": "Product"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_2",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "image_2_alt",
+      "label": "Image alt text",
+      "info": "Optional alt text for the image (for accessibility)"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Side by Side Assets",
+      "category": "Assets"
+    }
+  ]
+}
+{% endschema %}

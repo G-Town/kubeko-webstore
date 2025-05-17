@@ -1,0 +1,66 @@
+{% comment %}
+  product-form.liquid
+  This partial handles the product form, including variant options and add-to-cart buttons.
+{% endcomment %}
+{% form 'product', product %}
+
+<div>
+  {% if product.available %}
+      <cart-add class="flex  flex-col gap-[15px]">
+        {% if product.variants.size > 1 %}
+          <div class="variant-options flex flex-col w-full gap-[10px] flex-wrap">
+            <p class="bold-body">Size</p>
+            <div class="flex flex-row flex-wrap gap-y-[6px]">
+              {% for variant in product.variants %}
+                {% if variant.available %}
+                  <div
+                    id="variant"
+                    class="variant-option cta  cursor-pointer"
+                    data-variant-id="{{ variant.id }}"
+                  >
+                    {{ variant.title }}
+                  </div>
+                {% elsif !product.available %}
+                  <div
+                    class="variant-option cta !opacity-30 sm:opacity-100 text-[#979797] !border-[#979797] pointer-events-none relative sm:line-through decoration-black decoration-1"
+                    data-variant-id="{{ variant.id }}"
+                  >
+                    {{ variant.title }}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+        <input
+          name="id"
+          type="hidden"
+          id="selected-variant-id"
+          value="{{ product.first_available_variant.id }}"
+        >
+        <div class="flex flex-col  md:w-full gap-[7.5px] cta">
+          <button
+            id="atc"
+            class="big-btn bg-black !text-white hover:opacity-85 transition-opacity"
+            type="submit"
+          >
+            Add to Cart
+          </button>
+          <button
+            id="quick-checkout"
+            class="big-btn hover:bg-black/5 transition-colors hidden"
+            type="submit"
+          >
+            Quick Buy
+          </button>
+        </div>
+      </cart-add>
+  {% else %}
+    <button
+      class="big-btn pointer-events-none !border-black/0 bg-neutral-200"
+    >
+      Sold Out
+    </button>
+  {% endif %}
+</div>
+{% endform %}

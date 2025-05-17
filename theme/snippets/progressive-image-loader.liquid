@@ -1,0 +1,151 @@
+{% comment %}
+  Progressive Image Loading Component
+  
+  This snippet provides utility CSS and JavaScript for progressive image loading.
+  Include this snippet in your theme.liquid or any other template where you use progressive image loading.
+  
+  Usage:
+  1. Add "blur-up" class to your images
+  2. Set src to low-resolution image (e.g., {{ image | img_url: '100x' }})
+  3. Add data-src attribute with high-resolution image URL
+  4. Add onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
+  5. Add proper width and height attributes
+  6. Add loading="lazy" for offscreen images (or loading="eager" for above-the-fold images)
+{% endcomment %}
+
+<style>
+  /* Progressive loading styles */
+  .blur-up {
+    transition: filter 0.5s;
+  }
+  
+  .blur-sm {
+    filter: blur(5px);
+  }
+  
+  .blur-none {
+    filter: blur(0px);
+  }
+  
+  /* Avoid content layout shift with proper aspect ratio */
+  img.blur-up {
+    transition: filter 0.5s, opacity 0.3s;
+  }
+  
+  /* Optional fade-in animation when high-res loads */
+  img.blur-up.blur-none {
+    animation: fadeIn 0.5s ease-in;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0.8; }
+    to { opacity: 1; }
+  }
+</style>
+
+<script>
+  // Global progressive image loading function
+  window.loadHighResImage = function(img) {
+    // Skip if already processed
+    if (img.dataset.highResLoaded) return;
+    
+    // Create a new image element to preload the high-res version
+    const highResImage = new Image();
+    
+    // Set up onload before setting src to ensure it catches
+    highResImage.onload = function() {
+      // Only change the src attribute (keep srcset as is for responsive images)
+      img.src = img.dataset.src;
+      
+      // Remove blur effect with transition
+      img.classList.remove('blur-sm');
+      img.classList.add('blur-none');
+      
+      // Mark as processed
+      img.dataset.highResLoaded = true;
+      
+      // Optional: dispatch event for other components that might need to know
+      img.dispatchEvent(new CustomEvent('highResLoaded'));
+    };
+    
+    // Set src after onload handler to ensure event fires
+    highResImage.src = img.dataset.src;
+  };
+  
+  // Initialize all blur-up images on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    const blurUpImages = document.querySelectorAll('.blur-up');
+    console.log('Initializing progressive loading for', blurUpImages.length, 'images');
+    
+    // Create IntersectionObserver for lazy loading
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          if (img.dataset.loaded && !img.dataset.highResLoaded) {
+            img.classList.add('blur-sm');
+            window.loadHighResImage(img);
+          }
+          
+          // Stop observing once loaded
+          observer.unobserve(img);
+        }
+      });
+    }, {
+      // Start loading when image is 200px away from viewport
+      rootMargin: '200px 0px',
+      threshold: 0.01
+    });
+    
+    blurUpImages.forEach(img => {
+      // For images that are already loaded when this script runs
+      if (img.complete && img.dataset.loaded && !img.dataset.highResLoaded) {
+        // If image has loading="eager", load immediately
+        if (img.getAttribute('loading') === 'eager') {
+          img.classList.add('blur-sm');
+          window.loadHighResImage(img);
+        } else {
+          // Otherwise, use IntersectionObserver
+          imageObserver.observe(img);
+        }
+      } else {
+        // For images not yet loaded
+        img.addEventListener('load', function() {
+          this.dataset.loaded = true;
+          
+          if (!this.dataset.highResLoaded) {
+            if (this.getAttribute('loading') === 'eager') {
+              this.classList.add('blur-sm');
+              window.loadHighResImage(this);
+            } else {
+              imageObserver.observe(this);
+            }
+          }
+        });
+      }
+    });
+    
+    // For dynamically added images
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach(function(node) {
+            if (node.nodeType === 1 && node.matches('.blur-up')) {
+              if (node.complete && node.dataset.loaded && !node.dataset.highResLoaded) {
+                if (node.getAttribute('loading') === 'eager') {
+                  node.classList.add('blur-sm');
+                  window.loadHighResImage(node);
+                } else {
+                  imageObserver.observe(node);
+                }
+              }
+            }
+          });
+        }
+      });
+    });
+    
+    // Start observing the document body for added nodes
+    observer.observe(document.body, { childList: true, subtree: true });
+  });
+</script> 

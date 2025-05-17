@@ -1,0 +1,143 @@
+{% schema %}
+{
+  "name": "Hero Image",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero Image",
+      "category": "Image"
+    }
+  ]
+}
+{% endschema %}
+
+{%- if section.settings.image != blank -%}
+<div class="hero-image w-screen h-screen md:h-min relative">
+  {%- assign img_url_tiny = section.settings.image | image_url: width: 100 -%}
+  {%- assign img_url = section.settings.image | image_url: width: 2000 -%}
+  {%- assign img_url_800 = section.settings.image | image_url: width: 800 -%}
+  {%- assign img_url_400 = section.settings.image | image_url: width: 400 -%}
+  <picture>
+    <source
+      srcset="{{ img_url_tiny }} 100w, {{ img_url_400 }} 400w, {{ img_url_800 }} 800w, {{ img_url }} 2000w"
+      sizes="100vw"
+      type="image/webp"
+    >
+    <img
+      src="{{ img_url_tiny }}"
+      data-src="{{ img_url }}"
+      srcset="{{ img_url_tiny }} 100w, {{ img_url_400 }} 400w, {{ img_url_800 }} 800w, {{ img_url }} 2000w"
+      sizes="100vw"
+      alt="{{ section.settings.image.alt | escape }}"
+      width="{{ section.settings.image.width }}"
+      height="{{ section.settings.image.height }}"
+      loading="eager"
+      class="w-full h-full object-cover blur-up"
+      onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
+    >
+  </picture>
+  
+  {%- if section.settings.title != blank or section.settings.description != blank -%}
+    <div class="text-container">
+      {%- if section.settings.title != blank -%}
+        <div class="title-container">
+          <h2>{{ section.settings.title }}</h2>
+        </div>
+      {%- endif -%}
+      
+      {%- if section.settings.description != blank -%}
+        <div class="description-container">
+          <p>{{ section.settings.description }}</p>
+        </div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</div>
+
+<style>
+  .hero-image {
+    position: relative;
+  }
+  
+  .hero-image img {
+    aspect-ratio: 21/9;
+    width: 100%;
+  }
+  
+  .text-container {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px;
+  }
+  
+  .title-container, .description-container {
+    background: rgba(254, 254, 254, 0.60);
+    backdrop-filter: blur(4.087094783782959px);
+    -webkit-backdrop-filter: blur(4.087094783782959px);
+    border-radius: 1px;
+    padding: 4.9px 12px;
+    color: var(--Black, #444);
+  }
+  
+  .title-container h2, .description-container p {
+    color: var(--Black, #444);
+  }
+  
+  .title-container h2 {
+    margin: 0;
+    font-size: 13px;
+    font-family: Helvetica, Arial, sans-serif;
+    text-transform: uppercase;
+    font-weight: 400;
+    padding: 4.9;
+  }
+  
+  .description-container p {
+    margin: 0;
+    font-size: 16px;
+    font-family: adobe-garamond-pro, "Adobe Garamond Pro", AGaramondPro-Regular, "EB Garamond", Garamond, serif;
+    padding: 0;
+  }
+  
+  @media screen and (max-width: 767px) {
+    .hero-image {
+      height: 100vh;
+      padding-top: 40px; /* Add space for header on mobile */
+    }
+    
+    .hero-image img {
+      height: 100%;
+      aspect-ratio: auto;
+      object-fit: cover;
+    }
+    
+    .text-container {
+      width: 80%;
+      bottom: 0;
+      right: 0;
+      padding: 4px;
+    }
+  }
+</style>
+{%- endif -%}

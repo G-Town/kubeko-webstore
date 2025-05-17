@@ -1,0 +1,1394 @@
+<div class="w-full flex text-black justify-center">
+  <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
+    <header class="flex items-center fixed top-[4px] md:top-[8px] w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2 z-[110] text-[#44444] font-helvetica text-sm md:h-[49px]" id="site-header">
+      <div class="absolute inset-0 md:h-[49px] rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]" id="header-overlay"></div>
+      
+      <style>
+        /* Prevent hover opacity effect for active parent links */
+        .no-hover-effect {
+          opacity: 1 !important;
+        }
+        .no-hover-effect:hover {
+          opacity: 1 !important;
+        }
+        
+        /* New approach: use data attribute on parent to control hover */
+        nav li[data-dropdown-active="true"] a {
+          opacity: 1 !important;
+        }
+        
+        /* Add cursor pointer to links without hover effects */
+        a:not([class*="hover"]):not([class*="cursor-"]):not(:has(img)):not(img) {
+          cursor: pointer !important;
+          opacity: 1 !important;
+          transition: opacity 0.2s ease !important;
+        }
+        
+        a:not([class*="hover"]):not([class*="cursor-"]):not(:has(img)):not(img):hover {
+          opacity: 0.6 !important;
+        }
+        
+        /* Menu item hover state styles - top nav */
+        #header-nav li a {
+          opacity: 1 !important;
+          transition: opacity 0.2s ease !important;
+        }
+        
+        /* Set all menu items to 50% opacity when hovering the nav area */
+        #header-nav:hover li a {
+          opacity: 0.5 !important;
+        }
+        
+        /* Always set hovered items to 100% opacity - highest priority rule */
+        #header-nav li:hover > a {
+          opacity: 1 !important;
+        }
+        
+        /* Keep active parent item visible when dropdown is open, and others opaque */
+        body:has(.menu-dropdown:not(.hidden)) #header-nav li:not([data-dropdown-active="true"]):not(:hover) > a {
+          opacity: 0.5 !important;
+        }
+        
+        body:has(.menu-dropdown:not(.hidden)) #header-nav li[data-dropdown-active="true"] > a {
+          opacity: 1 !important;
+        }
+        
+        /* Ensure data-dropdown-active remains visible during hovering other items */
+        #header-nav:hover li[data-dropdown-active="true"] > a {
+          opacity: 1 !important;
+        }
+        
+        /* Cart hover makes nav items opaque */
+        .ml-auto .group:hover ~ #header-nav li:not(:hover) > a {
+          opacity: 0.5 !important;
+        }
+        
+        /* When cart dropdown is open, make nav items opaque - except hovered items */
+        body:has(.cart-dropdown:not(.hidden)) #header-nav li:not(:hover) > a {
+          opacity: 0.5 !important;
+        }
+        
+        /* Make cart opaque when dropdown is open - except when hovered */
+        body:has(.menu-dropdown:not(.hidden)) .ml-auto .group:not(:hover) p {
+          opacity: 0.5 !important;
+        }
+        
+        /* Ensure cart stays visible when menu item is hovered */
+        #header-nav:hover ~ .ml-auto .group:not(:hover) p {
+          opacity: 0.5 !important;
+        }
+        
+        /* Ensure cart is visible when hovered directly */
+        .ml-auto .group:hover p {
+          opacity: 1 !important;
+        }
+        
+        /* Dropdown menu hover effects - default state */
+        .menu-dropdown .submenu-item a,
+        .submenu-content a {
+          opacity: 0.5 !important;
+          transition: opacity 0.2s ease !important;
+        }
+        
+        /* First level - restore opacity for hovered submenu-item */
+        .menu-dropdown .submenu-item:hover > a {
+          opacity: 1 !important;
+        }
+        
+        /* Second level - restore opacity for hovered grandchild link */
+        .submenu-content a:hover {
+          opacity: 1 !important;
+        }
+        
+        /* Keep parent and child items visible when grandchild is being hovered */
+        .menu-dropdown .submenu-item.active > a {
+          opacity: 1 !important;
+        }
+        
+        /* Mobile menu opacity behavior similar to desktop */
+        #mobile-menu .mobile-parent-container a {
+          opacity: 1 !important;
+          transition: opacity 0.2s ease !important;
+        }
+        
+        /* Make all inactive links opaque when one parent is active */
+        #mobile-menu:has(.mobile-children:not(.hidden)) .mobile-parent-container > a:not(:has(+ .mobile-children:not(.hidden))) {
+          opacity: 0.5 !important;
+        }
+        
+        /* Keep the active parent visible */
+        #mobile-menu .mobile-parent-container > a:has(+ .mobile-children:not(.hidden)) {
+          opacity: 1 !important;
+        }
+        
+        /* Children should be opaque by default */
+        #mobile-menu .mobile-children a {
+          opacity: 0.5 !important;
+        }
+        
+        /* Make inactive children opaque when one is active */
+        #mobile-menu:has(.mobile-child-active) .mobile-child-link:not(.mobile-child-active) {
+          opacity: 0.5 !important;
+        }
+        
+        /* Keep the active child and its children visible */
+        #mobile-menu .mobile-child-active {
+          opacity: 1 !important;
+        }
+        
+        /* Make active parent's direct children normal opacity when no child is selected */
+        #mobile-menu .mobile-children:not(.hidden) > a {
+          opacity: 0.5 !important;
+        }
+        
+        #mobile-menu .mobile-children:not(.hidden) > a:hover {
+          opacity: 1 !important;
+        }
+        
+        /* Quantity adjustment button styles */
+        .quantity-adjust {
+          cursor: pointer;
+          transition: all 0.2s ease;
+          border-radius: 2px;
+          min-width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 8px;
+          font-size: 16px;
+        }
+        
+        .quantity-adjust:hover {
+          background-color: #D9D9D9;
+        }
+
+        .quantity-value {
+          min-width: 24px;
+          text-align: center;
+        }
+        
+        /* Remove button styles */
+        .remove-item {
+          transition: all 0.2s ease;
+          border-radius: 2px;
+          color: black !important;
+          text-transform: uppercase;
+          font-size: 13px;
+          padding: 3px 6px;
+          cursor: pointer;
+        }
+        
+        .remove-item:hover {
+          background-color: #D9D9D9;
+          opacity: 1 !important;
+        }
+        
+        /* Cart item hover effect */
+        .cart-item {
+          transition: background-color 0.2s ease;
+          border-radius: 2px;
+          padding: 10px;
+        }
+        
+        .cart-item:hover {
+          background-color: rgba(254, 254, 254, 0.60);
+        }
+        
+        /* Add space for header on mobile product listing pages */
+        @media (max-width: 767px) {
+          /* Adjust product grid container on mobile */
+          .template-collection #product-grid,
+          .template-collection .grid,
+          .template-list-collections .grid {
+            padding-top: 0 !important;
+          }
+          
+          /* Hero image section on mobile */
+          .hero-image {
+            padding-top: 0 !important;
+          }
+          
+          /* Side by side assets section on mobile */
+          .side-by-side-assets {
+            padding-top: 0 !important;
+          }
+          
+          /* First section on index page */
+          .template-index > div > div:first-child {
+            padding-top: 0 !important;
+          }
+        }
+        
+        /* Remove transitions for mobile menu items */
+        #mobile-menu a {
+          opacity: 1;
+        }
+        
+        #mobile-menu .mobile-parent-container > a.menu-faded {
+          opacity: 0.5;
+        }
+        
+        #mobile-menu .mobile-children a {
+          opacity: 0.5;
+        }
+        
+        #mobile-menu .mobile-children a:hover {
+          opacity: 1;
+        }
+        
+        #mobile-menu .mobile-parent-active > a {
+          opacity: 1 !important;
+        }
+      </style>
+      
+      <!-- Mobile Header -->
+      <nav class="md:hidden flex p-[15px] flex-row relative w-full items-center uppercase">
+        <button class="text-sm uppercase" id="mobile-menu-trigger">MENU</button>
+        <a href="/" class="absolute left-1/2 -translate-x-1/2">
+          {% render 'logo' %}
+        </a>
+        <div class="ml-auto flex items-center">
+          <div class="relative mobile-cart-trigger">
+            <p class="cursor-pointer text-sm uppercase hover:opacity-60 transition-opacity">
+              Cart<span class="absolute -top-1 -right-2 {% if cart.item_count >= 10 %}-right-[12px]{% endif %} text-[10px] cart-count" {% if cart.item_count == 0 %}style="display: none;"{% endif %}>{{ cart.item_count }}</span>
+            </p>
+          </div>
+        </div>
+      </nav>
+      
+      <!-- Desktop Header -->
+      <nav class="hidden md:flex h-full flex-row relative w-full items-center px-6 uppercase">
+        <ul class="flex items-center gap-12 transition-all duration-300" id="header-nav">
+          {% for link in linklists.main-menu.links %}
+            <li class="relative group">
+              <a href="{{ link.url }}" class="cursor-pointer text-sm hover:opacity-60 transition-opacity">{{ link.title }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+        <a href="/" class="absolute left-1/2 -translate-x-1/2 transition-all duration-300" id="header-logo">
+          {% render 'logo' %}
+        </a>
+        <div class="ml-auto flex items-center gap-8">
+          <div class="relative group">
+            <p class="cursor-pointer text-sm uppercase hover:opacity-60 transition-opacity">
+              Cart<span class="absolute -top-1 -right-2 {% if cart.item_count >= 10 %}-right-[12px]{% endif %} text-[10px] cart-count" {% if cart.item_count == 0 %}style="display: none;"{% endif %}>{{ cart.item_count }}</span>
+            </p>
+          </div>
+        </div>
+      </nav>
+    </header>
+  </div>
+</div>
+
+<!-- Mobile Menu Dropdown -->
+<div class="w-full flex justify-center">
+  <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
+    <div class="fixed top-[47px] mt-[4px] md:top-[50px] md:mt-[4px] bottom-[4px] md:bottom-[8px] z-[110] hidden flex-col rounded-[1px] bg-white w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2" id="mobile-menu">
+      <div class="flex flex-col p-[15px] h-full justify-between">
+        <div class="flex h-full">
+          <div class="w-full uppercase text-[13px] flex flex-col gap-[8px] py-2 px-2" id="mobile-menu-left">
+            {% for link in linklists.main-menu.links %}
+              <div class="mobile-parent-container">
+                {% if link.title == 'Shop' %}
+                  <a href="javascript:void(0)" class="text-black mobile-parent-link py-1 block hover:opacity-60 transition-opacity text-[13px] h-[32px] px-[25px]" data-parent-id="{{ link.title | handleize }}">{{ link.title }}</a>
+                  <div class="mobile-children pl-3 mt-2 hidden">
+                    {% if link.links.size > 0 %}
+                      {% for childlink in link.links %}
+                        <a href="{{ childlink.url }}" class="text-black block py-1 mobile-child-link hover:opacity-60 transition-opacity text-[13px] h-[32px] px-[25px]" data-child-id="{{ childlink.title | handleize }}" data-parent-id="{{ link.title | handleize }}" data-has-children="{% if childlink.links.size > 0 %}true{% else %}false{% endif %}">{{ childlink.title }}</a>
+                        {% if childlink.links.size > 0 %}
+                          <div class="mobile-grandchildren pl-3 mt-1 hidden" data-for-child="{{ childlink.title | handleize }}" data-for-parent="{{ link.title | handleize }}">
+                            {% for grandchildlink in childlink.links %}
+                              <a href="{{ grandchildlink.url }}" class="text-black block py-1 hover:opacity-60 transition-opacity text-[13px] h-[32px] px-[25px]">{{ grandchildlink.title }}</a>
+                            {% endfor %}
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                  </div>
+                {% elsif link.title == 'Collections' or link.title == 'Collection' %}
+                  {% if link.links.size > 0 %}
+                    <a href="{{ link.url }}" class="text-black mobile-parent-link collection-parent py-1 block hover:opacity-60 transition-opacity text-[13px] h-[32px] px-[25px]" data-parent-id="{{ link.title | handleize }}">{{ link.title }}</a>
+                    <div class="mobile-children pl-3 mt-2 hidden">
+                      {% for childlink in link.links %}
+                        <a href="{{ childlink.url }}" class="text-black block py-1 hover:opacity-60 transition-opacity text-[13px] h-[32px] px-[25px]">{{ childlink.title }}</a>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    <a href="{{ link.url }}" class="text-black py-1 block hover:opacity-60 transition-opacity text-[13px] h-[32px] px-[25px]">{{ link.title }}</a>
+                  {% endif %}
+                {% else %}
+                  <a href="{{ link.url }}" class="text-black mobile-parent-link py-1 block hover:opacity-60 transition-opacity text-[13px] h-[32px] px-[25px]" data-parent-id="{{ link.title | handleize }}">{{ link.title }}</a>
+                  <div class="mobile-children pl-3 mt-2 hidden {% if link.links.size == 0 %}no-children{% endif %}">
+                    {% if link.links.size > 0 %}
+                      {% for childlink in link.links %}
+                        <a href="{{ childlink.url }}" class="text-black block py-1 mobile-child-link hover:opacity-60 transition-opacity text-[13px] h-[32px] px-[25px]" data-child-id="{{ childlink.title | handleize }}" data-parent-id="{{ link.title | handleize }}" data-has-children="{% if childlink.links.size > 0 %}true{% else %}false{% endif %}">{{ childlink.title }}</a>
+                        {% if childlink.links.size > 0 %}
+                          <div class="mobile-grandchildren pl-3 mt-1 hidden" data-for-child="{{ childlink.title | handleize }}" data-for-parent="{{ link.title | handleize }}">
+                            {% for grandchildlink in childlink.links %}
+                              <a href="{{ grandchildlink.url }}" class="text-black block py-1 hover:opacity-60 transition-opacity text-[13px] h-[32px] px-[25px]">{{ grandchildlink.title }}</a>
+                            {% endfor %}
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        
+        <div class="mt-4 text-center">
+          <button id="mobile-menu-close" class="uppercase text-[13px] text-black">CLOSE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Menu Templates (Hidden) -->
+<div class="hidden" id="mobile-menu-templates">
+  <!-- This section can be removed as we're no longer using the right panel -->
+</div>
+
+<!-- Menu Dropdowns -->
+{% for link in linklists.main-menu.links %}
+  {% if link.links.size > 0 %}
+    {% if link.title == 'Collections' or link.title == 'Collection' %}
+    <div class="w-full flex justify-center">
+      <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
+        <div data-menu="{{ link.title | handleize }}" class="fixed hidden text-sm text-black uppercase top-[46px] mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2">
+          <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]">
+            <div class="p-[15px] pl-[15px]">
+              <div class="flex relative">
+                {% assign max_rows = 5 %}
+                {% assign total_columns = link.links.size | divided_by: max_rows | ceil %}
+                {% if total_columns == 0 %}{% assign total_columns = 1 %}{% endif %}
+                
+                <div class="flex w-1/2" id="parent-menu">
+                  {% for column_index in (1..total_columns) %}
+                    <div class="flex flex-col gap-[8px]">
+                      {% assign start_index = forloop.index0 | times: max_rows %}
+                      {% assign end_index = start_index | plus: max_rows | minus: 1 %}
+                      {% for childlink_index in (start_index..end_index) %}
+                        {% if childlink_index < link.links.size %}
+                          {% assign childlink = link.links[childlink_index] %}
+                          <div class="submenu-item" data-submenu="{{ childlink.title | handleize }}">
+                            <a href="{{ childlink.url }}" class="hover:opacity-60 transition-opacity text-black submenu-link">{{ childlink.title }}</a>
+                            {% if childlink.links.size > 0 %}
+                              <div class="submenu-children hidden">
+                                {% for grandchildlink in childlink.links %}
+                                  <a href="{{ grandchildlink.url }}" class="hover:opacity-60 transition-opacity text-[#444444]">{{ grandchildlink.title }}</a>
+                                {% endfor %}
+                              </div>
+                            {% endif %}
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                  {% endfor %}
+                </div>
+                <!-- Center line reference -->
+                <div class="absolute left-1/2 top-0 bottom-0 border-r border-transparent" id="center-line-marker"></div>
+                <div class="submenu-content flex w-1/2">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="w-full flex justify-center">
+      <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
+        <div data-menu="{{ link.title | handleize }}" class="fixed hidden text-sm text-black uppercase top-[46px] mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2">
+          <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]">
+            <div class="p-[15px] mt-[5px] pl-[15px]">
+              <div class="flex relative">
+                <div class="flex flex-col gap-[8px] w-1/2" id="parent-menu">
+                  {% for childlink in link.links %}
+                    <div class="submenu-item" data-submenu="{{ childlink.title | handleize }}">
+                      <a href="{{ childlink.url }}" class="hover:opacity-60 transition-opacity text-black submenu-link">{{ childlink.title }}</a>
+                      {% if childlink.links.size > 0 %}
+                        <div class="submenu-children hidden">
+                          {% for grandchildlink in childlink.links %}
+                            <a href="{{ grandchildlink.url }}" class="hover:opacity-60 transition-opacity text-[#444444]">{{ grandchildlink.title }}</a>
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+                </div>
+                <!-- Center line reference -->
+                <div class="absolute left-1/2 top-0 bottom-0 border-r border-transparent" id="center-line-marker"></div>
+                <div class="submenu-content flex w-1/2">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+<!-- Cart dropdown -->
+<div class="w-full flex justify-center">
+  <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
+    <div class="fixed hidden text-sm text-black uppercase top-[46px] mt-[4px] md:top-[55px] md:mt-[6px] z-[90] cart-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2">
+      <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] md:bg-[rgba(254,254,254,0.60)] md:backdrop-blur-[12.5px] bg-white max-h-[80vh] flex flex-col">
+        <div class="p-[5px] pl-[5px] mt-[5px] flex flex-col h-full">
+          {% if cart.item_count > 0 %}
+            <div class="flex flex-col h-full">
+              <div class="cart-items-container {% if cart.items.size > 2 %}max-h-[400px] overflow-y-auto pr-1{% endif %}">
+                <div class="flex flex-col gap-[30px]">
+                  {% for item in cart.items %}
+                    <div class="flex py-4 cart-item pr-2 h-[120px]" data-variant-id="{{ item.variant.id }}" data-line-item-key="{{ item.key }}">
+                      <div class="flex-shrink-0 mr-4">
+                        <img 
+                          src="{{ item.image | img_url: 'small' }}"
+                          alt="{{ item.title }}" 
+                          class="w-[65px] h-[100px] object-cover"
+                          width="65"
+                          height="100"
+                          loading="lazy"
+                        >
+                      </div>
+                      <div class="flex flex-col justify-between flex-grow">
+                        <div class="flex justify-between">
+                          <div class="flex flex-col gap-1">
+                            <p class="uppercase font-medium md:text-sm text-[13px]">{{ item.product.title }}</p>
+                            <p class="text-black/50 md:text-sm text-[13px]">{{ item.variant.title }}</p>
+                          </div>
+                          <p class="text-right min-w-[70px] md:text-sm text-[13px]">{{ item.final_line_price | money_without_trailing_zeros }}</p>
+                        </div>
+                        <div class="flex justify-between mt-auto">
+                          <button class="text-[13px] md:text-xs remove-item" data-variant-id="{{ item.variant.id }}">Remove</button>
+                          <div class="flex items-center gap-2">
+                            <p class="text-black uppercase text-[13px] hidden md:block">QUANTITY</p>
+                            <div class="flex items-center">
+                              <button class="quantity-adjust text-[13px] md:text-base" data-variant-id="{{ item.variant.id }}" data-action="decrease">−</button>
+                              <span class="quantity-value text-[13px] md:text-base text-black">{{ item.quantity }}</span>
+                              <button class="quantity-adjust text-[13px] md:text-base" data-variant-id="{{ item.variant.id }}" data-action="increase">+</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="cart-footer mt-6 flex-shrink-0 px-[15px] pl-[15px] py-[15px]">
+                <div class="flex justify-between items-center pt-6 pb-8">
+                  <p class="uppercase font-medium text-[13px] md:text-sm">Total</p>
+                  <p class="text-[13px] md:text-sm">{{ cart.total_price | money_without_trailing_zeros }}</p>
+                </div>
+                <div class="flex flex-col gap-4">
+                  <form action="/cart" method="post">
+                    <input type="hidden" name="checkout" value="">
+                    <button type="submit" class="w-full bg-black text-white text-center py-2 uppercase hover:opacity-80 transition-opacity text-[13px] md:text-sm h-[33px]">
+                      CHECK OUT
+                    </button>
+                  </form>
+                  {% if additional_checkout_buttons %}
+                    <div class="additional-checkout-buttons--vertical">
+                      {{ content_for_additional_checkout_buttons }}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <p class="text-center text-black/50 text-[13px] md:text-sm">Your cart is empty</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const header = document.getElementById('site-header');
+    const headerOverlay = document.getElementById('header-overlay');
+    const headerNav = document.getElementById('header-nav');
+    const headerLogo = document.getElementById('header-logo');
+    const menuItems = document.querySelectorAll('nav li');
+    const dropdowns = document.querySelectorAll('.menu-dropdown');
+    const cartDropdown = document.querySelector('.cart-dropdown');
+    const mobileMenu = document.getElementById('mobile-menu');
+    let currentDropdown = null;
+    let isOverHeader = false;
+    let isOverDropdown = false;
+    let lastScrollTop = 0;
+    
+    // Initialize data-dropdown-active attribute for all menu items
+    menuItems.forEach(item => {
+      item.setAttribute('data-dropdown-active', 'false');
+    });
+    
+    // Set dropdown positions based on header height - disabled since we're using CSS margin now
+    function updateDropdownPositions() {
+      // Disabled - using CSS classes for positioning instead
+    }
+    
+    // Mobile menu functionality
+    const mobileMenuTrigger = document.getElementById('mobile-menu-trigger');
+    const mobileMenuClose = document.getElementById('mobile-menu-close');
+    
+    if (mobileMenuTrigger && mobileMenu && mobileMenuClose) {
+      mobileMenuTrigger.addEventListener('click', () => {
+        mobileMenu.classList.remove('hidden');
+        mobileMenu.classList.add('flex');
+        
+        // Make the header background white when mobile menu is open
+        headerOverlay.style.opacity = '1';
+        headerOverlay.style.display = 'block';
+        headerOverlay.style.backgroundColor = 'white';
+        updateBlendMode(true);
+      });
+
+      mobileMenuClose.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+        mobileMenu.classList.remove('flex');
+        // Reset expanded states when closing
+        document.querySelectorAll('.mobile-children').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.mobile-grandchildren').forEach(el => el.classList.add('hidden'));
+        
+        // Reset active classes for opacity control
+        document.querySelectorAll('.mobile-parent-active').forEach(el => {
+          el.classList.remove('mobile-parent-active');
+        });
+        document.querySelectorAll('.mobile-child-active').forEach(el => {
+          el.classList.remove('mobile-child-active');
+        });
+        
+        // Reset header background
+        headerOverlay.style.backgroundColor = 'rgba(254,254,254,0.60)';
+        
+        // Check scroll position to determine if header should be hidden
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const isAnyDropdownOpen = cartDropdown && !cartDropdown.classList.contains('hidden');
+        
+        // Keep header visible if any dropdown is open
+        if (isAnyDropdownOpen) {
+          headerOverlay.style.opacity = '1';
+          headerOverlay.style.display = 'block';
+          updateBlendMode(true);
+        } else if (scrollTop > 0) {
+          // Hide header when scrolled and no dropdowns open
+          headerOverlay.style.opacity = '0';
+          headerOverlay.style.display = 'none';
+          updateBlendMode(false);
+        }
+      });
+
+      // Handle parent link clicks
+      document.querySelectorAll('.mobile-parent-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          // For all parent links except Collection, let default navigation occur
+          if (link.classList.contains('collection-parent')) {
+            // Check if collections has any children
+            const parentContainer = link.closest('.mobile-parent-container');
+            const childrenContainer = parentContainer.querySelector('.mobile-children');
+            
+            {% assign collectionsHasChildren = false %}
+            {% for link in linklists.main-menu.links %}
+              {% if link.title == 'Collections' or link.title == 'Collection' %}
+                {% if link.links.size > 0 %}
+                  {% assign collectionsHasChildren = true %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+            const hasChildren = {% if collectionsHasChildren %}true{% else %}false{% endif %};
+            
+            // If no children, allow the default navigation
+            if (!hasChildren) {
+              return true;
+            }
+            
+            e.preventDefault();
+            
+            // Toggle collection children display
+            if (childrenContainer.classList.contains('hidden')) {
+              // First remove all existing active states
+              document.querySelectorAll('.mobile-parent-container').forEach(el => {
+                el.classList.remove('mobile-parent-active');
+                el.querySelector('a').classList.add('menu-faded');
+              });
+              
+              // Then set this one as active
+              parentContainer.classList.add('mobile-parent-active');
+              link.classList.remove('menu-faded');
+              childrenContainer.classList.remove('hidden');
+            } else {
+              // Reset everything
+              document.querySelectorAll('.mobile-parent-container').forEach(el => {
+                el.classList.remove('mobile-parent-active');
+                el.querySelector('a').classList.remove('menu-faded');
+              });
+              childrenContainer.classList.add('hidden');
+            }
+            
+          } else if (link.getAttribute('href') === 'javascript:void(0)') {
+            // Shop menu - toggle its children
+            e.preventDefault();
+            
+            const parentContainer = link.closest('.mobile-parent-container');
+            const childrenContainer = parentContainer.querySelector('.mobile-children');
+            
+            // Toggle children visibility
+            if (childrenContainer.classList.contains('hidden')) {
+              // First remove all existing active states
+              document.querySelectorAll('.mobile-parent-container').forEach(el => {
+                el.classList.remove('mobile-parent-active');
+                el.querySelector('a').classList.add('menu-faded');
+              });
+              
+              // Then set this one as active
+              parentContainer.classList.add('mobile-parent-active');
+              link.classList.remove('menu-faded');
+              childrenContainer.classList.remove('hidden');
+            } else {
+              // Reset everything
+              document.querySelectorAll('.mobile-parent-container').forEach(el => {
+                el.classList.remove('mobile-parent-active');
+                el.querySelector('a').classList.remove('menu-faded');
+              });
+              childrenContainer.classList.add('hidden');
+            }
+          }
+        });
+      });
+
+      // Handle child link clicks with grandchildren
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('mobile-child-link')) {
+          const childLink = e.target;
+          const childId = childLink.dataset.childId;
+          const parentId = childLink.dataset.parentId;
+          const hasChildren = childLink.dataset.hasChildren === 'true';
+          
+          // Only process dropdown logic for children with grandchildren
+          if (hasChildren) {
+            e.preventDefault();
+            
+            // Find the grandchildren container for this child
+            const grandchildrenContainer = document.querySelector(`.mobile-grandchildren[data-for-child="${childId}"][data-for-parent="${parentId}"]`);
+            
+            if (grandchildrenContainer) {
+              // Remove active class from all child links
+              document.querySelectorAll('.mobile-child-link').forEach(el => {
+                el.classList.remove('mobile-child-active');
+              });
+              
+              // Add active class to this child link
+              childLink.classList.add('mobile-child-active');
+              
+              // Toggle the visibility of grandchildren
+              const isHidden = grandchildrenContainer.classList.contains('hidden');
+              
+              // Hide all grandchildren first
+              document.querySelectorAll('.mobile-grandchildren').forEach(el => {
+                el.classList.add('hidden');
+              });
+              
+              // If it was hidden, show it now
+              if (isHidden) {
+                grandchildrenContainer.classList.remove('hidden');
+              } else {
+                // If was showing, hide it and remove active state
+                childLink.classList.remove('mobile-child-active');
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateBlendMode(isVisible) {
+      if (isVisible) {
+        headerNav.classList.remove('mix-blend-difference');
+        headerLogo.classList.remove('mix-blend-difference');
+      } else {
+        headerNav.classList.add('mix-blend-difference');
+        headerLogo.classList.add('mix-blend-difference');
+      }
+    }
+
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const isMobile = window.innerWidth < 768;
+      
+      // Check if any dropdown is open
+      const isAnyDropdownOpen = 
+        (currentDropdown !== null && !currentDropdown.classList.contains('hidden')) || 
+        (mobileMenu && mobileMenu.classList.contains('flex')) ||
+        (cartDropdown && !cartDropdown.classList.contains('hidden') && isMobile);
+      
+      // On any device, keep header visible if a dropdown is open
+      if (isAnyDropdownOpen) {
+        headerOverlay.style.opacity = '1';
+        headerOverlay.style.display = 'block';
+        updateBlendMode(true);
+      } else {
+        // When no dropdown is open, hide header when scrolling down
+        if (scrollTop > lastScrollTop) {
+          headerOverlay.style.opacity = '0';
+          headerOverlay.style.display = 'none';
+          updateBlendMode(false);
+        } else {
+          headerOverlay.style.opacity = '1';
+          headerOverlay.style.display = 'block';
+          updateBlendMode(true);
+        }
+      }
+      
+      lastScrollTop = scrollTop;
+    });
+
+    // Modified event listeners for header to prevent hiding overlay during scroll
+    header.addEventListener('mouseenter', () => {
+      isOverHeader = true;
+      headerOverlay.style.opacity = '1';
+      headerOverlay.style.display = 'block';
+      updateBlendMode(true);
+    });
+
+    header.addEventListener('mouseleave', () => {
+      isOverHeader = false;
+      setTimeout(() => {
+        if (!isOverDropdown && currentDropdown) {
+          currentDropdown.classList.add('hidden');
+          currentDropdown = null;
+          
+          // Reset all nav items data attributes
+          menuItems.forEach(menuItem => {
+            menuItem.setAttribute('data-dropdown-active', 'false');
+          });
+          
+          // Check scroll position to determine if header should be hidden
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const isAnyDropdownOpen = 
+            (currentDropdown !== null && !currentDropdown.classList.contains('hidden')) || 
+            (mobileMenu && mobileMenu.classList.contains('flex'));
+            
+          // Keep header visible if any dropdown is open
+          if (isAnyDropdownOpen) {
+            headerOverlay.style.opacity = '1';
+            headerOverlay.style.display = 'block';
+            updateBlendMode(true);
+          } else if (scrollTop > 0) {
+            // Hide header when scrolled and no dropdowns open
+            headerOverlay.style.opacity = '0';
+            headerOverlay.style.display = 'none';
+            updateBlendMode(false);
+          }
+        }
+      }, 100);
+    });
+
+    menuItems.forEach(item => {
+      const link = item.querySelector('a');
+      if (!link) return;
+      
+      const menuTitle = link.textContent.toLowerCase().trim().replace(/\s+/g, '-');
+      const dropdown = document.querySelector(`[data-menu="${menuTitle}"]`);
+      
+      if (dropdown) {
+        // Check if this is Collections/Collection and it has no children
+        const isCollection = menuTitle === 'collections' || menuTitle === 'collection';
+        
+        {% assign collectionsHasNoChildren = false %}
+        {% for link in linklists.main-menu.links %}
+          {% if link.title == 'Collections' or link.title == 'Collection' %}
+            {% if link.links.size == 0 %}
+              {% assign collectionsHasNoChildren = true %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        const hasNoChildren = isCollection && {% if collectionsHasNoChildren %}true{% else %}false{% endif %};
+        
+        // If it's Collections with no children, don't set up hover events
+        if (isCollection && hasNoChildren) {
+          return;
+        }
+        
+        item.addEventListener('mouseenter', () => {
+          // Hide any existing dropdown from another parent before showing this one
+          if (currentDropdown && currentDropdown !== dropdown) {
+            currentDropdown.classList.add('hidden');
+            
+            // Reset data-dropdown-active for the previous parent
+            menuItems.forEach(menuItem => {
+              menuItem.setAttribute('data-dropdown-active', 'false');
+            });
+          }
+          
+          // Set this item as active
+          item.setAttribute('data-dropdown-active', 'true');
+          
+          dropdown.classList.remove('hidden');
+          currentDropdown = dropdown;
+          
+          // Position the dropdown correctly when it first appears
+          positionSubmenu(dropdown);
+          
+          // Initialize the first submenu item as active
+          const firstSubmenuItem = dropdown.querySelector('.submenu-item');
+          if (firstSubmenuItem) {
+            // No need to set opacity classes initially
+            showSubmenuContent(firstSubmenuItem, dropdown, 0);
+          }
+        });
+
+        const submenuItems = dropdown.querySelectorAll('.submenu-item');
+        const submenuContent = dropdown.querySelector('.submenu-content');
+        
+        submenuItems.forEach((submenuItem, index) => {
+          submenuItem.addEventListener('mouseenter', () => {
+            showSubmenuContent(submenuItem, dropdown, index);
+          });
+        });
+
+        dropdown.addEventListener('mouseenter', () => {
+          isOverDropdown = true;
+          headerOverlay.style.opacity = '1';
+          headerOverlay.style.display = 'block';
+          updateBlendMode(true);
+        });
+
+        dropdown.addEventListener('mouseleave', () => {
+          isOverDropdown = false;
+          setTimeout(() => {
+            if (!isOverHeader && currentDropdown) {
+              currentDropdown.classList.add('hidden');
+              currentDropdown = null;
+              
+              // Reset all nav items data attributes
+              menuItems.forEach(menuItem => {
+                menuItem.setAttribute('data-dropdown-active', 'false');
+              });
+              
+              // Check scroll position to determine if header should be hidden
+              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+              const isAnyDropdownOpen = 
+                (currentDropdown !== null && !currentDropdown.classList.contains('hidden')) || 
+                (mobileMenu && mobileMenu.classList.contains('flex'));
+                
+              // Keep header visible if any dropdown is open
+              if (isAnyDropdownOpen) {
+                headerOverlay.style.opacity = '1';
+                headerOverlay.style.display = 'block';
+                updateBlendMode(true);
+              } else if (scrollTop > 0) {
+                // Hide header when scrolled and no dropdowns open
+                headerOverlay.style.opacity = '0';
+                headerOverlay.style.display = 'none';
+                updateBlendMode(false);
+              }
+            }
+          }, 100);
+        });
+      }
+    });
+
+    function showSubmenuContent(submenuItem, dropdown, index) {
+      // Reset all submenu items to default state
+      dropdown.querySelectorAll('.submenu-item').forEach(item => {
+        item.classList.remove('active');
+      });
+
+      // Set active submenu
+      submenuItem.classList.add('active');
+      
+      const submenuContent = dropdown.querySelector('.submenu-content');
+      const submenuChildren = submenuItem.querySelector('.submenu-children');
+      const isCollectionMenu = dropdown.getAttribute('data-menu') === 'collection' || 
+                               dropdown.getAttribute('data-menu') === 'collections';
+      
+      submenuContent.innerHTML = '';
+
+      if (submenuChildren && submenuChildren.children.length > 0) {
+        const children = Array.from(submenuChildren.children);
+        const maxRows = 5; // Limit to 5 rows maximum
+        
+        // Create wrapper that will position its content starting from the center
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = 'absolute left-1/2 flex flex-col gap-[8px]';
+        
+        // Add each child directly to the wrapper - no columnar layout
+        children.forEach(child => {
+          const clone = child.cloneNode(true);
+          contentWrapper.appendChild(clone);
+        });
+        
+        submenuContent.appendChild(contentWrapper);
+      }
+      
+      // Position the submenu correctly with its parent navigation item
+      positionSubmenu(dropdown);
+    }
+    
+    // Function to align dropdown with navigation items
+    function positionSubmenu(dropdown) {
+      const menuTitle = dropdown.getAttribute('data-menu');
+      const navItem = Array.from(menuItems).find(item => {
+        const link = item.querySelector('a');
+        if (!link) return false;
+        return link.textContent.toLowerCase().trim().replace(/\s+/g, '-') === menuTitle;
+      });
+      
+      if (navItem) {
+        // Get the position of the navigation item
+        const navItemRect = navItem.getBoundingClientRect();
+        
+        // Get the first column of the dropdown menu
+        const parentMenu = dropdown.querySelector('#parent-menu');
+        if (parentMenu && parentMenu.firstElementChild) {
+          // Align the first column with the nav item's left edge
+          parentMenu.style.paddingLeft = '8px'; // Fine-tune this value as needed
+        }
+      }
+    }
+
+    // Cart dropdown functionality
+    const desktopCartTrigger = document.querySelector('.group p');
+    const mobileCartTrigger = document.querySelector('.mobile-cart-trigger p');
+    let isOverCart = false;
+
+    if (desktopCartTrigger && cartDropdown) {
+      desktopCartTrigger.parentElement.addEventListener('mouseenter', () => {
+        // Hide any other dropdown that might be open
+        if (currentDropdown && currentDropdown !== cartDropdown) {
+          currentDropdown.classList.add('hidden');
+        }
+        
+        // Reset all nav items data attributes when cart is hovered
+        menuItems.forEach(menuItem => {
+          menuItem.setAttribute('data-dropdown-active', 'false');
+        });
+        
+        cartDropdown.classList.remove('hidden');
+        currentDropdown = cartDropdown;
+        headerOverlay.style.opacity = '1';
+        headerOverlay.style.display = 'block';
+        updateBlendMode(true);
+        
+        // Position the cart dropdown to align with the cart link
+        const cartLink = desktopCartTrigger.parentElement;
+        const cartRect = cartLink.getBoundingClientRect();
+        const cartDropdownContent = cartDropdown.querySelector('.p-\\[5px\\]');
+        if (cartDropdownContent) {
+          cartDropdownContent.style.paddingRight = '5px';
+        }
+        
+        // Update cart content when opened
+        fetchAndUpdateCart();
+      });
+
+      cartDropdown.addEventListener('mouseenter', () => {
+        isOverDropdown = true;
+        headerOverlay.style.opacity = '1';
+        headerOverlay.style.display = 'block';
+        updateBlendMode(true);
+      });
+
+      cartDropdown.addEventListener('mouseleave', () => {
+        isOverDropdown = false;
+        setTimeout(() => {
+          if (!isOverHeader && currentDropdown) {
+            currentDropdown.classList.add('hidden');
+            currentDropdown = null;
+            
+            // Reset all nav items data attributes
+            menuItems.forEach(menuItem => {
+              menuItem.setAttribute('data-dropdown-active', 'false');
+            });
+            
+            // Check scroll position to determine if header should be hidden
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const isAnyDropdownOpen = 
+              (currentDropdown !== null && !currentDropdown.classList.contains('hidden')) || 
+              (mobileMenu && mobileMenu.classList.contains('flex'));
+              
+            // Keep header visible if any dropdown is open
+            if (isAnyDropdownOpen) {
+              headerOverlay.style.opacity = '1';
+              headerOverlay.style.display = 'block';
+              updateBlendMode(true);
+            } else if (scrollTop > 0) {
+              // Hide header when scrolled and no dropdowns open
+              headerOverlay.style.opacity = '0';
+              headerOverlay.style.display = 'none';
+              updateBlendMode(false);
+            }
+          }
+        }, 100);
+      });
+    }
+
+    if (mobileCartTrigger && cartDropdown) {
+      mobileCartTrigger.addEventListener('click', () => {
+        if (mobileMenu.classList.contains('flex')) {
+          mobileMenu.classList.add('hidden');
+          mobileMenu.classList.remove('flex');
+        }
+        cartDropdown.classList.toggle('hidden');
+        
+        // Set white background for header when cart dropdown is open on mobile
+        if (!cartDropdown.classList.contains('hidden')) {
+          headerOverlay.style.opacity = '1';
+          headerOverlay.style.display = 'block';
+          
+          // Check if we're on mobile
+          if (window.innerWidth < 768) {
+            headerOverlay.style.backgroundColor = 'white';
+          }
+          
+          fetchAndUpdateCart();
+        } else {
+          // Reset background
+          headerOverlay.style.backgroundColor = 'rgba(254,254,254,0.60)';
+        }
+      });
+    }
+
+    // Initialize cart count display
+    updateCartCountDisplay({{ cart.item_count }});
+    
+    // Listen for add to cart events from the theme
+    document.addEventListener('product:added', function(event) {
+      fetchAndUpdateCart();
+      showCartTemporarily();
+    });
+    
+    // Also listen for variant changes
+    document.addEventListener('variant:change', function(event) {
+      fetchAndUpdateCart();
+    });
+    
+    // Listen for form submissions that might add to cart
+    document.addEventListener('submit', function(event) {
+      const form = event.target;
+      if (form.action && (form.action.includes('/cart/add') || form.getAttribute('action') === '/cart/add')) {
+        // Wait a bit to allow Shopify to process the add-to-cart
+        setTimeout(() => {
+          fetchAndUpdateCart();
+          showCartTemporarily();
+        }, 500);
+      }
+    });
+    
+    // Check for AJAX add-to-cart that may not trigger other events
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options) {
+      const fetchPromise = originalFetch.apply(this, arguments);
+      
+      // If this is a cart-related request
+      if (typeof url === 'string' && url.includes('/cart/add')) {
+        fetchPromise.then(response => {
+          setTimeout(() => {
+            fetchAndUpdateCart();
+            showCartTemporarily();
+          }, 500);
+          return response;
+        });
+      } else if (typeof url === 'string' && (url.includes('/cart/change') || url.includes('/cart/update'))) {
+        fetchPromise.then(response => {
+          setTimeout(fetchAndUpdateCart, 500);
+          return response;
+        });
+      }
+      
+      return fetchPromise;
+    };
+    
+    // Function to show cart temporarily
+    let cartAutoHideTimer;
+    function showCartTemporarily() {
+      // Clear any existing timer
+      if (cartAutoHideTimer) {
+        clearTimeout(cartAutoHideTimer);
+      }
+      
+      // Show the cart
+      cartDropdown.classList.remove('hidden');
+      headerOverlay.style.opacity = '1';
+      headerOverlay.style.display = 'block';
+      
+      // Add white background on mobile
+      if (window.innerWidth < 768) {
+        headerOverlay.style.backgroundColor = 'white';
+      }
+      
+      updateBlendMode(true);
+      currentDropdown = cartDropdown;
+      
+      // Set timer to hide after 3 seconds
+      cartAutoHideTimer = setTimeout(() => {
+        cartDropdown.classList.add('hidden');
+        currentDropdown = null;
+        
+        // Reset background
+        headerOverlay.style.backgroundColor = 'rgba(254,254,254,0.60)';
+        
+        // Check scroll position to determine if header should be hidden
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const isAnyDropdownOpen = 
+          (currentDropdown !== null && !currentDropdown.classList.contains('hidden')) || 
+          (mobileMenu && mobileMenu.classList.contains('flex'));
+          
+        // Keep header visible if any dropdown is open
+        if (isAnyDropdownOpen) {
+          headerOverlay.style.opacity = '1';
+          headerOverlay.style.display = 'block';
+          updateBlendMode(true);
+        } else if (scrollTop > 0) {
+          // Hide header when scrolled and no dropdowns open
+          headerOverlay.style.opacity = '0';
+          headerOverlay.style.display = 'none';
+          updateBlendMode(false);
+        }
+      }, 3000);
+    }
+    
+    // Fetch cart on page load to ensure accuracy
+    fetchAndUpdateCart();
+
+    // Add event listeners to quantity buttons
+    document.querySelectorAll('.quantity-adjust').forEach(button => {
+      button.addEventListener('click', handleQuantityAdjustment);
+    });
+    
+    // Add event listeners to remove buttons
+    document.querySelectorAll('.remove-item').forEach(button => {
+      button.addEventListener('click', function() {
+        removeItem(this);
+      });
+    });
+
+    // Listen for resize events to update dropdown appearances
+    window.addEventListener('resize', () => {
+      // Reset background color for header overlay when resizing
+      if (window.innerWidth >= 768) {
+        headerOverlay.style.backgroundColor = 'rgba(254,254,254,0.60)';
+      }
+    });
+  });
+
+  // Function to update cart count display
+  function updateCartCountDisplay(count) {
+    const cartCounts = document.querySelectorAll('.cart-count');
+    cartCounts.forEach(cartCount => {
+      if (cartCount) {
+        cartCount.textContent = count;
+        if (count > 0) {
+          cartCount.style.display = 'block';
+        } else {
+          cartCount.style.display = 'none';
+        }
+      }
+    });
+  }
+  
+  // Function to fetch and update cart content
+  async function fetchAndUpdateCart() {
+    try {
+      const response = await fetch('/cart.js');
+      if (!response.ok) throw new Error('Cart fetch failed');
+      
+      const cart = await response.json();
+      updateCartCountDisplay(cart.item_count);
+      
+      // Update cart dropdown content
+      updateCartDropdownContent(cart);
+      
+      // Dispatch event for other components
+      document.dispatchEvent(new CustomEvent('cart:updated', {
+        detail: {
+          item_count: cart.item_count,
+          total_price: cart.total_price
+        }
+      }));
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+    }
+  }
+  
+  // Function to update cart dropdown content
+  function updateCartDropdownContent(cart) {
+    const cartContent = document.querySelector('.cart-dropdown .p-\\[5px\\]');
+    if (!cartContent) return;
+    
+    if (cart.item_count === 0) {
+      cartContent.innerHTML = '<p class="text-center text-black/50 text-[13px] md:text-sm">Your cart is empty</p>';
+      return;
+    }
+    
+    // Create container elements
+    let html = `
+      <div class="flex flex-col h-full">
+        <div class="cart-items-container ${cart.items.length > 2 ? 'max-h-[400px] overflow-y-auto pr-1' : ''}">
+          <div class="flex flex-col gap-[30px]">
+    `;
+    
+    // Generate HTML for each item
+    cart.items.forEach(item => {
+      // Get the variant title (which should contain the size)
+      let sizeDisplay = '';
+      if (item.variant_title) {
+        sizeDisplay = item.variant_title.replace('Default Title', '');
+      }
+      
+      // Ensure we have a valid image URL
+      let imageUrl = item.image || '';
+      
+      html += `
+        <div class="flex py-2 cart-item pr-2 h-[120px]" data-variant-id="${item.variant_id}" data-line-item-key="${item.key}">
+          <div class="flex-shrink-0 mr-4">
+            <img 
+              src="${imageUrl}"
+              alt="${item.title}" 
+              class="w-[65px] h-[100px] object-cover"
+              width="65"
+              height="100"
+              loading="lazy"
+            >
+          </div>
+          <div class="flex flex-col justify-between flex-grow">
+            <div class="flex justify-between">
+              <div class="flex flex-col gap-1">
+                <p class="uppercase font-medium md:text-sm text-[13px]">${item.product_title}</p>
+                <p class="text-black/50 md:text-sm text-[13px]">${sizeDisplay}</p>
+              </div>
+              <p class="text-right min-w-[70px] md:text-sm text-[13px]">$${(item.final_price * item.quantity / 100).toFixed(0)}</p>
+            </div>
+            <div class="flex justify-between mt-auto">
+              <button class="text-[13px] md:text-xs remove-item" data-variant-id="${item.variant_id}">Remove</button>
+              <div class="flex items-center gap-2">
+                <p class="text-black uppercase text-[13px] hidden md:block">QUANTITY</p>
+                <div class="flex items-center">
+                  <button class="quantity-adjust text-[13px] md:text-base" data-variant-id="${item.variant_id}" data-action="decrease">−</button>
+                  <span class="quantity-value text-[13px] md:text-base text-black">${item.quantity}</span>
+                  <button class="quantity-adjust text-[13px] md:text-base" data-variant-id="${item.variant_id}" data-action="increase">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    // Close items container and add checkout section
+    html += `
+          </div>
+        </div>
+        <div class="cart-footer mt-6 flex-shrink-0 px-[15px] pl-[15px] py-[15px]">
+          <div class="flex justify-between items-center pt-6 pb-8">
+            <p class="uppercase font-medium text-[13px] md:text-sm">Total</p>
+            <p class="text-[13px] md:text-sm">$${(cart.total_price / 100).toFixed(0)}</p>
+          </div>
+          <div class="flex flex-col gap-4">
+            <form action="/cart" method="post">
+              <input type="hidden" name="checkout" value="">
+              <button type="submit" class="w-full bg-black text-white text-center py-2 uppercase hover:opacity-80 transition-opacity text-[13px] md:text-sm h-[33px]">
+                CHECK OUT
+              </button>
+            </form>
+            {% if additional_checkout_buttons %}
+              <div class="additional-checkout-buttons--vertical">
+                {{ content_for_additional_checkout_buttons }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    `;
+    
+    cartContent.innerHTML = html;
+    
+    // Add event listeners to quantity buttons
+    document.querySelectorAll('.quantity-adjust').forEach(button => {
+      button.addEventListener('click', handleQuantityAdjustment);
+    });
+    
+    // Add event listeners to remove buttons in the updated cart content
+    document.querySelectorAll('.remove-item').forEach(button => {
+      button.addEventListener('click', function() {
+        removeItem(this);
+      });
+    });
+  }
+  
+  // Handle quantity adjustment
+  async function handleQuantityAdjustment(event) {
+    const button = event.currentTarget;
+    const variantId = button.dataset.variantId;
+    const action = button.dataset.action;
+    const item = button.closest('.cart-item');
+    const quantityDisplay = item.querySelector('.quantity-value');
+    let currentQuantity = parseInt(quantityDisplay.textContent);
+    
+    // Calculate the new quantity
+    let newQuantity = currentQuantity;
+    if (action === 'increase') {
+      newQuantity = currentQuantity + 1;
+    } else if (action === 'decrease') {
+      newQuantity = currentQuantity - 1;
+    }
+    
+    // If quantity would be zero, remove the item
+    if (newQuantity <= 0) {
+      await updateCartItemQuantity(variantId, 0);
+      return;
+    }
+    
+    // Otherwise update the quantity
+    await updateCartItemQuantity(variantId, newQuantity);
+  }
+  
+  // Function to update cart item quantity
+  async function updateCartItemQuantity(variantId, quantity) {
+    try {
+      const response = await fetch('/cart/change.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: variantId,
+          quantity: quantity
+        })
+      });
+
+      if (!response.ok) throw new Error('Update item quantity failed');
+      
+      // Fetch and update cart after successful quantity change
+      fetchAndUpdateCart();
+      
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+    }
+  }
+
+  // Update the removeItem function to use updateCartItemQuantity
+  async function removeItem(button) {
+    const variantId = button.dataset.variantId;
+    await updateCartItemQuantity(variantId, 0);
+  }
+
+  function formatMoney(cents) {
+    return (cents / 100).toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+  }
+</script>
+
+
+

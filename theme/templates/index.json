@@ -1,0 +1,49 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "index-page",
+      "settings": {}
+    },
+    "side_by_side_assets_Q3Pzin": {
+      "type": "side-by-side-assets",
+      "settings": {
+        "product_1": "",
+        "image_1": "shopify://shop_images/1.jpg",
+        "image_1_alt": "",
+        "product_2": "gari",
+        "image_2_alt": ""
+      }
+    },
+    "hero_image_qy3MAb": {
+      "type": "hero-image",
+      "settings": {
+        "image": "shopify://shop_images/IMG07934-2-2-3-2_021c7738-5107-4ebd-af4d-3309394d218c.jpg"
+      }
+    },
+    "side_by_side_assets_fwqBQg": {
+      "type": "side-by-side-assets",
+      "settings": {
+        "product_1": "willy",
+        "image_1_alt": "",
+        "product_2": "",
+        "image_2": "shopify://shop_images/IMG08034.jpg",
+        "image_2_alt": ""
+      }
+    }
+  },
+  "order": [
+    "main",
+    "side_by_side_assets_Q3Pzin",
+    "hero_image_qy3MAb",
+    "side_by_side_assets_fwqBQg"
+  ]
+}

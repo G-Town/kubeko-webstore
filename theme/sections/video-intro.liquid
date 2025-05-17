@@ -1,0 +1,133 @@
+{% schema %}
+{
+  "name": "Intro Video",
+  "settings": [
+    {
+      "type": "range",
+      "id": "fade_duration",
+      "min": 1,
+      "max": 5,
+      "step": 0.5,
+      "unit": "s",
+      "label": "Fade-out Duration",
+      "default": 1.5
+    }
+  ],
+  "presets": [
+    {
+      "name": "Intro Video",
+      "category": "Video"
+    }
+  ]
+}
+{% endschema %}
+
+{% if settings.intro_video_desktop != blank or settings.intro_video_mobile != blank %}
+<div id="intro-video-container" class="fixed inset-0 z-[9999] w-screen h-screen bg-black flex items-center justify-center opacity-100 transition-opacity" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;">
+  <div class="relative w-full h-full">
+    {% if settings.intro_video_desktop != blank %}
+    <div class="desktop-video-container w-full h-full hidden md:block">
+      {{ settings.intro_video_desktop | video_tag: class: 'w-full h-full object-cover', controls: false, autoplay: true, muted: true, playsinline: true, id: 'intro-video-desktop' }}
+    </div>
+    {% endif %}
+    
+    {% if settings.intro_video_mobile != blank %}
+    <div class="mobile-video-container w-full h-full block md:hidden">
+      {{ settings.intro_video_mobile | video_tag: class: 'w-full h-full object-cover', controls: false, autoplay: true, muted: true, playsinline: true, id: 'intro-video-mobile' }}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const introContainer = document.getElementById('intro-video-container');
+    const desktopVideo = document.getElementById('intro-video-desktop');
+    const mobileVideo = document.getElementById('intro-video-mobile');
+    const fadeDuration = {{ section.settings.fade_duration | default: 1.5 }} * 500; // Halved for twice the speed
+    const hasSeenIntro = localStorage.getItem('hasSeenIntroVideo');
+    
+    // Determine active video based on screen size
+    const isMobile = window.innerWidth < 768;
+    const activeVideo = isMobile ? mobileVideo : desktopVideo;
+    
+    if (!hasSeenIntro && activeVideo) {
+      // Show the intro video on first visit only
+      introContainer.style.display = 'flex';
+      document.body.style.overflow = 'hidden'; // Prevent scrolling
+      
+      // Start the fade out before video completely ends
+      if (activeVideo) {
+        activeVideo.addEventListener('timeupdate', function() {
+          if (activeVideo.duration > 0 && (activeVideo.duration - activeVideo.currentTime) <= {{ section.settings.fade_duration | default: 1.5 }}) {
+            // If we're within the fade duration of the end, start fading
+            if (introContainer.style.opacity === '1' || introContainer.style.opacity === '') {
+              fadeOutIntro();
+            }
+          }
+        });
+      }
+      
+      // Backup: hide after video completes
+      activeVideo.addEventListener('ended', function() {
+        if (introContainer.style.opacity === '1' || introContainer.style.opacity === '') {
+          fadeOutIntro();
+        }
+      });
+      
+      // Also add a timeout in case video doesn't fire events properly
+      setTimeout(function() {
+        if (activeVideo && !activeVideo.paused) {
+          fadeOutIntro();
+        }
+      }, (activeVideo ? activeVideo.duration * 1000 : 5000) + 1000); // Video duration plus 1 second buffer or 6 seconds fallback
+      
+      // Set localStorage to remember the user has seen the intro
+      localStorage.setItem('hasSeenIntroVideo', 'true');
+    }
+    
+    // Handle screen resize (though unlikely during video playback)
+    window.addEventListener('resize', function() {
+      if (introContainer.style.display === 'flex') {
+        const newIsMobile = window.innerWidth < 768;
+        if (newIsMobile !== isMobile) {
+          // Screen size category changed, reload page to show proper video
+          window.location.reload();
+        }
+      }
+    });
+    
+    function fadeOutIntro() {
+      introContainer.style.opacity = '0';
+      setTimeout(function() {
+        introContainer.style.display = 'none';
+        document.body.style.overflow = ''; // Restore scrolling
+      }, fadeDuration);
+    }
+  });
+</script>
+
+<style>
+  #intro-video-container {
+    transition: opacity {{ section.settings.fade_duration | default: 1.5 | divided_by: 2 }}s ease-out;
+  }
+  
+  @media (min-width: 768px) {
+    .desktop-video-container {
+      display: block;
+    }
+    .mobile-video-container {
+      display: none;
+    }
+  }
+  
+  @media (max-width: 767px) {
+    .desktop-video-container {
+      display: none;
+    }
+    .mobile-video-container {
+      display: block;
+    }
+  }
+</style>
+{% endif %} 
