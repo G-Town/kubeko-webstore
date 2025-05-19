@@ -1,0 +1,20 @@
+{%- assign first_image = product.images[0] | default: product.featured_image -%}
+
+<div class="collection-item-image-container">
+  <a href="{{ product.url }}">
+    {%- if first_image -%}
+      {{ first_image | image_url: width: 600 | img_tag: class: 'w-full h-auto object-cover' }}
+    {%- else -%}
+      {{ 'product-no-image.gif' | asset_url | img_tag: alt: product.title, class: 'w-full h-auto object-cover' }}
+    {%- endif -%}
+  </a>
+</div>
+
+{% style %}
+  .collection-item-image-container {
+    position: relative; /* For potential overlay elements */
+    overflow: hidden; /* To contain image within bounds */
+  }
+
+  /* You can add more specific styling here if needed */
+{% endstyle %}

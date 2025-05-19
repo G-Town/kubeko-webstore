@@ -121,6 +121,19 @@
     content: "";
     margin-top: 1rem;
   }
+
+/* TODO: this solution should allow any length of content on mobile, need something else for desktop */
+@media (max-width: 767px) {
+  .flex-col.h-full { /* Target the parent flex container on mobile */
+    height: auto !important; /* Allow it to grow with content */
+    min-height: auto;
+  }
+
+  .md\:h-full { /* Ensure the desktop height setting doesn't interfere */
+    height: auto !important;
+  }
+}
+
 </style>
 
 {% schema %}
