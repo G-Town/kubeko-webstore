@@ -1,4 +1,4 @@
-<div class="flex flex-col md:flex-row h-full bg-[#606060] w-full">
+<div class="flex flex-col md:flex-row h-full bg-[#d9d9d9] w-full">
   <div class="w-full md:w-1/2 relative mobile-square">
     <div class="absolute inset-0">
       {% if section.settings.video != blank %}
@@ -51,8 +51,8 @@
   </div>
   
   <div class="w-full flex-1 md:h-full md:w-1/2 flex flex-col p-1">
-    {% comment %} TODO: change dark grey to a lighter tone here and switch to black text {% endcomment %}
-    <div class="w-full flex-grow text-center bg-[#4A4A4A] text-white flex flex-col justify-center items-center mb-1 overflow-y-auto">
+    {% comment %} TODO: change dark grey to a lighter tone here and switch to black text (re-add mb-1 if btn is re-added) {% endcomment %}
+    <div class="w-full flex-grow text-center bg-[#efefef] text-black flex flex-col justify-center items-center overflow-y-auto">
       <div class="max-w-[426px] flex flex-col py-8">
         <h1 class="uppercase mb-[50px] text-sm font-helvetica">{{ section.settings.title }}</h1>
         
@@ -124,14 +124,17 @@
 
 /* TODO: this solution should allow any length of content on mobile, need something else for desktop */
 @media (max-width: 767px) {
-  .flex-col.h-full { /* Target the parent flex container on mobile */
-    height: auto !important; /* Allow it to grow with content */
+  /* Target the parent flex container on mobile */
+  .flex-col.h-full {
+    /* Allow it to grow with content */
+    height: auto;
     min-height: auto;
   }
 
-  .md\:h-full { /* Ensure the desktop height setting doesn't interfere */
+  /* Ensure the desktop height setting doesn't interfere */
+  /* .md\:h-full {
     height: auto !important;
-  }
+  } */
 }
 
 </style>

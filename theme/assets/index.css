@@ -1119,29 +1119,36 @@ video {
   border-color: transparent;
 }
 /* TODO: edit this dark gray for content-limited text background */
-.bg-\[\#4A4A4A\]{
+/* dark gray */
+.bg-\[\#4A4A4A\]{ 
   --tw-bg-opacity: 1;
   background-color: rgb(74 74 74 / var(--tw-bg-opacity, 1));
 }
+/* medium gray */
 .bg-\[\#606060\]{
   --tw-bg-opacity: 1;
   background-color: rgb(96 96 96 / var(--tw-bg-opacity, 1));
 }
+/* light gray */
 .bg-\[\#D9D9D9\]{
   --tw-bg-opacity: 1;
   background-color: rgb(217 217 217 / var(--tw-bg-opacity, 1));
 }
+/* very light gray */
 .bg-\[\#EFEFEF\]{
   --tw-bg-opacity: 1;
   background-color: rgb(239 239 239 / var(--tw-bg-opacity, 1));
 }
+/* faded off-white */
 .bg-\[\#F5F5F5\]\/60{
   background-color: rgb(245 245 245 / 0.6);
 }
+/* off-white */
 .bg-\[\#f5f5f5\]{
   --tw-bg-opacity: 1;
   background-color: rgb(245 245 245 / var(--tw-bg-opacity, 1));
 }
+/* faded white */
 .bg-\[rgba\(254\2c 254\2c 254\2c 0\.60\)\]{
   background-color: rgba(254,254,254,0.60);
 }
