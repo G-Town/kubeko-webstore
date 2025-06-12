@@ -1,8 +1,9 @@
 {% paginate collection.products by 24 %}
-  <div class="grid grid-cols-1 md:grid-cols-{% if collection.metafields.custom.isdrop == true %}3{% else %}2{% endif %} gap-0">
+  {% comment %} TODO: investigate dynamic col rule here (isdrop?) {% endcomment %}
+  <div class="grid grid-cols-1 md:grid-cols-{% if collection.metafields.custom.isdrop == true %}3{% else %}4{% endif %} gap-0">
     {% for product in collection.products %}
       {% if product.handle != 'routeins' %}
-        <div class="h-screen relative">
+        <div class="h-3/4 relative">
           {% render 'product-card', product: product %}
         </div>
       {% endif %}

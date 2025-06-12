@@ -1,6 +1,6 @@
-<div class="w-full flex text-black justify-center">
-  <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
-    <header class="flex items-center fixed top-[4px] md:top-[8px] w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2 z-[110] text-[#44444] font-helvetica text-sm md:h-[49px]" id="site-header">
+<div class="z-[110] bg-white w-full flex text-black justify-center">
+  <div class="z-[110] fixed w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
+    <header class="flex items-center w-full left-1/2 z-[110] text-[#44444] font-helvetica text-sm md:h-[56px]" id="site-header">
       <div class="absolute inset-0 md:h-[49px] rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]" id="header-overlay"></div>
       
       <style>
@@ -244,11 +244,13 @@
       
       <!-- Mobile Header -->
       <nav class="md:hidden flex p-[15px] flex-row relative w-full items-center uppercase">
-        <button class="text-sm uppercase" id="mobile-menu-trigger">MENU</button>
+        {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
+        <button class="text-sm uppercase pt-2" id="mobile-menu-trigger">MENU</button>
         <a href="/" class="absolute left-1/2 -translate-x-1/2">
           {% render 'logo' %}
         </a>
-        <div class="ml-auto flex items-center">
+        {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
+        <div class="ml-auto flex items-center pt-2">
           <div class="relative mobile-cart-trigger">
             <p class="cursor-pointer text-sm uppercase hover:opacity-60 transition-opacity">
               Cart<span class="absolute -top-1 -right-2 {% if cart.item_count >= 10 %}-right-[12px]{% endif %} text-[10px] cart-count" {% if cart.item_count == 0 %}style="display: none;"{% endif %}>{{ cart.item_count }}</span>
@@ -259,7 +261,8 @@
       
       <!-- Desktop Header -->
       <nav class="hidden md:flex h-full flex-row relative w-full items-center px-6 uppercase">
-        <ul class="flex items-center gap-12 transition-all duration-300" id="header-nav">
+        {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
+        <ul class="flex items-center gap-12 transition-all duration-300 pt-2" id="header-nav">
           {% for link in linklists.main-menu.links %}
             <li class="relative group">
               <a href="{{ link.url }}" class="cursor-pointer text-sm hover:opacity-60 transition-opacity">{{ link.title }}</a>
@@ -267,9 +270,11 @@
           {% endfor %}
         </ul>
         <a href="/" class="absolute left-1/2 -translate-x-1/2 transition-all duration-300" id="header-logo">
+          {% comment %} TODO: go to logo.svg to adjust size {% endcomment %}
           {% render 'logo' %}
         </a>
-        <div class="ml-auto flex items-center gap-8">
+        {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
+        <div class="ml-auto flex items-center gap-8 pt-2">
           <div class="relative group">
             <p class="cursor-pointer text-sm uppercase hover:opacity-60 transition-opacity">
               Cart<span class="absolute -top-1 -right-2 {% if cart.item_count >= 10 %}-right-[12px]{% endif %} text-[10px] cart-count" {% if cart.item_count == 0 %}style="display: none;"{% endif %}>{{ cart.item_count }}</span>
