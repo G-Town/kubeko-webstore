@@ -1,0 +1,49 @@
+{% paginate collection.products by 24 %}
+  {% comment %} TODO: investigate dynamic col rule here (isdrop?) {% endcomment %}
+  <div class="grid grid-cols-1 md:grid-cols-{% if collection.metafields.custom.isdrop == true %}3{% else %}4{% endif %} gap-0">
+    {% for product in collection.products %}
+      {% if product.handle != 'routeins' %}
+        <div class="h-3/4 relative">
+          {% render 'product-card', product: product %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% if paginate.pages > 1 %}
+    <div class="fixed bottom-0 left-0 w-full bg-black/80 p-4 flex justify-center gap-4 z-50">
+      {% if paginate.previous %}
+        <a href="{{ paginate.previous.url }}" class="text-white hover:opacity-80">Previous</a>
+      {% endif %}
+      
+      <span class="text-white">Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
+      
+      {% if paginate.next %}
+        <a href="{{ paginate.next.url }}" class="text-white hover:opacity-80">Next</a>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endpaginate %}
+
+{% schema %}
+{
+  "name": "Collections Grid",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Collections Grid",
+      "category": "Products"
+    }
+  ]
+}
+{% endschema %}
+
+{% style %}
+.group:hover .group-hover\:opacity-100 {
+  opacity: 1 !important;
+}
+
+.group:hover .group-hover\:opacity-0 {
+  opacity: 0 !important;
+}
+{% endstyle %}

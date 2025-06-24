@@ -1,0 +1,67 @@
+{% assign product_type_filter = null %}
+{% for filter in collection.filters %}
+  {% if filter.label == 'Product type' %}
+    {% assign product_type_filter = filter %}
+  {% endif %}
+{% endfor %}
+
+<div
+  class="fixed w-screen flex justify-center left-0 p-[15px] sm:p-[30px] pointer-events-none z-[100] bottom-0 transition-opacity duration-300"
+  id="collection-nav"
+>
+  <form class="rounded-[8px] bg-black p-[10px] gap-[5px] flex flex-row items-center max-w-fit  h-full w-full overflow-x-scroll hide-scrollbar whitespace-nowrap pointer-events-auto">
+    {% if product_type_filter.active_values.size == 0 %}
+      <p class="cta text-black rounded-[4px] bg-white py-[4.5px] p-[10px]">All Products</p>
+    {% else %}
+      <a
+        class="cta text-white py-[4.5px] p-[10px] 	"
+        href="{{ product_type_filter.url_to_remove }}"
+      >
+        All Products
+      </a>
+    {% endif %}
+
+    {% for filter_value in product_type_filter.values %}
+      {% if filter_value.active %}
+        <p class="cta text-black rounded-[4px] capitalize bg-white py-[4.5px] p-[10px]">{{ filter_value.label }}</p>
+      {% else %}
+        <a
+          class="cta text-white capitalize py-[4.5px] p-[10px] 	"
+          href="{{ collection.url }}?{{ product_type_filter.param_name }}={{ filter_value.value }}"
+        >
+          {{ filter_value.label }}
+        </a>
+      {% endif %}
+    {% endfor %}
+  </form>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const collectionNav = document.getElementById('collection-nav');
+    const footer = document.getElementById('footer');
+
+    if (collectionNav && footer) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              collectionNav.style.opacity = '0';
+              collectionNav.style.pointerEvents = 'none';
+            } else {
+              collectionNav.style.opacity = '1';
+              collectionNav.style.pointerEvents = 'auto';
+            }
+          });
+        },
+        {
+          root: null,
+          threshold: 0,
+          rootMargin: '0px 0px -5px 0px',
+        }
+      );
+
+      observer.observe(footer);
+    }
+  });
+</script>

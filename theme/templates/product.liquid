@@ -18,6 +18,64 @@
   <meta name="twitter:site" content="@kubeko">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    /* Standardize transitions */
+    .nav-container,
+    #header-overlay {
+      transition: background-color 300ms ease !important;
+    }
+
+    /* Ensure consistent timing for background color changes */
+    .product-info-container:hover .nav-container,
+    .product-info-container:hover #header-overlay {
+      transition: background-color 300ms ease !important;
+    }
+
+    /* Keep existing styles */
+    .product-info-container {
+      transition: all 300ms ease;
+    }
+
+    .product-details-container {
+      transition: all 300ms ease;
+    }
+
+    .popup-content {
+      transition: all 300ms ease;
+    }
+
+    /* Ensure consistent timing when popup is active */
+    body.popup-active .nav-container,
+    body.popup-active #header-overlay {
+      {% comment %} background-color: white !important; {% endcomment %}
+      transition: background-color 300ms ease !important;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const productInfoContainer = document.querySelector('.product-info-container');
+      const headerOverlay = document.querySelector('#header-overlay');
+      const navContainer = document.querySelector('.nav-container');
+      
+      if (productInfoContainer && headerOverlay && navContainer) {
+        productInfoContainer.addEventListener('mouseenter', function() {
+          {% comment %} requestAnimationFrame(() => {
+            headerOverlay.style.backgroundColor = 'white';
+            navContainer.style.backgroundColor = 'white';
+          }); {% endcomment %}
+        });
+        
+        productInfoContainer.addEventListener('mouseleave', function() {
+          requestAnimationFrame(() => {
+            headerOverlay.style.backgroundColor = 'rgba(254,254,254,0.60)';
+            navContainer.style.backgroundColor = 'rgba(254,254,254,0.60)';
+          });
+        });
+      }
+    });
+  </script>
 </head>
 
 {%- assign show_recently_viewed = false -%}
@@ -210,10 +268,11 @@
         <div class="hidden md:block w-full h-full">
           <img 
             id="main-image"
-            src="{{ first_image | img_url: 'master' }}" 
-            alt="{{ product.title }}" 
-            {% comment %} TODO: csondier simple contain instead of cover to prevent cutoff and retain dimensions {% endcomment %}
-            class="w-full h-full object-contain"
+            src="{{ first_image | img_url: '100x' }}" 
+            data-src="{{ first_image | image_url }}"
+            alt="{{ product.title }}"
+            {% comment %} TODO: contain vs cover to prevent img cutoff {% endcomment %}
+            class="w-full h-full object-contain blur-up"
             width="{{ first_image.width }}"
             height="{{ first_image.height }}"
             loading="eager"
@@ -223,6 +282,7 @@
                     {{ first_image | img_url: '1200x' }} 1200w,
                     {{ first_image | img_url: 'master' }} {{ first_image.width }}w"
             sizes="(max-width: 767px) 100vw, 50vw"
+            onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
           >
         </div>
         
@@ -235,9 +295,10 @@
               onclick="scrollToMobileImage({{ forloop.index0 }})"
             >
               <img 
-                src="{{ image | img_url: 'master' }}" 
+                src="{{ image | img_url: '100x' }}" 
+                data-src="{{ image | image_url }}"
                 alt="{{ product.title }}" 
-                class="w-full h-full object-cover"
+                class="w-full h-full object-cover blur-up"
                 width="{{ image.width }}"
                 height="{{ image.height }}"
                 loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
@@ -248,6 +309,7 @@
                         {{ image | img_url: '1200x' }} 1200w,
                         {{ image | img_url: 'master' }} {{ image.width }}w"
                 sizes="100vw"
+                onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
               >
             </div>
           {% endfor %}
@@ -290,11 +352,12 @@
               data-image-id="{{ image.id }}"
               id="scroll-image-{{ image.id }}"
             >
-              <img 
-                src="{{ image | img_url: 'master' }}" 
-                alt="{{ product.title }}" 
-                {% comment %} TODO: contain instead of cover {% endcomment %}
-                class="w-full h-full object-contain"
+              <img
+                src="{{ image | img_url: '100x' }}" 
+                data-src="{{ image | image_url }}"
+                alt="{{ product.title }}"
+                {% comment %} TODO: contain vs cover to prevent img cutoff {% endcomment %}
+                class="w-full h-full object-contain blur-up"
                 width="{{ image.width }}"
                 height="{{ image.height }}"
                 loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
@@ -304,6 +367,7 @@
                         {{ image | img_url: '1200x' }} 1200w,
                         {{ image | img_url: 'master' }} {{ image.width }}w"
                 sizes="(max-width: 767px) 100vw, 50vw"
+                onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
               >
             </div>
           {% endfor %}
@@ -337,110 +401,114 @@
       </div>
       
       <!-- Mobile Product Info - Below the images on mobile, hidden on desktop -->
-      <div class="block md:hidden w-full bg-white z-10">
+      <div class="block bg-[#EFEFEF] md:hidden w-full z-10">
         <!-- Product Header Row -->
-        <div class="px-4 py-3 flex justify-between items-center border-b border-[#EEEEEE]">
-          <h1 class="uppercase text-[13px] font-medium text-[#444444]">{{ product.title }}</h1>
-          <span class="text-[13px] text-[#444444]">${{ product.price | money_without_currency }}</span>
+        <div class="p-[4px]">
+          <div class="px-4 bg-white py-3 flex justify-between items-center">
+            <h1 class="uppercase text-[13px] font-medium text-[#444444]">{{ product.title }}</h1>
+            <span class="text-[13px] text-[#444444]">${{ product.price | money_without_currency }}</span>
+          </div>
         </div>
         
-        <!-- Variant Options and Add to Cart - Restructured to match product card -->
-        <div class="flex flex-col p-4">
-          {% if product.has_only_default_variant == false %}
-            {% assign options = product.options_with_values %}
-            
-            <!-- Options grid in two columns -->
-            <div class="grid grid-cols-2 gap-4 mb-4">
-              <!-- First option column (usually color) -->
-              <div class="flex flex-col items-start gap-[8px]">
-                {% if options.size > 0 %}
-                  {% for value in options[0].values %}
-                    <button 
-                      type="button"
-                      class="variant-button text-left uppercase text-[13px] text-[#444444] {% if forloop.first %}font-medium{% endif %}" 
-                      data-option-position="{{ options[0].position }}" 
-                      data-value="{{ value | escape }}"
-                      onclick="selectVariant(this, '{{ options[0].position }}', '{{ value | escape }}')"
-                    >
-                      {{ value }}
-                    </button>
-                  {% endfor %}
-                {% endif %}
+        <!-- Container for all product info -->
+        <div class="px-[4px] pb-[4px]">
+          <div class="flex bg-white flex-col p-4">
+            {% if product.has_only_default_variant == false %}
+              {% assign options = product.options_with_values %}
+              
+              <!-- Options grid in two columns -->
+              <div class="grid grid-cols-2 gap-4 mb-4">
+                <!-- First option column (usually color) -->
+                <div class="flex flex-col items-start gap-[8px]">
+                  {% if options.size > 0 %}
+                    {% for value in options[0].values %}
+                      <button 
+                        type="button"
+                        class="variant-button text-left uppercase text-[13px] text-[#444444] {% if forloop.first %}font-medium{% endif %}" 
+                        data-option-position="{{ options[0].position }}" 
+                        data-value="{{ value | escape }}"
+                        onclick="selectVariant(this, '{{ options[0].position }}', '{{ value | escape }}')"
+                      >
+                        {{ value }}
+                      </button>
+                    {% endfor %}
+                  {% endif %}
+                </div>
+                
+                <!-- Second option column (usually size) -->
+                <div class="flex flex-col items-end gap-[8px]">
+                  {% if options.size > 1 %}
+                    {% for value in options[1].values %}
+                      <button 
+                        type="button"
+                        class="variant-button text-right uppercase text-[13px] text-[#444444] {% if forloop.first %}font-medium{% endif %}" 
+                        data-option-position="{{ options[1].position }}" 
+                        data-value="{{ value | escape }}"
+                        onclick="selectVariant(this, '{{ options[1].position }}', '{{ value | escape }}')"
+                      >
+                        {{ value }}
+                      </button>
+                    {% endfor %}
+                  {% endif %}
+                </div>
               </div>
               
-              <!-- Second option column (usually size) -->
-              <div class="flex flex-col items-end gap-[8px]">
-                {% if options.size > 1 %}
-                  {% for value in options[1].values %}
-                    <button 
-                      type="button"
-                      class="variant-button text-right uppercase text-[13px] text-[#444444] {% if forloop.first %}font-medium{% endif %}" 
-                      data-option-position="{{ options[1].position }}" 
-                      data-value="{{ value | escape }}"
-                      onclick="selectVariant(this, '{{ options[1].position }}', '{{ value | escape }}')"
-                    >
-                      {{ value }}
-                    </button>
-                  {% endfor %}
-                {% endif %}
+              <!-- Add to cart button centered below variants -->
+              <div class="text-center mb-6">
+                {% form 'product', product %}
+                  <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" id="variant-id-mobile">
+                  <input type="hidden" name="quantity" value="1">
+                  <button type="submit" class="w-full bg-neutral-200 h-[33px] text-black text-sm uppercase py-2 transition-colors add-to-cart-btn" disabled>ADD TO CART</button>
+                  <div id="mobile-inventory-status" class="inventory-status text-xs mt-1" style="display: none;"></div>
+                {% endform %}
               </div>
+            {% else %}
+              <!-- Only Add to Cart when no variants -->
+              <div class="text-center mb-6">
+                {% form 'product', product %}
+                  <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" id="variant-id-mobile">
+                  <input type="hidden" name="quantity" value="1">
+                  <button type="submit" class="w-full h-[33px] bg-neutral-200 text-black text-sm uppercase py-2 transition-colors add-to-cart-btn">ADD TO CART</button>
+                  <div id="mobile-inventory-status" class="inventory-status text-xs mt-1" style="display: none;"></div>
+                {% endform %}
+              </div>
+            {% endif %}
+            
+            <!-- Product Description -->
+            <div class="mb-6">
+              <p class="font-garamond text-[16px] text-[#444444] font-normal">{{ product.description | strip_html }}</p>
             </div>
             
-            <!-- Add to cart button centered below variants -->
-            <div class="text-center">
-              {% form 'product', product %}
-                <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" id="variant-id-mobile">
-                <input type="hidden" name="quantity" value="1">
-                <button type="submit" class="w-full bg-neutral-200 h-[33px] text-black text-sm uppercase py-2 transition-colors add-to-cart-btn" disabled>ADD TO CART</button>
-                <div id="mobile-inventory-status" class="inventory-status text-xs mt-1" style="display: none;"></div>
-              {% endform %}
+            <!-- Info Links -->
+            <div class="flex flex-col space-y-2">
+              <button onclick="openPopup('materials-popup')" class="flex justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+                <span class="uppercase text-[13px] text-[#444444]">MATERIALS</span>
+                <span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
+                    <path d="M7 0.388877V5.44428C7 5.54741 6.95903 5.64633 6.8861 5.71925C6.81317 5.79218 6.71426 5.83315 6.61112 5.83315C6.50799 5.83315 6.40907 5.79218 6.33615 5.71925C6.26322 5.64633 6.22225 5.54741 6.22225 5.44428V1.32753L0.664224 6.88604C0.591255 6.95901 0.492287 7 0.389093 7C0.285899 7 0.186932 6.95901 0.113963 6.88604C0.0409936 6.81307 0 6.7141 0 6.61091C0 6.50771 0.0409936 6.40875 0.113963 6.33578L5.67247 0.777754H1.55572C1.45259 0.777754 1.35367 0.736783 1.28075 0.663854C1.20782 0.590926 1.16685 0.492013 1.16685 0.388877C1.16685 0.28574 1.20782 0.186828 1.28075 0.113899C1.35367 0.0409709 1.45259 0 1.55572 0H6.61112C6.71426 0 6.81317 0.0409709 6.8861 0.113899C6.95903 0.186828 7 0.28574 7 0.388877Z" fill="#444444"/>
+                  </svg>
+                </span>
+              </button>
+              
+              <button onclick="openPopup('size-guide-popup')" class="flex text-black justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+                <span class="uppercase text-[13px] text-[#444444]">SIZE GUIDE</span>
+                <span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
+                    <path d="M7 0.388877V5.44428C7 5.54741 6.95903 5.64633 6.8861 5.71925C6.81317 5.79218 6.71426 5.83315 6.61112 5.83315C6.50799 5.83315 6.40907 5.79218 6.33615 5.71925C6.26322 5.64633 6.22225 5.54741 6.22225 5.44428V1.32753L0.664224 6.88604C0.591255 6.95901 0.492287 7 0.389093 7C0.285899 7 0.186932 6.95901 0.113963 6.88604C0.0409936 6.81307 0 6.7141 0 6.61091C0 6.50771 0.0409936 6.40875 0.113963 6.33578L5.67247 0.777754H1.55572C1.45259 0.777754 1.35367 0.736783 1.28075 0.663854C1.20782 0.590926 1.16685 0.492013 1.16685 0.388877C1.16685 0.28574 1.20782 0.186828 1.28075 0.113899C1.35367 0.0409709 1.45259 0 1.55572 0H6.61112C6.71426 0 6.81317 0.0409709 6.8861 0.113899C6.95903 0.186828 7 0.28574 7 0.388877Z" fill="#444444"/>
+                  </svg>
+                </span>
+              </button>
+              
+              <button onclick="openPopup('shipping-popup')" class="flex justify-between text-black items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+                <span class="uppercase text-[13px] text-[#444444]">SHIPPING</span>
+                <span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
+                    <path d="M7 0.388877V5.44428C7 5.54741 6.95903 5.64633 6.8861 5.71925C6.81317 5.79218 6.71426 5.83315 6.61112 5.83315C6.50799 5.83315 6.40907 5.79218 6.33615 5.71925C6.26322 5.64633 6.22225 5.54741 6.22225 5.44428V1.32753L0.664224 6.88604C0.591255 6.95901 0.492287 7 0.389093 7C0.285899 7 0.186932 6.95901 0.113963 6.88604C0.0409936 6.81307 0 6.7141 0 6.61091C0 6.50771 0.0409936 6.40875 0.113963 6.33578L5.67247 0.777754H1.55572C1.45259 0.777754 1.35367 0.736783 1.28075 0.663854C1.20782 0.590926 1.16685 0.492013 1.16685 0.388877C1.16685 0.28574 1.20782 0.186828 1.28075 0.113899C1.35367 0.0409709 1.45259 0 1.55572 0H6.61112C6.71426 0 6.81317 0.0409709 6.8861 0.113899C6.95903 0.186828 7 0.28574 7 0.388877Z" fill="#444444"/>
+                  </svg>
+                </span>
+              </button>
             </div>
-          {% else %}
-            <!-- Only Add to Cart when no variants -->
-            <div class="text-center">
-              {% form 'product', product %}
-                <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" id="variant-id-mobile">
-                <input type="hidden" name="quantity" value="1">
-                <button type="submit" class="w-full h-[33px] bg-neutral-200 text-black text-sm uppercase py-2 transition-colors add-to-cart-btn">ADD TO CART</button>
-                <div id="mobile-inventory-status" class="inventory-status text-xs mt-1" style="display: none;"></div>
-              {% endform %}
-            </div>
-          {% endif %}
-        </div>
-        
-        <!-- Product Description -->
-        <div class="prose px-4 py- w-full prose-sm border-b border-[#EEEEEE]">
-          <p class="font-garamond text-[16px] text-black font-normal leading-normal">{{ product.description | strip_html }}</p>
-        </div>
-        
-        <!-- Info Links -->
-        <div class="px-6 py-4 flex flex-col space-y-2">
-          <button onclick="openPopup('materials-popup')" class="flex justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
-            <span class="uppercase text-[13px] text-[#444444]">MATERIALS</span>
-            <span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
-                <path d="M7 0.388877V5.44428C7 5.54741 6.95903 5.64633 6.8861 5.71925C6.81317 5.79218 6.71426 5.83315 6.61112 5.83315C6.50799 5.83315 6.40907 5.79218 6.33615 5.71925C6.26322 5.64633 6.22225 5.54741 6.22225 5.44428V1.32753L0.664224 6.88604C0.591255 6.95901 0.492287 7 0.389093 7C0.285899 7 0.186932 6.95901 0.113963 6.88604C0.0409936 6.81307 0 6.7141 0 6.61091C0 6.50771 0.0409936 6.40875 0.113963 6.33578L5.67247 0.777754H1.55572C1.45259 0.777754 1.35367 0.736783 1.28075 0.663854C1.20782 0.590926 1.16685 0.492013 1.16685 0.388877C1.16685 0.28574 1.20782 0.186828 1.28075 0.113899C1.35367 0.0409709 1.45259 0 1.55572 0H6.61112C6.71426 0 6.81317 0.0409709 6.8861 0.113899C6.95903 0.186828 7 0.28574 7 0.388877Z" fill="#444444"/>
-              </svg>
-            </span>
-          </button>
-          
-          <button onclick="openPopup('size-guide-popup')" class="flex text-black justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
-            <span class="uppercase text-[13px] text-[#444444]">SIZE GUIDE</span>
-            <span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
-                <path d="M7 0.388877V5.44428C7 5.54741 6.95903 5.64633 6.8861 5.71925C6.81317 5.79218 6.71426 5.83315 6.61112 5.83315C6.50799 5.83315 6.40907 5.79218 6.33615 5.71925C6.26322 5.64633 6.22225 5.54741 6.22225 5.44428V1.32753L0.664224 6.88604C0.591255 6.95901 0.492287 7 0.389093 7C0.285899 7 0.186932 6.95901 0.113963 6.88604C0.0409936 6.81307 0 6.7141 0 6.61091C0 6.50771 0.0409936 6.40875 0.113963 6.33578L5.67247 0.777754H1.55572C1.45259 0.777754 1.35367 0.736783 1.28075 0.663854C1.20782 0.590926 1.16685 0.492013 1.16685 0.388877C1.16685 0.28574 1.20782 0.186828 1.28075 0.113899C1.35367 0.0409709 1.45259 0 1.55572 0H6.61112C6.71426 0 6.81317 0.0409709 6.8861 0.113899C6.95903 0.186828 7 0.28574 7 0.388877Z" fill="#444444"/>
-              </svg>
-            </span>
-          </button>
-          
-          <button onclick="openPopup('shipping-popup')" class="flex justify-between text-black items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
-            <span class="uppercase text-[13px] text-[#444444]">SHIPPING</span>
-            <span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
-                <path d="M7 0.388877V5.44428C7 5.54741 6.95903 5.64633 6.8861 5.71925C6.81317 5.79218 6.71426 5.83315 6.61112 5.83315C6.50799 5.83315 6.40907 5.79218 6.33615 5.71925C6.26322 5.64633 6.22225 5.54741 6.22225 5.44428V1.32753L0.664224 6.88604C0.591255 6.95901 0.492287 7 0.389093 7C0.285899 7 0.186932 6.95901 0.113963 6.88604C0.0409936 6.81307 0 6.7141 0 6.61091C0 6.50771 0.0409936 6.40875 0.113963 6.33578L5.67247 0.777754H1.55572C1.45259 0.777754 1.35367 0.736783 1.28075 0.663854C1.20782 0.590926 1.16685 0.492013 1.16685 0.388877C1.16685 0.28574 1.20782 0.186828 1.28075 0.113899C1.35367 0.0409709 1.45259 0 1.55572 0H6.61112C6.71426 0 6.81317 0.0409709 6.8861 0.113899C6.95903 0.186828 7 0.28574 7 0.388877Z" fill="#444444"/>
-              </svg>
-            </span>
-          </button>
+          </div>
         </div>
       </div>
       
@@ -525,7 +593,7 @@
           
           <!-- Product Description -->
           <div class="prose px-4 py-4 max-w-[480px] prose-sm">
-            <p class="font-garamond text-[16px] text-[#444444] font-normal leading-normal">{{ product.description | strip_html }}</p>
+            <p class="font-garamond text-[16px] text-[#444444] font-normal ">{{ product.description | strip_html }}</p>
           </div>
           
           <!-- Info Links -->
@@ -595,13 +663,13 @@
         const navContainer = document.querySelector('.nav-container');
         const popupContent = popup.querySelector('.popup-content');
         
-        if (navContainer) {
+        {% comment %} if (navContainer) {
           navContainer.style.backgroundColor = 'white';
         }
         
         if (popupContent) {
           popupContent.style.backgroundColor = 'white';
-        }
+        } {% endcomment %}
         
         // Add the active popup class to the body for styling
         document.body.classList.add('popup-active');
@@ -678,10 +746,23 @@
       });
     }
     
-    // Add click handler to overlay
-    document.getElementById('popup-overlay').addEventListener('click', function() {
-      closeAllPopups();
-    });
+          // Add click handler to overlay
+      document.getElementById('popup-overlay').addEventListener('click', function() {
+        closeAllPopups();
+      });
+      
+      // Add click handlers for header elements on mobile
+      const mobileHeaderElements = ['site-header', 'header-overlay'].map(id => 
+        document.querySelector('#' + id)
+      ).filter(Boolean);
+      
+      mobileHeaderElements.forEach(element => {
+        element.addEventListener('click', function() {
+          if (window.innerWidth < 768) {
+            closeAllPopups();
+          }
+        });
+      });
     
     // Function to handle variant selection
     function selectVariant(element, optionPosition, optionValue) {
@@ -1061,13 +1142,14 @@
         const productInfoContainer = document.querySelector('.product-info-container');
         const navContainer = document.querySelector('.nav-container');
         const header = document.querySelector('header');
+        const headerOverlay = document.querySelector('#header-overlay');
         
         // Function to handle mouse enter
         function handleMouseEnter() {
           // Apply white background to all items
-          productInfoItems.forEach(item => {
+          {% comment %} productInfoItems.forEach(item => {
             item.style.backgroundColor = 'white';
-          });
+          }); {% endcomment %}
           
           // Show background for selected variants
           document.querySelectorAll('.variant-button[data-selected="true"]').forEach(button => {
@@ -1083,9 +1165,9 @@
           });
 
           // Change nav background to white
-          if (navContainer) {
+          {% comment %} if (navContainer) {
             navContainer.style.backgroundColor = 'white';
-          }
+          } {% endcomment %}
         }
 
         // Function to handle mouse leave
@@ -1606,6 +1688,7 @@
   </script>
 {% endif %}
 <style>
+  {% comment %} TODO: restylw scrollbar to match Khaite website {% endcomment %}
   /* Custom scrollbar styling */
   .custom-scrollbar::-webkit-scrollbar {
     width: 3px;
@@ -1621,10 +1704,8 @@
   }
   
   .custom-scrollbar {
-    {% comment %} scrollbar-width: thin;
-    scrollbar-color: rgba(68, 68, 68, 0.3) transparent; {% endcomment %}
-    {% comment %} TODO: restyle scroll bar rather than remove it {% endcomment %}
-    scrollbar-width: none;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(68, 68, 68, 0.3) transparent;
   }
   
   /* Enhanced spacing for popup content */
@@ -1708,21 +1789,37 @@
   /* Thumbnail styling for both desktop and mobile */
   .mobile-thumbnail,
   .thumbnail-image {
-    transition: opacity 0.3s ease, transform 0.2s ease;
+    transition: opacity 0.3s ease;
     position: relative;
-    cursor: default; /* Remove pointer cursor */
+    cursor: default;
+    width: 100%;
+    height: 100%;
+    display: block;
+    flex-shrink: 0;
   }
   
   .mobile-thumbnail.opacity-100,
   .thumbnail-image.opacity-100 {
     opacity: 1 !important;
-    transform: scale(1.05);
   }
   
   .mobile-thumbnail.opacity-60,
   .thumbnail-image.opacity-60 {
     opacity: 0.3 !important;
-    transform: scale(1);
+  }
+  
+  /* Desktop thumbnails specific styling */
+  .thumbnail-image {
+    width: 130px;
+    height: 200px;
+    margin-bottom: 4px;
+  }
+  
+  /* Mobile thumbnails specific styling */
+  .mobile-thumbnail {
+    width: 45.5px;
+    height: 70px;
+    margin-right: 3px;
   }
   
   /* Mobile gallery container - remove background */
@@ -1742,12 +1839,6 @@
   
   .mobile-gallery::-webkit-scrollbar {
     display: none;
-  }
-  
-  /* Desktop thumbnails specific styling */
-  .thumbnail-image.opacity-100 {
-    border-right: none;
-    margin-bottom: 4px; /* Add 4px gap between thumbnails */
   }
   
   /* Custom visibility checker for scroll observers */
@@ -1812,7 +1903,7 @@
 
   body.popup-active .add-to-cart-btn.variants-selected {
     background-color: #444444 !important;
-    color: white !important;
+    {% comment %} color: white !important; {% endcomment %}
   }
   
   /* Success state for Add to Cart button */
@@ -2147,7 +2238,7 @@
   }
   
   /* Style for white backgrounds when popup is active */
-  body.popup-active .popup-content {
+  {% comment %} body.popup-active .popup-content {
     background-color: white !important;
   }
   
@@ -2157,11 +2248,11 @@
   
   body.popup-active .product-info-item {
     background-color: white !important;
-  }
+  } {% endcomment %}
   
   body.popup-active .add-to-cart-btn.variants-selected {
     background-color: #444444 !important;
-    color: white !important;
+    {% comment %} color: white !important; {% endcomment %}
   }
   
   /* Popup button styling - updated height */
@@ -2410,3 +2501,51 @@
   }
 </style>
 
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // ... existing code ...
+
+    // Add hover effect for product info container
+    const productInfoContainer = document.querySelector('.product-info-container');
+    const header = document.querySelector('#site-header');
+    const headerOverlay = document.querySelector('#header-overlay');
+    
+      if (productInfoContainer && header && headerOverlay) {
+    productInfoContainer.addEventListener('mouseenter', function() {
+      this.classList.add('container-hover');
+      const detailsContainer = this.querySelector('.product-details-container');
+      if (detailsContainer) {
+        requestAnimationFrame(() => {
+          detailsContainer.style.maxHeight = '1000px';
+          detailsContainer.style.paddingTop = '4px';
+        });
+      }
+      
+      // Add header background change
+      {% comment %} requestAnimationFrame(() => {
+        headerOverlay.style.backgroundColor = 'white';
+        document.querySelector('.nav-container').style.backgroundColor = 'white';
+      }); {% endcomment %}
+    });
+
+    productInfoContainer.addEventListener('mouseleave', function() {
+      this.classList.remove('container-hover');
+      const detailsContainer = this.querySelector('.product-details-container');
+      if (detailsContainer) {
+        requestAnimationFrame(() => {
+          detailsContainer.style.maxHeight = '0';
+          detailsContainer.style.paddingTop = '0';
+        });
+      }
+      
+      // Reset header background
+      requestAnimationFrame(() => {
+        headerOverlay.style.backgroundColor = 'rgba(254,254,254,0.60)';
+        document.querySelector('.nav-container').style.backgroundColor = 'rgba(254,254,254,0.60)';
+      });
+    });
+    }
+    
+    // ... rest of existing code ...
+  });
+</script>

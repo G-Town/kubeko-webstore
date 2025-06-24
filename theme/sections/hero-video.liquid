@@ -5,7 +5,12 @@
     {
       "type": "video",
       "id": "video",
-      "label": "Video"
+      "label": "Desktop Video"
+    },
+    {
+      "type": "video",
+      "id": "mobile_video",
+      "label": "Mobile Video"
     },
     {
       "type": "product",
@@ -24,7 +29,14 @@
 
 {% if section.settings.video != blank %}
 <div class="hero-video w-screen h-screen md:h-min">
-  {{ section.settings.video | video_tag: class: 'w-full h-full object-cover', autoplay: true, loop: true, muted: true }}
+  <div class="desktop-video hidden md:block">
+    {{ section.settings.video | video_tag: class: 'w-full h-full object-cover', autoplay: true, loop: true, muted: true, playsinline: true }}
+  </div>
+  
+  <div class="mobile-video md:hidden">
+    {% assign mobile_video = section.settings.mobile_video | default: section.settings.video %}
+    {{ mobile_video | video_tag: class: 'w-full h-full object-cover', autoplay: true, loop: true, muted: true, playsinline: true }}
+  </div>
 </div>
 
 <style>

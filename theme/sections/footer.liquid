@@ -12,6 +12,7 @@
         <p class="text-black/50 text-[13px]">Sign up for Monthly Updates</p>
         {% form 'customer', class: 'flex flex-col' %}
           <input type="hidden" name="contact[tags]" value="newsletter">
+          <input type="hidden" name="form_type" value="customer">
           <div class="flex flex-col">
             <input
               type="email"
@@ -96,6 +97,7 @@
           <p class="text-black text-[13px]">Sign up for Monthly Updates</p>
           {% form 'customer', class: 'flex flex-col' %}
             <input type="hidden" name="contact[tags]" value="newsletter">
+            <input type="hidden" name="form_type" value="customer">
             <div class="flex flex-col">
               <input
                 type="email"

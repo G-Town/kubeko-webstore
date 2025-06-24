@@ -1,0 +1,37 @@
+<div class="break"></div>
+
+<details class="group appearance-none overflow-hidden transition-all duration-300 ease-in-out">
+  <summary>
+    <div class="flex flex-row gap-[12px] cursor-pointer">
+      <span class="cta">{{ accordion_title }}</span>
+      <img
+        src="{{ 'arrow.svg' | asset_url }}"
+        alt="arrow"
+        class="transform transition-transform duration-300 ease-in-out"
+        srcset="{{ 'arrow.svg' | asset_url }} 1x, {{ 'arrow.svg' | asset_url }} 2x"
+        sizes="16px"
+        width="16"
+        height="16"
+        loading="lazy">
+    </div>
+  </summary>
+  <accordion-element class="block pt-[15px] font-mono" data-accordion-content>
+    <p>{{ accordion_content | newline_to_br }}</p>
+
+    {% if accordion_size_chart %}
+      {% render 'sizechart'
+        , size_chart: accordion_size_chart %}
+    {% endif %}
+  </accordion-element>
+</details>
+
+{% style %}
+  details[open] img {
+    transform: rotate(90deg);
+    /* Rotate the arrow 180 degrees */
+  }
+  details[data-closing] img {
+    transform: rotate(0deg);
+    /* Rotate the arrow 180 degrees */
+  }
+{% endstyle %}

@@ -1,6 +1,10 @@
+{% comment %} <div class="w-full flex text-black justify-center">
+  <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
+    <header class="flex items-center fixed top-[4px] md:top-[8px] w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2 z-[110] text-[#44444] font-helvetica text-sm md:h-[49px]" id="site-header"> {% endcomment %}
 <div class="z-[110] bg-white w-full flex text-black justify-center">
-  <div class="z-[110] fixed w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
-    <header class="flex items-center w-full left-1/2 z-[110] text-[#44444] font-helvetica text-sm md:h-[56px]" id="site-header">
+  {% comment %} <div class="z-[110] fixed w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]"> {% endcomment %}
+  <div class="z-[110] fixed w-full">
+    <header class="flex items-center w-full left-1/2 z-[110] text-[#44444] font-helvetica text-sm md:h-[48px]" id="site-header">
       <div class="absolute inset-0 md:h-[49px] rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]" id="header-overlay"></div>
       
       <style>
@@ -9,7 +13,7 @@
           opacity: 1 !important;
         }
         .no-hover-effect:hover {
-          opacity: 1 !important;
+          opacity: 1 !important; 
         }
         
         /* New approach: use data attribute on parent to control hover */
@@ -243,7 +247,7 @@
       </style>
       
       <!-- Mobile Header -->
-      <nav class="md:hidden flex p-[15px] flex-row relative w-full items-center uppercase">
+      <nav class="md:hidden flex px-[15px] py-[13.5px] flex-row relative w-full items-center uppercase">
         {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
         <button class="text-sm uppercase pt-2" id="mobile-menu-trigger">MENU</button>
         <a href="/" class="absolute left-1/2 -translate-x-1/2">
@@ -270,7 +274,7 @@
           {% endfor %}
         </ul>
         <a href="/" class="absolute left-1/2 -translate-x-1/2 transition-all duration-300" id="header-logo">
-          {% comment %} TODO: go to logo.svg to adjust size {% endcomment %}
+          {% comment %} TODO: edit logo.liquid to adjust size {% endcomment %}
           {% render 'logo' %}
         </a>
         {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
@@ -289,7 +293,7 @@
 <!-- Mobile Menu Dropdown -->
 <div class="w-full flex justify-center">
   <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
-    <div class="fixed top-[47px] mt-[4px] md:top-[50px] md:mt-[4px] bottom-[4px] md:bottom-[8px] z-[110] hidden flex-col rounded-[1px] bg-white w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2" id="mobile-menu">
+    <div class="fixed top-[43px] mt-[4px] md:top-[50px] md:mt-[4px] bottom-[4px] md:bottom-[8px] z-[110] hidden flex-col rounded-[1px] bg-white w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2" id="mobile-menu">
       <div class="flex flex-col p-[15px] h-full justify-between">
         <div class="flex h-full">
           <div class="w-full uppercase text-[13px] flex flex-col gap-[8px] py-2 px-2" id="mobile-menu-left">
@@ -363,7 +367,7 @@
     {% if link.title == 'Collections' or link.title == 'Collection' %}
     <div class="w-full flex justify-center">
       <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
-        <div data-menu="{{ link.title | handleize }}" class="fixed hidden text-sm text-black uppercase top-[46px] mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2">
+        <div data-menu="{{ link.title | handleize }}" class="fixed hidden text-sm text-black uppercase top-[43px] mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2">
           <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]">
             <div class="p-[15px] pl-[15px]">
               <div class="flex relative">
@@ -407,7 +411,7 @@
     {% else %}
     <div class="w-full flex justify-center">
       <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
-        <div data-menu="{{ link.title | handleize }}" class="fixed hidden text-sm text-black uppercase top-[46px] mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2">
+        <div data-menu="{{ link.title | handleize }}" class="fixed hidden text-sm text-black uppercase top-[43px] mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2">
           <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]">
             <div class="p-[15px] mt-[5px] pl-[15px]">
               <div class="flex relative">
@@ -443,12 +447,12 @@
 <!-- Cart dropdown -->
 <div class="w-full flex justify-center">
   <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
-    <div class="fixed hidden text-sm text-black uppercase top-[46px] mt-[4px] md:top-[55px] md:mt-[6px] z-[90] cart-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2">
-      <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] md:bg-[rgba(254,254,254,0.60)] md:backdrop-blur-[12.5px] bg-white max-h-[80vh] flex flex-col">
+    <div class="fixed hidden text-sm text-black uppercase top-[43px] mt-[4px] md:top-[55px] md:mt-[6px] z-[90] cart-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2">
+      <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] md:bg-[rgba(254,254,254,0.60)] md:backdrop-blur-[12.5px] bg-white flex flex-col">
         <div class="p-[5px] pl-[5px] mt-[5px] flex flex-col h-full">
           {% if cart.item_count > 0 %}
             <div class="flex flex-col h-full">
-              <div class="cart-items-container {% if cart.items.size > 2 %}max-h-[400px] overflow-y-auto pr-1{% endif %}">
+              <div class="cart-items-container overflow-y-auto pr-1 md:max-h-[calc(120px*4+30px*3)] max-h-[calc(120px*3+30px*2)]">
                 <div class="flex flex-col gap-[30px]">
                   {% for item in cart.items %}
                     <div class="flex py-4 cart-item pr-2 h-[120px]" data-variant-id="{{ item.variant.id }}" data-line-item-key="{{ item.key }}">
@@ -1237,7 +1241,7 @@
     // Create container elements
     let html = `
       <div class="flex flex-col h-full">
-        <div class="cart-items-container ${cart.items.length > 2 ? 'max-h-[400px] overflow-y-auto pr-1' : ''}">
+        <div class="cart-items-container overflow-y-auto pr-1 md:max-h-[calc(120px*4+30px*3)] max-h-[calc(120px*3+30px*2)]">
           <div class="flex flex-col gap-[30px]">
     `;
     

@@ -14,12 +14,13 @@
     
     {% if image_1 %}
       <img
-        class="w-full h-screen min-h-screen object-cover"
+        class="w-full h-screen min-h-screen object-cover blur-up"
         alt="{{ product_1.title | default: section.settings.image_1_alt | default: 'Left column image' }}"
-        src="{{ image_1 | image_url }}"
+        src="{{ image_1 | img_url: '100x' }}"
+        data-src="{{ image_1 | image_url }}"
         width="{{ image_1.width }}"
         height="{{ image_1.height }}"
-        loading="eager"
+        loading="lazy"
         srcset="{{ image_1 | img_url: '400x' }} 400w,
                 {{ image_1 | img_url: '600x' }} 600w,
                 {{ image_1 | img_url: '800x' }} 800w,
@@ -27,6 +28,7 @@
                 {{ image_1 | img_url: '1600x' }} 1600w,
                 {{ image_1 | img_url: 'master' }} {{ image_1.width }}w"
         sizes="(max-width: 767px) 100vw, 50vw"
+        onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
       >
     {% elsif product_1 %}
       <div class="h-screen w-full">
@@ -42,12 +44,13 @@
     
     {% if image_2 %}
       <img
-        class="w-full h-screen min-h-screen object-cover"
+        class="w-full h-screen min-h-screen object-cover blur-up"
         alt="{{ product_2.title | default: section.settings.image_2_alt | default: 'Right column image' }}"
-        src="{{ image_2 | image_url }}"
+        src="{{ image_2 | img_url: '100x' }}"
+        data-src="{{ image_2 | image_url }}"
         width="{{ image_2.width }}"
         height="{{ image_2.height }}"
-        loading="eager"
+        loading="lazy"
         srcset="{{ image_2 | img_url: '400x' }} 400w,
                 {{ image_2 | img_url: '600x' }} 600w,
                 {{ image_2 | img_url: '800x' }} 800w,
@@ -55,9 +58,10 @@
                 {{ image_2 | img_url: '1600x' }} 1600w,
                 {{ image_2 | img_url: 'master' }} {{ image_2.width }}w"
         sizes="(max-width: 767px) 100vw, 50vw"
+        onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
       >
     {% elsif product_2 %}
-      <div class="w-full">
+      <div class="h-screen w-full">
         {% render 'product-card', product: product_2 %}
       </div>
     {% endif %}

@@ -52,7 +52,8 @@
   <body class="">
     {% section 'video-intro' %}
     {% section 'header' %}
-    <div class="min-h-screen pt-12">
+    {% comment %} TODO: min height removed? was min-h-screen {% endcomment %}
+    <div class="min-h- pt-12">
       {{ content_for_layout }}
     </div>
     {% section 'footer' %}

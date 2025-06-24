@@ -1,0 +1,60 @@
+<html>
+  <head>
+    <title>
+      {{ page_title }}
+      {%- unless page_title contains 'Kubeko' %}
+        | Kubeko
+      {%- endunless -%}
+    </title>
+    <meta name="title" content="{{ page_title }}{%- unless page_title contains "Kubeko" %} | Kubeko{% endunless -%}">
+    <meta property="og:title" content="{{ page_title }}{%- unless page_title contains "Kubeko" %} | Kubeko{% endunless -%}">
+    <meta
+      property="twitter:title"
+      content="{{ page_title }}{%- unless page_title contains "Kubeko" %} | Kubeko{% endunless -%}"
+    >
+
+    {% if page_description %}
+      <meta name="description" content="{{ page_description | escape }}">
+      <meta property="og:description" content="{{ page_description | escape }}">
+      <meta name="twitter:description" content="{{ page_description | escape }}">
+    {% endif %}
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ canonical_url | default: shop.url }}">
+    <meta property="og:site_name" content="{{ shop.name }}">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ canonical_url | default: shop.url }}">
+    <meta name="twitter:site" content="@kubeko">
+    
+    <!-- Default Open Graph Image -->
+    {% if settings.default_og_image %}
+      <meta property="og:image" content="{{ settings.default_og_image | img_url: '1200x' | replace_first: '//', 'https://' }}">
+      <meta property="twitter:image" content="{{ settings.default_og_image | img_url: '1200x' | replace_first: '//', 'https://' }}">
+    {% endif %}
+
+    <link rel="shortcut icon" href="{{ "favicon.ico" | asset_url }}">
+
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+    <script src="{{ 'base.js' | asset_url}}" defer></script>
+    {{ content_for_header }}
+    {{ 'index.css' | asset_url | stylesheet_tag }}
+    {{ 'swiper-bundle.min.css' | asset_url | stylesheet_tag }}
+    <script src="{{ 'swiper-bundle.min.js' | asset_url }}" defer></script>
+    
+    {% comment %} Progressive image loading support {% endcomment %}
+    {% render 'progressive-image-loader' %}
+  </head>
+
+  <body class="">
+    {% section 'video-intro' %}
+    {% section 'header' %}
+    <div class="min-h-screen pt-12">
+      {{ content_for_layout }}
+    </div>
+    {% section 'footer' %}
+  </body>
+</html>
