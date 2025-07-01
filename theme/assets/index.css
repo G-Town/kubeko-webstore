@@ -1161,6 +1161,10 @@ video {
 .bg-\[rgba\(254\2c 254\2c 254\2c 0\.60\)\]{
   background-color: rgba(254,254,254,0.60);
 }
+/* custom color  */
+.bg-\[\#f4f4f4\]{
+  background-color: #f4f4f4;
+}
 .bg-black{
   --tw-bg-opacity: 1;
   background-color: rgb(68 68 68 / var(--tw-bg-opacity, 1));
@@ -1466,8 +1470,10 @@ video {
   line-height: 0.75rem;
 }
 .text-xs{
-  font-size: 0.75rem;
-  line-height: 1rem;
+  /* font-size: 0.75rem;
+  line-height: 1rem; */
+  font-size: 0.7rem;
+  line-height: 0.75rem;
 }
 .font-bold{
   font-weight: 700;

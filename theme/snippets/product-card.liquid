@@ -7,6 +7,40 @@
 const ProductCard = {
   // Cache for product data to avoid re-parsing JSON
   productDataCache: {},
+
+  // TODO: configure this
+  // Function to switch image based on color chip click
+  switchImageByColor: function(button, productId, imageUrl) {
+    const productCard = button.closest(`[data-product-card="${productId}"]`);
+    if (!productCard || !imageUrl) return;
+
+    // De-select other color chips in the same card
+    productCard.querySelectorAll('.color-chip').forEach(chip => {
+      chip.classList.remove('ring-2', 'ring-offset-2', 'ring-black');
+    });
+
+    // Select the current chip by adding a ring
+    button.classList.add('ring-2', 'ring-offset-2', 'ring-black');
+
+    const mainImage = productCard.querySelector(`#primary-image-${productId}`);
+    
+    if (mainImage) {
+      // To provide feedback, we can fade the image slightly during load
+      mainImage.style.transition = 'opacity 0.2s ease-in-out';
+      mainImage.style.opacity = '0.7';
+
+      const newImg = new Image();
+      newImg.src = imageUrl;
+      newImg.onload = () => {
+        mainImage.src = imageUrl;
+        mainImage.dataset.src = imageUrl;
+        mainImage.dataset.highResLoaded = 'false';
+        mainImage.classList.add('blur-sm');
+        window.loadHighResImage(mainImage);
+        mainImage.style.opacity = '1';
+      };
+    }
+  },
   
   // Function to toggle product images on mobile
   toggleProductImages: function(thumbnailButton, event, productId) {
@@ -586,27 +620,100 @@ document.addEventListener('DOMContentLoaded', function() {
   </button>
 
   <!-- Product info and dropdown container -->
-  <div class="absolute bottom-0 left-0 right-0 m-[4px] z-10">
+  <div class="absolute bottom-0 left-0 right-0 z-10">
     <!-- Product info bar (always visible) -->
-    <div class="product-info-bar relative rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] px-4 py-3 flex justify-between items-center h-[49px]">
-      <a href="{{ product.url }}" class="uppercase text-sm tracking-wide text-black">{{ product.title }}</a>
-      <div class="text-sm text-black">
-        {% if product.available %}
-          {{ product.price | money_without_trailing_zeros }}
-          {% if product.inventory_quantity <= 10 and product.inventory_quantity > 0 and product.inventory_management == 'shopify' %}
-            <span class="stock-status in-stock text-xs ml-2">({{ product.inventory_quantity }} left)</span>
+    {% comment %} TODO: edit height (was 49px) and style {% endcomment %}
+    <div class="product-info-bar relative rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] px-4 py-3">
+      
+
+      {% comment %} <div style="font-size: 10px; background: #f0f0f0; padding: 5px; border: 1px solid #ccc; position: absolute; bottom: 100%; left: 0; z-index: 100; width: 100%; opacity: 0.8; color: black;">
+        <div style="padding: 5px; border-bottom: 1px solid #ddd;">
+          <p style="margin: 0; padding: 0; font-weight: bold; font-size: 11px;">first variant:</p>
+          {%- assign first_variant = product.variants.first -%}
+          <pre style="font-size: 10px; white-space: pre-wrap; word-break: break-all;">
+            First Variant Title: {{ first_variant.title }}
+            Options List:
+            {%- for option_value in first_variant.options -%}
+              {{ option_value }} 
+            {%- endfor -%}
+          </pre>
+        </div>
+
+        <div style="padding: 5px;">
+          <p style="margin: 0; padding: 0; font-weight: bold; font-size: 11px;">Color Options:</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 2px; padding-top: 5px;">
+            {% for option in product.options_with_values %}
+              {% if option.name == 'Color' %}
+                {% for value in option.values %}
+                  {% if value.swatch.color %}
+                    <span style="font-family: monospace; background: #e0e0e0; padding: 1px 3px;">
+                      {{ value.name }}
+                      {{ value.swatch.color }}
+                    </span>
+                  {% else %}
+                    <span style="font-family: monospace; background: #e0e0e0; padding: 1px 3px;">
+                      {{ value.name }}
+                    </span>
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div> {% endcomment %}
+
+
+      <!-- Row 1: Title and Price -->
+      <div class="flex justify-between items-center mb-1">
+        <a href="{{ product.url }}" class="uppercase text-xs text-black tracking-wide">{{ product.title }}</a>
+        <div class="text-xs text-black">
+          {% if product.available %}
+            {{ product.price | money_without_trailing_zeros }}
+            {% if product.inventory_quantity <= 10 and product.inventory_quantity > 0 and product.inventory_management == 'shopify' %}
+              <span class="stock-status in-stock text-xs ml-2">({{ product.inventory_quantity }} left)</span>
+            {% endif %}
+          {% else %}
+            <span class="stock-status out-of-stock">Sold Out</span>
           {% endif %}
-        {% else %}
-          <span class="stock-status out-of-stock">Sold Out</span>
-        {% endif %}
+        </div>
+      </div>
+      <!-- Row 2: Color Chips --> 
+      <div class="flex items-center gap-1 pt-2">
+        {%- for option in product.options_with_values -%} <!--  -->
+          {%- if option.name == 'Color' -%}
+            {%- for value in option.values -%} <!-- names of the color options -->
+              {%- assign variant_for_color = null -%}
+              {%- for variant in product.variants -%}
+                {%- if variant.options contains value -%}
+                  {%- assign variant_for_color = variant -%}
+                  {%- break -%}
+                {%- endif -%}
+              {%- endfor -%}
+
+              {%- if variant_for_color  -%}
+                {% comment %} {{ variant_for_color.title }}
+                {{ value.swatch.color }} {% endcomment %}
+                <a class="color-chip-container">
+                  <button
+                    class="color-chip"
+                    style="background-color: {{ value.swatch.color }};"
+                    {% comment %} onclick="ProductCard.switchImageByColor(this, '{{ product.id }}', '{{ variant_for_color.featured_image | image_url: width: 800 }}')" {% endcomment %}
+                    aria-label="Select color {{ value.name }}"
+                  ></button>
+                </a>
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+        {%- endfor -%}
       </div>
     </div>
 
     <!-- Gap div -->
-    <div class="h-[4px]"></div>
+    {% comment %} <div class="h-[4px]"></div> {% endcomment %}
 
     <!-- Hover dropdown (appears below the product info) -->
-    <div class="product-dropdown rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] overflow-hidden max-h-0 md:group-hover:opacity-100 md:group-hover:max-h-[500px] mobile-dropdown-hidden">
+    {% comment %} TODO: re-add "product-dropdown" & "md:group-hover:opacity-100 md:group-hover:max-h-[500px]" to enable pop-up {% endcomment %}
+    {% comment %} <div class="  rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] overflow-hidden max-h-0   mobile-dropdown-hidden">
       <!-- Unified layout for both mobile and desktop -->
       <div class="p-4">
         <!-- Options grid - two columns on mobile, three columns on desktop -->
@@ -659,7 +766,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" id="variant-id-{{ product.id }}">
                 <input type="hidden" name="quantity" value="1">
                 
-                {% comment %} Store all product data as a data attribute for quick access {% endcomment %}
+                <!-- Store all product data as a data attribute for quick access -->
                 <div 
                   class="hidden" 
                   data-product-json="{{ product | json | escape }}"
@@ -686,6 +793,11 @@ document.addEventListener('DOMContentLoaded', function() {
           {% endif %}
         </div>
       </div>
+    </div> {% endcomment %}
+
+    {% comment %} TODO: replace above dropdown {% endcomment %}
+    <div class="">
+      
     </div>
   </div>
 </div>
@@ -1241,5 +1353,45 @@ img#secondary-image-{{ product.id }} {
   .group.mobile-expanded .product-dropdown-gap.mobile-dropdown-visible {
     max-height: 4px !important;
   }
+}
+
+/* TODO: color chips style */
+.color-chip {
+  width: 15px;
+  height: 12px;
+  border-radius: 10%;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  outline: none;
+}
+
+/* .color-chip:hover::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 2px;
+  background-color: #000;
+
+  pointer-events: none;
+  z-index: 1;
+} */
+
+.color-chip-container {
+  display: inline-block;
+  padding-bottom: 6px; /* Space for the underline */
+  border-bottom: 2px solid transparent; /* Hidden border by default */
+  transition: border-color 0.2s ease; /* Smooth transition */
+}
+
+.color-chip-container:hover {
+  border-bottom-color: #000; /* Show black underline on hover */
+}
+
+.color-chip:hover {
+  /* outline: 2px solid #000;
+  outline-offset: 2px; */
 }
 {% endstyle %}

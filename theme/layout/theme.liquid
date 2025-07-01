@@ -53,7 +53,7 @@
     {% section 'video-intro' %}
     {% section 'header' %}
     {% comment %} TODO: min height removed? was min-h-screen {% endcomment %}
-    <div class="min-h- pt-12">
+    <div class="min-h- {% if canonical_url != 'https://kubeko-dev.myshopify.com/' %} pt-12 {% endif %}">
       {{ content_for_layout }}
     </div>
     {% section 'footer' %}

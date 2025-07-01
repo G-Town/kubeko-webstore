@@ -2,6 +2,7 @@
   {% comment %} TODO: investigate dynamic col rule here (isdrop?) {% endcomment %}
   <div class="grid grid-cols-1 md:grid-cols-{% if collection.metafields.custom.isdrop == true %}4{% else %}4{% endif %} gap-1 px-[120px] pt-[40px]">
     {% for product in collection.products %}
+      {% assign variant_metafields = product.variants | map: 'metafields' %}
       {% if product.handle != 'routeins' %}
         {% comment %} TODO: adjust custom height classes {% endcomment %}
         <div class="h-1/2 relative">
