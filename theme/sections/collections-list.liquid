@@ -1,8 +1,8 @@
 {% paginate collections by 24 %}
-  <div class="md:flex md:flex-wrap">
+  <div class="md:flex md:flex-wrap px-[120px] pt-6">
     {% for collection in collections %}
-{% if collection.metafields.custom.isdrop == true %}
-        <div class="relative h-4/5 w-full md:w-1/3 p-[5px] group flex-shrink-0">
+      {% if collection.metafields.custom.isdrop == true %}
+        <div class="relative h-4/5 w-full md:w-1/3 p-[5px] group flex-shrink-0 bg-[#606060]">
           <!-- Determine first image -->
           {% if collection.image %}
             {% assign first_image = collection.image %}
@@ -74,7 +74,7 @@
             </a>
           </div>
         </div>
-   {% endif %}
+      {% endif %}
     {% endfor %}
   </div>
 

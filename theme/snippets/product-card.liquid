@@ -622,21 +622,25 @@ document.addEventListener('DOMContentLoaded', function() {
   <!-- Product info and dropdown container -->
   <div class="absolute bottom-0 left-0 right-0 z-10">
     <!-- Product info bar (always visible) -->
-    {% comment %} TODO: edit height (was 49px) and style {% endcomment %}
+    {% comment %} TODO: edit height (was 49px) {% endcomment %}
     <div class="product-info-bar relative rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] px-4 py-3">
       
 
       {% comment %} <div style="font-size: 10px; background: #f0f0f0; padding: 5px; border: 1px solid #ccc; position: absolute; bottom: 100%; left: 0; z-index: 100; width: 100%; opacity: 0.8; color: black;">
         <div style="padding: 5px; border-bottom: 1px solid #ddd;">
-          <p style="margin: 0; padding: 0; font-weight: bold; font-size: 11px;">first variant:</p>
-          {%- assign first_variant = product.variants.first -%}
           <pre style="font-size: 10px; white-space: pre-wrap; word-break: break-all;">
-            First Variant Title: {{ first_variant.title }}
-            Options List:
-            {%- for option_value in first_variant.options -%}
-              {{ option_value }} 
+            Product Title: {{ product.title }}
+            Options: 
+            {%- for option in product.options_with_values %}
+              option name: {{ option.name }}
+              option values: {{ option.values }}
             {%- endfor -%}
           </pre>
+          <div style="font-size: 10px; background: yellow; padding: 5px;">
+            <p>Total variants: {{ product.variants.size }}</p>
+            <p>First Variant: {{ product.variants.first.title }}</p>
+            <p>First Available: {{ product.selected_or_first_available_variant.title }}</p>
+          </div>
         </div>
 
         <div style="padding: 5px;">
@@ -665,12 +669,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
       <!-- Row 1: Title and Price -->
       <div class="flex justify-between items-center mb-1">
-        <a href="{{ product.url }}" class="uppercase text-xs text-black tracking-wide">{{ product.title }}</a>
-        <div class="text-xs text-black">
+        <a href="{{ product.url }}" class="uppercase text-xs md:text-sm text-black tracking-wide">{{ product.title }}</a>
+        <div class="text-xs md:text-sm text-black">
           {% if product.available %}
             {{ product.price | money_without_trailing_zeros }}
             {% if product.inventory_quantity <= 10 and product.inventory_quantity > 0 and product.inventory_management == 'shopify' %}
-              <span class="stock-status in-stock text-xs ml-2">({{ product.inventory_quantity }} left)</span>
+              <span class="stock-status in-stock text-sm ml-2">({{ product.inventory_quantity }} left)</span>
             {% endif %}
           {% else %}
             <span class="stock-status out-of-stock">Sold Out</span>
@@ -681,10 +685,12 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="flex items-center gap-1 pt-2">
         {%- for option in product.options_with_values -%} <!--  -->
           {%- if option.name == 'Color' -%}
-            {%- for value in option.values -%} <!-- names of the color options -->
-              {%- assign variant_for_color = null -%}
-              {%- for variant in product.variants -%}
-                {%- if variant.options contains value -%}
+            {%- for value in option.values -%} <!-- COLOR OPTION NAMES eg. Mustard, Carbon/Stripe etc. --> 
+            {%- assign variant_for_color = null -%}
+              {%- for variant in product.variants -%} <!-- ALL PRODUCT VARIANT TITLES eg. Mustard1, Mustard2 etc. -->
+                {%- if variant.options contains value -%} <!-- variant title will contain color name, usually 1st variant category -->
+                  {% comment %} {{ variant.options }}
+                  {{ value }} {% endcomment %}
                   {%- assign variant_for_color = variant -%}
                   {%- break -%}
                 {%- endif -%}
@@ -693,14 +699,32 @@ document.addEventListener('DOMContentLoaded', function() {
               {%- if variant_for_color  -%}
                 {% comment %} {{ variant_for_color.title }}
                 {{ value.swatch.color }} {% endcomment %}
-                <a class="color-chip-container">
+                {%- assign is_selected = false -%}
+
+                {% comment %} {{ product.selected_or_first_available_variant.id }} {% endcomment %}
+                {% comment %} {{ variant_for_color.options }} {% endcomment %}
+
+                {% comment %} {%- if product.selected_or_first_available_variant.id == variant_for_color.id -%}
+                  {%- assign is_selected = true -%}
+                {%- endif -%} {% endcomment %}
+
+                {%- comment -%} Check if the currently selected variant has the same color as this chip {%- endcomment -%}
+                {%- if product.selected_or_first_available_variant.options contains value -%}
+                  {%- assign is_selected = true -%}
+                {%- endif -%}
+
+                {% comment %} {%- if product == variant_for_color -%} {% endcomment %}
+
+                <div class="color-chip-container{% if is_selected %} active{% endif %}">
+                  {% comment %} {{ variant_for_color.options }} {% endcomment %}
+                  {% comment %} {{ value }} {% endcomment %}
                   <button
                     class="color-chip"
                     style="background-color: {{ value.swatch.color }};"
                     {% comment %} onclick="ProductCard.switchImageByColor(this, '{{ product.id }}', '{{ variant_for_color.featured_image | image_url: width: 800 }}')" {% endcomment %}
                     aria-label="Select color {{ value.name }}"
                   ></button>
-                </a>
+                </div>
               {%- endif -%}
             {%- endfor -%}
           {%- endif -%}
@@ -1357,12 +1381,13 @@ img#secondary-image-{{ product.id }} {
 
 /* TODO: color chips style */
 .color-chip {
-  width: 15px;
-  height: 12px;
-  border-radius: 10%;
+  width: 16px;
+  height: 10px;
+  border-radius: 5%;
   border: 1px solid #d1d5db;
   cursor: pointer;
   outline: none;
+  opacity: 1;
 }
 
 /* .color-chip:hover::after {
@@ -1381,12 +1406,13 @@ img#secondary-image-{{ product.id }} {
 
 .color-chip-container {
   display: inline-block;
-  padding-bottom: 6px; /* Space for the underline */
-  border-bottom: 2px solid transparent; /* Hidden border by default */
+  padding-bottom: 4px; /* Space for the underline */
+  border-bottom: 1px solid transparent; /* Hidden border by default */
   transition: border-color 0.2s ease; /* Smooth transition */
 }
 
-.color-chip-container:hover {
+.color-chip-container:hover,
+.color-chip-container.active {
   border-bottom-color: #000; /* Show black underline on hover */
 }
 

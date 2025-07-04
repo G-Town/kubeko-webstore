@@ -92,18 +92,18 @@
   {% assign second_image = product.images[1] | default: first_image %}
   
   <!-- Product Layout -->
-  <div class="flex flex-col text-black md:h-screen w-full pt-[42px] md:pt-0">
+  <div class="flex flex-col text-black md:h-screen w-full pt-[42px] md:pt-0 bg-[#f4f4f4]">
     <!-- Product Content -->
-    <div class="flex flex-col md:flex-row h-full md:h-full relative overflow-visible">
+    <div class="flex flex-col md:flex-row h-full md:h-full relative overflow-visible max-w-6xl mx-auto">
       <!-- Product Navigation Bar - Only visible on desktop -->
-      <div class="hidden md:flex h-[49px] max-w-[864px] absolute top-[57px] mt-[4px] left-1/2 -translate-x-1/2 w-[calc(100%-8px)] justify-between items-center py-[10px] z-[50] rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] nav-container transition-colors duration-300">
+      {% comment %} <div class="hidden md:flex h-[49px] max-w-[650px] absolute top-[57px]  left-1/2 -translate-x-1/2 w-[calc(100%-8px)] justify-between items-center  z-[50] rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] nav-container transition-colors duration-300">
         <nav class="flex py-[10px] px-0 flex-row relative w-full items-center uppercase">
           {% if collection == blank and product.collections != blank %}
             {% assign collection = collections.all %}
           {% endif %}
           
           {% if collection != blank %}
-            {% comment %}Find adjacent products{% endcomment %}
+            <!-- Find adjacent products -->
             {% assign found_prev = false %}
             {% assign found_current = false %}
             {% assign prev_product = false %}
@@ -123,7 +123,7 @@
               {% endif %}
             {% endfor %}
             
-            {% comment %}Loop to beginning/end if needed{% endcomment %}
+            <!-- Loop to beginning/end if needed -->
             {% if prev_product == false and collections.all.products.size > 1 %}
               {% assign prev_product = collections.all.products.last %}
             {% endif %}
@@ -156,7 +156,7 @@
             </div>
           {% endif %}
         </nav>
-      </div>
+      </div> {% endcomment %}
       
       <!-- Popups for Materials, Size Guide, and Shipping -->
       <div id="popup-overlay" class="hidden fixed inset-0 bg-transparent z-[54]"></div>
@@ -477,6 +477,7 @@
             <!-- Product Description -->
             <div class="mb-6">
               <p class="font-garamond text-[16px] text-[#444444] font-normal">{{ product.description | strip_html }}</p>
+              {% render 'accordion', accordion_title: 'Test Accordion', accordion_content: 'This is the test content for the accordion.' %}
             </div>
             
             <!-- Info Links -->
@@ -515,7 +516,7 @@
       <!-- Product Info Overlay - Desktop only -->
       <div class="hidden md:block absolute bottom-0 left-1/2 -translate-x-1/2 max-w-[864px] w-[calc(100%-8px)] z-20 product-info-container">
         <!-- Product Header Row with bottom gap -->
-        <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] h-[49px] backdrop-blur-[12.5px] px-4 py-3 flex justify-between items-center product-info-item transition-colors duration-300">
+        <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] h-[38px] backdrop-blur-[12.5px] px-4 py-3 flex justify-between items-center product-info-item transition-colors duration-300">
           <h1 class="uppercase text-[13px] font-medium text-[#444444]">{{ product.title }}</h1>
           <span class="text-[13px] text-[#444444]">${{ product.price | money_without_currency }}</span>
         </div>
@@ -524,14 +525,16 @@
         <div class="h-[4px] bg-transparent"></div>
         
         <!-- Rest of the content in a single container - hidden by default -->
-        <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] product-info-item transition-all duration-300 max-h-0 overflow-hidden product-details-container">
+        {% comment %} max-h-0 product-details-container {% endcomment %}
+        <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] product-info-item transition-all duration-300 overflow-hidden max-h-0 product-details-container">
           <!-- Variant Options and Add to Cart -->
           <div class="flex flex-col">
             {% if product.has_only_default_variant == false %}
               {% assign options = product.options_with_values %}
               
               <!-- First option row with Add to Cart inline -->
-              <div class="w-full px-6 py-2 flex justify-between items-start min-h-[150px] relative">
+              {% comment %} TODO: consider replacing min-h- with flexing height {% endcomment %}
+              <div class="w-full px-6 py-2 flex justify-between items-start min-h-[100px] relative">
                 <!-- Variant Options in Columns -->
                 <div class="flex flex-1 gap-[8px] w-full relative">
                   <!-- First Column (usually Color) -->
@@ -591,39 +594,43 @@
             {% endif %}
           </div>
           
-          <!-- Product Description -->
-          <div class="prose px-4 py-4 max-w-[480px] prose-sm">
-            <p class="font-garamond text-[16px] text-[#444444] font-normal ">{{ product.description | strip_html }}</p>
-          </div>
-          
-          <!-- Info Links -->
-          <div class="px-4 py-3 flex flex-col space-y-2">
-            <button onclick="openPopup('materials-popup')" class="flex justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
-              <span class="uppercase text-[13px] text-[#444444]">MATERIALS</span>
-              <span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
-                  <path d="M7 0.388877V5.44428C7 5.54741 6.95903 5.64633 6.8861 5.71925C6.81317 5.79218 6.71426 5.83315 6.61112 5.83315C6.50799 5.83315 6.40907 5.79218 6.33615 5.71925C6.26322 5.64633 6.22225 5.54741 6.22225 5.44428V1.32753L0.664224 6.88604C0.591255 6.95901 0.492287 7 0.389093 7C0.285899 7 0.186932 6.95901 0.113963 6.88604C0.0409936 6.81307 0 6.7141 0 6.61091C0 6.50771 0.0409936 6.40875 0.113963 6.33578L5.67247 0.777754H1.55572C1.45259 0.777754 1.35367 0.736783 1.28075 0.663854C1.20782 0.590926 1.16685 0.492013 1.16685 0.388877C1.16685 0.28574 1.20782 0.186828 1.28075 0.113899C1.35367 0.0409709 1.45259 0 1.55572 0H6.61112C6.71426 0 6.81317 0.0409709 6.8861 0.113899C6.95903 0.186828 7 0.28574 7 0.388877Z" fill="#444444"/>
-                </svg>
-              </span>
-            </button>
+          {% comment %} TODO: consider this flex box putting description in same row as info links {% endcomment %}
+          <div class="flex">
+            <!-- Product Description -->
+             {% comment %} max-w-[480px] {% endcomment %}
+            <div class="prose px-4 py-4 w-[80%] prose-sm">
+              <p class="font-garamond text-[16px] text-[#444444] font-normal ">{{ product.description | strip_html }}</p>
+            </div>
             
-            <button onclick="openPopup('size-guide-popup')" class="flex justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
-              <span class="uppercase text-[13px] text-[#444444]">SIZE GUIDE</span>
-              <span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
-                  <path d="M7 0.388877V5.44428C7 5.54741 6.95903 5.64633 6.8861 5.71925C6.81317 5.79218 6.71426 5.83315 6.61112 5.83315C6.50799 5.83315 6.40907 5.79218 6.33615 5.71925C6.26322 5.64633 6.22225 5.54741 6.22225 5.44428V1.32753L0.664224 6.88604C0.591255 6.95901 0.492287 7 0.389093 7C0.285899 7 0.186932 6.95901 0.113963 6.88604C0.0409936 6.81307 0 6.7141 0 6.61091C0 6.50771 0.0409936 6.40875 0.113963 6.33578L5.67247 0.777754H1.55572C1.45259 0.777754 1.35367 0.736783 1.28075 0.663854C1.20782 0.590926 1.16685 0.492013 1.16685 0.388877C1.16685 0.28574 1.20782 0.186828 1.28075 0.113899C1.35367 0.0409709 1.45259 0 1.55572 0H6.61112C6.71426 0 6.81317 0.0409709 6.8861 0.113899C6.95903 0.186828 7 0.28574 7 0.388877Z" fill="#444444"/>
-                </svg>
-              </span>
-            </button>
-            
-            <button onclick="openPopup('shipping-popup')" class="flex justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
-              <span class="uppercase text-[13px] text-[#444444]">SHIPPING</span>
-              <span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
-                  <path d="M7 0.388877V5.44428C7 5.54741 6.95903 5.64633 6.8861 5.71925C6.81317 5.79218 6.71426 5.83315 6.61112 5.83315C6.50799 5.83315 6.40907 5.79218 6.33615 5.71925C6.26322 5.64633 6.22225 5.54741 6.22225 5.44428V1.32753L0.664224 6.88604C0.591255 6.95901 0.492287 7 0.389093 7C0.285899 7 0.186932 6.95901 0.113963 6.88604C0.0409936 6.81307 0 6.7141 0 6.61091C0 6.50771 0.0409936 6.40875 0.113963 6.33578L5.67247 0.777754H1.55572C1.45259 0.777754 1.35367 0.736783 1.28075 0.663854C1.20782 0.590926 1.16685 0.492013 1.16685 0.388877C1.16685 0.28574 1.20782 0.186828 1.28075 0.113899C1.35367 0.0409709 1.45259 0 1.55572 0H6.61112C6.71426 0 6.81317 0.0409709 6.8861 0.113899C6.95903 0.186828 7 0.28574 7 0.388877Z" fill="#444444"/>
-                </svg>
-              </span>
-            </button>
+            <!-- Info Links -->
+            <div class="px-4 py-3 flex flex-col space-y-2 flex-1">
+              <button onclick="openPopup('materials-popup')" class="flex flex-row justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+                <span class="uppercase text-[13px] text-[#444444]">MATERIALS</span>
+                <span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
+                    <path d="M7 0.388877V5.44428C7 5.54741 6.95903 5.64633 6.8861 5.71925C6.81317 5.79218 6.71426 5.83315 6.61112 5.83315C6.50799 5.83315 6.40907 5.79218 6.33615 5.71925C6.26322 5.64633 6.22225 5.54741 6.22225 5.44428V1.32753L0.664224 6.88604C0.591255 6.95901 0.492287 7 0.389093 7C0.285899 7 0.186932 6.95901 0.113963 6.88604C0.0409936 6.81307 0 6.7141 0 6.61091C0 6.50771 0.0409936 6.40875 0.113963 6.33578L5.67247 0.777754H1.55572C1.45259 0.777754 1.35367 0.736783 1.28075 0.663854C1.20782 0.590926 1.16685 0.492013 1.16685 0.388877C1.16685 0.28574 1.20782 0.186828 1.28075 0.113899C1.35367 0.0409709 1.45259 0 1.55572 0H6.61112C6.71426 0 6.81317 0.0409709 6.8861 0.113899C6.95903 0.186828 7 0.28574 7 0.388877Z" fill="#444444"/>
+                  </svg>
+                </span>
+              </button>
+              
+              <button onclick="openPopup('size-guide-popup')" class="flex justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+                <span class="uppercase text-[13px] text-[#444444]">SIZE GUIDE</span>
+                <span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
+                    <path d="M7 0.388877V5.44428C7 5.54741 6.95903 5.64633 6.8861 5.71925C6.81317 5.79218 6.71426 5.83315 6.61112 5.83315C6.50799 5.83315 6.40907 5.79218 6.33615 5.71925C6.26322 5.64633 6.22225 5.54741 6.22225 5.44428V1.32753L0.664224 6.88604C0.591255 6.95901 0.492287 7 0.389093 7C0.285899 7 0.186932 6.95901 0.113963 6.88604C0.0409936 6.81307 0 6.7141 0 6.61091C0 6.50771 0.0409936 6.40875 0.113963 6.33578L5.67247 0.777754H1.55572C1.45259 0.777754 1.35367 0.736783 1.28075 0.663854C1.20782 0.590926 1.16685 0.492013 1.16685 0.388877C1.16685 0.28574 1.20782 0.186828 1.28075 0.113899C1.35367 0.0409709 1.45259 0 1.55572 0H6.61112C6.71426 0 6.81317 0.0409709 6.8861 0.113899C6.95903 0.186828 7 0.28574 7 0.388877Z" fill="#444444"/>
+                  </svg>
+                </span>
+              </button>
+              
+              <button onclick="openPopup('shipping-popup')" class="flex justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+                <span class="uppercase text-[13px] text-[#444444]">SHIPPING</span>
+                <span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
+                    <path d="M7 0.388877V5.44428C7 5.54741 6.95903 5.64633 6.8861 5.71925C6.81317 5.79218 6.71426 5.83315 6.61112 5.83315C6.50799 5.83315 6.40907 5.79218 6.33615 5.71925C6.26322 5.64633 6.22225 5.54741 6.22225 5.44428V1.32753L0.664224 6.88604C0.591255 6.95901 0.492287 7 0.389093 7C0.285899 7 0.186932 6.95901 0.113963 6.88604C0.0409936 6.81307 0 6.7141 0 6.61091C0 6.50771 0.0409936 6.40875 0.113963 6.33578L5.67247 0.777754H1.55572C1.45259 0.777754 1.35367 0.736783 1.28075 0.663854C1.20782 0.590926 1.16685 0.492013 1.16685 0.388877C1.16685 0.28574 1.20782 0.186828 1.28075 0.113899C1.35367 0.0409709 1.45259 0 1.55572 0H6.61112C6.71426 0 6.81317 0.0409709 6.8861 0.113899C6.95903 0.186828 7 0.28574 7 0.388877Z" fill="#444444"/>
+                  </svg>
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1690,7 +1697,7 @@
 <style>
   {% comment %} TODO: restylw scrollbar to match Khaite website {% endcomment %}
   /* Custom scrollbar styling */
-  .custom-scrollbar::-webkit-scrollbar {
+  /* .custom-scrollbar::-webkit-scrollbar {
     width: 3px;
   }
   
@@ -1701,11 +1708,12 @@
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: rgba(68, 68, 68, 0.3);
     border-radius: 3px;
-  }
+  } */
   
   .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: rgba(68, 68, 68, 0.3) transparent;
+    scrollbar-width: none;
   }
   
   /* Enhanced spacing for popup content */

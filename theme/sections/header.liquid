@@ -249,12 +249,12 @@
       <!-- Mobile Header -->
       <nav class="md:hidden flex px-[15px] py-[13.5px] flex-row relative w-full items-center uppercase">
         {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
-        <button class="text-sm uppercase pt-2" id="mobile-menu-trigger">MENU</button>
+        <button class="text-sm uppercase" id="mobile-menu-trigger">MENU</button>
         <a href="/" class="absolute left-1/2 -translate-x-1/2">
           {% render 'logo' %}
         </a>
         {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
-        <div class="ml-auto flex items-center pt-2">
+        <div class="ml-auto flex items-center">
           <div class="relative mobile-cart-trigger">
             <p class="cursor-pointer text-sm uppercase hover:opacity-60 transition-opacity">
               Cart<span class="absolute -top-1 -right-2 {% if cart.item_count >= 10 %}-right-[12px]{% endif %} text-[10px] cart-count" {% if cart.item_count == 0 %}style="display: none;"{% endif %}>{{ cart.item_count }}</span>
@@ -264,9 +264,10 @@
       </nav>
       
       <!-- Desktop Header -->
-      <nav class="hidden md:flex h-full flex-row relative w-full items-center px-6 uppercase">
+      {% comment %} TODO: auto margin best for centering items? try to figure out flex {% endcomment %}
+      <nav class="hidden md:flex h-full flex-row relative w-full items-center px-6 uppercase max-w-[1024px] mx-auto">
         {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
-        <ul class="flex items-center gap-12 transition-all duration-300 pt-2" id="header-nav">
+        <ul class="flex items-center gap-12 transition-all duration-30" id="header-nav">
           {% for link in linklists.main-menu.links %}
             <li class="relative group">
               <a href="{{ link.url }}" class="cursor-pointer text-sm hover:opacity-60 transition-opacity">{{ link.title }}</a>
@@ -278,7 +279,7 @@
           {% render 'logo' %}
         </a>
         {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
-        <div class="ml-auto flex items-center gap-8 pt-2">
+        <div class="ml-auto flex items-center gap-">
           <div class="relative group">
             <p class="cursor-pointer text-sm uppercase hover:opacity-60 transition-opacity">
               Cart<span class="absolute -top-1 -right-2 {% if cart.item_count >= 10 %}-right-[12px]{% endif %} text-[10px] cart-count" {% if cart.item_count == 0 %}style="display: none;"{% endif %}>{{ cart.item_count }}</span>
