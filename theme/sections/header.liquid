@@ -244,6 +244,10 @@
         #mobile-menu .mobile-parent-active > a {
           opacity: 1 !important;
         }
+
+        #header-logo.logo-hidden {
+          opacity: 0 !important;
+        }
       </style>
       
       <!-- Mobile Header -->
@@ -448,7 +452,8 @@
 <!-- Cart dropdown -->
 <div class="w-full flex justify-center">
   <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
-    <div class="fixed hidden text-sm text-black uppercase top-[43px] mt-[4px] md:top-[55px] md:mt-[6px] z-[90] cart-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2">
+    {% comment %} hidden {% endcomment %}
+    <div class="fixed  text-sm text-black uppercase top-[43px] mt-[4px] md:top-[55px] md:mt-[6px] z-[90] cart-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2">
       <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] md:bg-[rgba(254,254,254,0.60)] md:backdrop-blur-[12.5px] bg-white flex flex-col">
         <div class="p-[5px] pl-[5px] mt-[5px] flex flex-col h-full">
           {% if cart.item_count > 0 %}
@@ -743,16 +748,19 @@
       if (isAnyDropdownOpen) {
         headerOverlay.style.opacity = '1';
         headerOverlay.style.display = 'block';
+        if (headerLogo) headerLogo.classList.remove('logo-hidden');
         updateBlendMode(true);
       } else {
         // When no dropdown is open, hide header when scrolling down
         if (scrollTop > lastScrollTop) {
           headerOverlay.style.opacity = '0';
           headerOverlay.style.display = 'none';
+          if (headerLogo) headerLogo.classList.add('logo-hidden');
           updateBlendMode(false);
         } else {
           headerOverlay.style.opacity = '1';
           headerOverlay.style.display = 'block';
+          if (headerLogo) headerLogo.classList.remove('logo-hidden');
           updateBlendMode(true);
         }
       }
@@ -1293,7 +1301,7 @@
       `;
     });
     
-    // Close items container and add checkout section
+    // Close items container and add vew cart and checkout buttons
     html += `
           </div>
         </div>
@@ -1303,6 +1311,9 @@
             <p class="text-[13px] md:text-sm">$${(cart.total_price / 100).toFixed(0)}</p>
           </div>
           <div class="flex flex-col gap-4">
+            <a href="/cart" class="w-full bg-white text-black text-center py-2 uppercase hover:opacity-80 transition-opacity text-[13px] md:text-sm h-[33px]">
+              View Cart
+            </a>
             <form action="/cart" method="post">
               <input type="hidden" name="checkout" value="">
               <button type="submit" class="w-full bg-black text-white text-center py-2 uppercase hover:opacity-80 transition-opacity text-[13px] md:text-sm h-[33px]">

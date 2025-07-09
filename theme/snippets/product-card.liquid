@@ -533,7 +533,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<div class="group relative block text-black {% unless custom_aspect_ratio %}aspect-[3/4]{% endunless %} overflow-visible h-full p-0" data-product-card="{{ unique_id }}">
+<div class="group relative block text-black {% unless custom_aspect_ratio %}aspect-[3/4]{% endunless %} overflow-visible h-full pb-12" data-product-card="{{ unique_id }}">
   <!-- Product link (image only) -->
   <a href="{{ product.url }}" class="block relative w-full h-full overflow-hidden product-card-link" id="product-link-{{ product.id }}" onclick="handleProductCardClick(event, '{{ product.id }}')">
     <!-- First image with LQIP -->
@@ -689,20 +689,13 @@ document.addEventListener('DOMContentLoaded', function() {
             {%- assign variant_for_color = null -%}
               {%- for variant in product.variants -%} <!-- ALL PRODUCT VARIANT TITLES eg. Mustard1, Mustard2 etc. -->
                 {%- if variant.options contains value -%} <!-- variant title will contain color name, usually 1st variant category -->
-                  {% comment %} {{ variant.options }}
-                  {{ value }} {% endcomment %}
                   {%- assign variant_for_color = variant -%}
                   {%- break -%}
                 {%- endif -%}
               {%- endfor -%}
 
               {%- if variant_for_color  -%}
-                {% comment %} {{ variant_for_color.title }}
-                {{ value.swatch.color }} {% endcomment %}
                 {%- assign is_selected = false -%}
-
-                {% comment %} {{ product.selected_or_first_available_variant.id }} {% endcomment %}
-                {% comment %} {{ variant_for_color.options }} {% endcomment %}
 
                 {% comment %} {%- if product.selected_or_first_available_variant.id == variant_for_color.id -%}
                   {%- assign is_selected = true -%}
@@ -713,15 +706,12 @@ document.addEventListener('DOMContentLoaded', function() {
                   {%- assign is_selected = true -%}
                 {%- endif -%}
 
-                {% comment %} {%- if product == variant_for_color -%} {% endcomment %}
-
                 <div class="color-chip-container{% if is_selected %} active{% endif %}">
                   {% comment %} {{ variant_for_color.options }} {% endcomment %}
                   {% comment %} {{ value }} {% endcomment %}
                   <button
                     class="color-chip"
                     style="background-color: {{ value.swatch.color }};"
-                    {% comment %} onclick="ProductCard.switchImageByColor(this, '{{ product.id }}', '{{ variant_for_color.featured_image | image_url: width: 800 }}')" {% endcomment %}
                     aria-label="Select color {{ value.name }}"
                   ></button>
                 </div>
@@ -1011,6 +1001,24 @@ document.addEventListener('DOMContentLoaded', function() {
       btn.style.fontWeight = '';
     });
   };
+
+  // New click handler for product card color chips
+  document.addEventListener('click', function(event) {
+    const chip = event.target.closest('.color-chip');
+    const productCard = event.target.closest('[data-product-card]');
+
+    if (!chip || !productCard) {
+      return;
+    }
+
+    // We are inside a product card and clicked a color chip.
+    event.stopPropagation(); // Prevent other click handlers on the card.
+
+    // Handle active state
+    const allChipContainers = productCard.querySelectorAll('.color-chip-container');
+    allChipContainers.forEach(container => container.classList.remove('active'));
+    chip.closest('.color-chip-container').classList.add('active');
+  });
 });
 </script>
 
@@ -1389,20 +1397,6 @@ img#secondary-image-{{ product.id }} {
   outline: none;
   opacity: 1;
 }
-
-/* .color-chip:hover::after {
-  content: '';
-  position: absolute;
-  bottom: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 14px;
-  height: 2px;
-  background-color: #000;
-
-  pointer-events: none;
-  z-index: 1;
-} */
 
 .color-chip-container {
   display: inline-block;

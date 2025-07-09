@@ -817,6 +817,9 @@ video {
 .h-1\/2{
   height: 50vh;
 }
+.h-\[45\%\]{
+  height: 45vh;
+}
 .h-1\/3{
     height: 33vh;
 }
@@ -916,6 +919,9 @@ video {
 }
 .max-w-\[1024px\]{
   max-width: 1052px;
+}
+.max-w-\[1260px\]{
+  max-width: 1260px;
 }
 .max-w-fit{
   max-width: -webkit-fit-content;
@@ -1179,7 +1185,7 @@ video {
 .bg-\[rgba\(254\2c 254\2c 254\2c 0\.60\)\]{
   background-color: rgba(254,254,254,0.60);
 }
-/* custom color  */
+/* product img bg color  */
 .bg-\[\#f4f4f4\]{
   background-color: #f4f4f4;
 }
@@ -1300,10 +1306,6 @@ video {
   padding-left: 120px;
   padding-right: 120px;
 }
-.md\:px-\[120px\]{
-  padding-left: 120px;
-  padding-right: 120px;
-}
 .px-\[180px\]{
   padding-left: 180px;
   padding-right: 180px;
@@ -1367,6 +1369,9 @@ video {
 .pb-8{
   padding-bottom: 2rem;
 }
+.pb-12{
+  padding-bottom: 3rem;
+}
 .pb-\[30px\]{
   padding-bottom: 30px;
 }
@@ -1419,9 +1424,6 @@ video {
 }
 .pt-12{
   padding-top: 3rem;
-}
-.pt-15{
-  padding-top: 3.75rem;
 }
 /* TODO: adjust header items padding here */
 .pt-2{
@@ -2213,8 +2215,17 @@ shopify-payment-terms{
   .md\:h-full{
     height: 100%;
   }
+  .md\:h-3\/4{
+    height: 75vh;
+  }
+  .md\:h-2\/3{
+    height: 67vh;
+  }
   .md\:h-1\/2{
-    height: 50vh;
+    height: 55vh;
+  }
+  .md\:h-\[60\%\]{
+    height: 60vh;
   }
   .md\:h-min{
     height: -webkit-min-content;
@@ -2281,6 +2292,10 @@ shopify-payment-terms{
     padding-left: 5px;
     padding-right: 5px;
   }
+  .md\:px-\[120px\]{
+    padding-left: 120px;
+    padding-right: 120px;
+  }
   .md\:py-\[2px\]{
     padding-top: 2px;
     padding-bottom: 2px;
@@ -2288,9 +2303,14 @@ shopify-payment-terms{
   .md\:pt-0{
     padding-top: 0px;
   }
+  
+  .md\:pt-15{
+    padding-top: 3.75rem;
+  }
   .md\:pt-20{
     padding-top: 5rem;
   }
+
   .md\:text-base{
     font-size: 0.75rem;
     line-height: 1rem;
@@ -2325,4 +2345,5 @@ shopify-payment-terms{
   .lg\:grid-cols-4{
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+  
 }

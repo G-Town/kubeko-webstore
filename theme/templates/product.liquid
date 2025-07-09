@@ -90,6 +90,13 @@
 {% else %}
   {% assign first_image = product.images[0] %}
   {% assign second_image = product.images[1] | default: first_image %}
+
+  <script>
+    // Store all product images in a global variable for client-side filtering
+    window.allProductImages = {{ product.images | json }};
+    window.productOptions = {{ product.options_with_values | json }};
+    window.productVariants = {{ product.variants | json }};
+  </script>
   
   <!-- Product Layout -->
   <div class="flex flex-col text-black md:h-screen w-full pt-[42px] md:pt-0 bg-[#f4f4f4]">
@@ -418,33 +425,70 @@
               
               <!-- Options grid in two columns -->
               <div class="grid grid-cols-2 gap-4 mb-4">
-                <!-- First option column (usually color) -->
+                <!-- First option column (Color) -->
                 <div class="flex flex-col items-start gap-[8px]">
-                  {% if options.size > 0 %}
-                    {% for value in options[0].values %}
-                      <button 
-                        type="button"
-                        class="variant-button text-left uppercase text-[13px] text-[#444444] {% if forloop.first %}font-medium{% endif %}" 
-                        data-option-position="{{ options[0].position }}" 
-                        data-value="{{ value | escape }}"
-                        onclick="selectVariant(this, '{{ options[0].position }}', '{{ value | escape }}')"
-                      >
-                        {{ value }}
-                      </button>
-                    {% endfor %}
+                  {%- assign color_option = null -%}
+                  {%- for opt in product.options_with_values -%}
+                    {%- if opt.name == 'Color' -%}
+                      {%- assign color_option = opt -%}
+                      {%- break -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+
+                  {% if color_option %}
+                    <span id="mobile-selected-color-name" class="uppercase text-[13px] text-[#444444] mb-2"></span>
+                    <div class="flex items-center flex-wrap gap-1 pt-2" id="mobile-color-chips-container">
+                      {%- for value in color_option.values -%}
+                        {%- assign variant_for_color = null -%}
+                        {%- for variant in product.variants -%}
+                          {%- if variant.options contains value -%}
+                            {%- assign variant_for_color = variant -%}
+                            {%- break -%}
+                          {%- endif -%}
+                        {%- endfor -%}
+
+                        {%- if variant_for_color -%}
+                          {%- assign is_selected = false -%}
+                          {%- if product.selected_or_first_available_variant.options contains value -%}
+                            {%- assign is_selected = true -%}
+                          {%- endif -%}
+
+                          <div class="color-chip-container{% if is_selected %} active{% endif %}">
+                            <button
+                              type="button"
+                              class="color-chip"
+                              style="background-color: {{ value.swatch.color }};"
+                              data-color-name="{{ value | escape }}"
+                              data-option-position="{{ color_option.position }}"
+                              data-value="{{ value | escape }}"
+                              onclick="selectVariant(this, '{{ color_option.position }}', '{{ value | escape }}')"
+                              aria-label="Select color {{ value | escape }}"
+                            ></button>
+                          </div>
+                        {%- endif -%}
+                      {%- endfor -%}
+                    </div>
                   {% endif %}
                 </div>
                 
-                <!-- Second option column (usually size) -->
+                <!-- Second option column (Size) -->
                 <div class="flex flex-col items-end gap-[8px]">
-                  {% if options.size > 1 %}
-                    {% for value in options[1].values %}
+                  {%- assign size_option = null -%}
+                  {%- for opt in product.options_with_values -%}
+                    {%- if opt.name == 'Size' -%}
+                      {%- assign size_option = opt -%}
+                      {%- break -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+
+                  {% if size_option %}
+                    {% for value in size_option.values %}
                       <button 
                         type="button"
                         class="variant-button text-right uppercase text-[13px] text-[#444444] {% if forloop.first %}font-medium{% endif %}" 
-                        data-option-position="{{ options[1].position }}" 
+                        data-option-position="{{ size_option.position }}" 
                         data-value="{{ value | escape }}"
-                        onclick="selectVariant(this, '{{ options[1].position }}', '{{ value | escape }}')"
+                        onclick="selectVariant(this, '{{ size_option.position }}', '{{ value | escape }}')"
                       >
                         {{ value }}
                       </button>
@@ -477,7 +521,6 @@
             <!-- Product Description -->
             <div class="mb-6">
               <p class="font-garamond text-[16px] text-[#444444] font-normal">{{ product.description | strip_html }}</p>
-              {% render 'accordion', accordion_title: 'Test Accordion', accordion_content: 'This is the test content for the accordion.' %}
             </div>
             
             <!-- Info Links -->
@@ -516,9 +559,11 @@
       <!-- Product Info Overlay - Desktop only -->
       <div class="hidden md:block absolute bottom-0 left-1/2 -translate-x-1/2 max-w-[864px] w-[calc(100%-8px)] z-20 product-info-container">
         <!-- Product Header Row with bottom gap -->
-        <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] h-[38px] backdrop-blur-[12.5px] px-4 py-3 flex justify-between items-center product-info-item transition-colors duration-300">
-          <h1 class="uppercase text-[13px] font-medium text-[#444444]">{{ product.title }}</h1>
-          <span class="text-[13px] text-[#444444]">${{ product.price | money_without_currency }}</span>
+        <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] h-[38px] px-4 py-3 product-info-item transition-colors duration-300">
+          <div class="flex justify-between items-center">
+            <h1 class="uppercase text-[13px] font-medium text-[#444444]">{{ product.title }}</h1>
+            <span class="text-[13px] text-[#444444]">${{ product.price | money_without_currency }}</span>
+          </div>
         </div>
         
         <!-- Visible gap - transparent divider -->
@@ -540,17 +585,45 @@
                   <!-- First Column (usually Color) -->
                   {% if options.size > 0 %}
                     <div class="flex flex-col absolute -left-[12px]">
-                      {% for value in options[0].values %}
-                        <button 
-                          type="button"
-                          class="variant-button text-left uppercase text-[13px] text-[#444444] bg-transparent hover:bg-[#D9D9D9] {% if forloop.first %}font-medium{% endif %}" 
-                          data-option-position="{{ options[0].position }}" 
-                          data-value="{{ value | escape }}"
-                          onclick="selectVariant(this, '{{ options[0].position }}', '{{ value | escape }}')"
-                        >
-                          {{ value }}
-                        </button>
-                      {% endfor %}
+                      <span id="selected-color-name" class="uppercase text-[13px] text-[#444444] mb-2">
+                        {{ product.selected_or_first_available_variant.option1 }}
+                      </span>
+
+                      <div class="flex items-center gap-1 pt-2" id="color-chips-container">
+                        {%- for option in product.options_with_values -%}
+                          {%- if option.name == 'Color' -%}
+                            {%- for value in option.values -%}
+                              {%- assign variant_for_color = null -%}
+                              {%- for variant in product.variants -%}
+                                {%- if variant.options contains value -%}
+                                  {%- assign variant_for_color = variant -%}
+                                  {%- break -%}
+                                {%- endif -%}
+                              {%- endfor -%}
+
+                              {%- if variant_for_color -%}
+                                {%- assign is_selected = false -%}
+                                {%- if product.selected_or_first_available_variant.options contains value -%}
+                                  {%- assign is_selected = true -%}
+                                {%- endif -%}
+
+                                <div class="color-chip-container{% if is_selected %} active{% endif %}">
+                                  <button
+                                    type="button"
+                                    class="color-chip"
+                                    style="background-color: {{ value.swatch.color }};"
+                                    data-color-name="{{ value | escape }}"
+                                    data-option-position="{{ option.position }}"
+                                    data-value="{{ value | escape }}"
+                                    onclick="selectVariant(this, '{{ option.position }}', '{{ value | escape }}')"
+                                    aria-label="Select color {{ value | escape }}"
+                                  ></button>
+                                </div>
+                              {%- endif -%}
+                            {%- endfor -%}
+                          {%- endif -%}
+                        {%- endfor -%}
+                      </div>
                     </div>
                   {% endif %}
                   
@@ -593,6 +666,24 @@
               </div>
             {% endif %}
           </div>
+
+          <!-- START: VARIANT DEBUGGING -->
+          {% comment %} <div style="padding: 10px 24px; font-size: 10px; background: rgba(255,0,0,0.05); border-top: 1px solid rgba(255,0,0,0.1); font-family: monospace;">
+            <h4 style="font-weight: bold; color: red; margin-bottom: 5px;">VARIANT DEBUGGER:</h4>
+            <ul style="max-height: 100px; overflow-y: auto;">
+              {% for variant in product.variants %}
+                <li>
+                  <strong>{{ variant.title }}:</strong> 
+                  {% if variant.featured_image %}
+                    <span style="color: green;">Featured Image FOUND</span>
+                  {% else %}
+                    <span style="color: red; font-weight: bold;">Featured Image MISSING</span>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div> {% endcomment %}
+          <!-- END: VARIANT DEBUGGING -->
           
           {% comment %} TODO: consider this flex box putting description in same row as info links {% endcomment %}
           <div class="flex">
@@ -753,10 +844,10 @@
       });
     }
     
-          // Add click handler to overlay
-      document.getElementById('popup-overlay').addEventListener('click', function() {
-        closeAllPopups();
-      });
+    // Add click handler to overlay
+    document.getElementById('popup-overlay').addEventListener('click', function() {
+      closeAllPopups();
+    });
       
       // Add click handlers for header elements on mobile
       const mobileHeaderElements = ['site-header', 'header-overlay'].map(id => 
@@ -773,37 +864,41 @@
     
     // Function to handle variant selection
     function selectVariant(element, optionPosition, optionValue) {
+      // Define selectable items for the current option group
+      const selectableItems = document.querySelectorAll(`.variant-button[data-option-position="${optionPosition}"], .color-chip[data-option-position="${optionPosition}"]`);
+
       // Clear previous selection for this option group
-      const optionGroup = element.parentElement.querySelectorAll('.variant-button');
-      optionGroup.forEach(btn => {
-        if (btn.getAttribute('data-option-position') === optionPosition) {
-          btn.removeAttribute('data-selected');
-          btn.classList.remove('bg-[#D9D9D9]');
+      selectableItems.forEach(item => {
+        item.removeAttribute('data-selected');
+        if (item.classList.contains('variant-button') && !item.classList.contains('color-chip')) {
+          item.classList.remove('bg-[#D9D9D9]');
         }
       });
-      
-      // Mark this button as selected
+
+      // Mark the clicked item as selected
       element.setAttribute('data-selected', 'true');
-      element.classList.add('bg-[#D9D9D9]');
-      
-      // Get current selections for all options
+      if (element.classList.contains('variant-button') && !element.classList.contains('color-chip')) {
+        element.classList.add('bg-[#D9D9D9]');
+      }
+
+      // Get current selections for all options from both .variant-button and .color-chip
       const selections = {};
-      document.querySelectorAll('.variant-button[data-selected="true"]').forEach(selectedBtn => {
-        const position = selectedBtn.getAttribute('data-option-position');
-        const value = selectedBtn.getAttribute('data-value');
+      document.querySelectorAll('.variant-button[data-selected="true"], .color-chip[data-selected="true"]').forEach(selectedItem => {
+        const position = selectedItem.getAttribute('data-option-position');
+        const value = selectedItem.getAttribute('data-value');
         selections[`option${position}`] = value;
       });
-      
+
       // Get total number of option types available for this product
       const totalOptionTypes = {{ product.options | size }};
-      
+
       // Check if all option types have been selected
       const allOptionsSelected = Object.keys(selections).length === totalOptionTypes;
-      
+
       // Find matching variant
       const variants = {{ product.variants | json }};
       let matchingVariant = null;
-      
+
       if (allOptionsSelected) {
         matchingVariant = variants.find(variant => {
           return Object.keys(selections).every(option => {
@@ -812,13 +907,13 @@
           });
         });
       }
-      
+
       // Check if this is an unavailable combination of options
       let isUnavailableCombination = false;
       if (allOptionsSelected && !matchingVariant) {
         isUnavailableCombination = true;
       }
-      
+
       // Update add to cart buttons based on inventory
       if (matchingVariant) {
         // We have a complete matching variant
@@ -830,12 +925,20 @@
         // Not all options selected yet
         updateAddToCartButtons(false);
       }
-      
+
       // If there's a matching variant, update the variant ID
       if (matchingVariant) {
         document.getElementById('variant-id').value = matchingVariant.id;
         if (document.getElementById('variant-id-mobile')) {
           document.getElementById('variant-id-mobile').value = matchingVariant.id;
+        }
+
+        // Update the main image to the variant's featured image
+        if (matchingVariant.featured_image) {
+          const mainImage = document.getElementById('main-image');
+          if (mainImage) {
+            mainImage.src = matchingVariant.featured_image.src;
+          }
         }
       }
     }
@@ -1693,6 +1796,98 @@
       }
     });
   </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const colorChipsContainer = document.getElementById('color-chips-container');
+      const selectedColorName = document.getElementById('selected-color-name');
+      let selectedColor = ''; // To store the name of the clicked color
+
+      if (colorChipsContainer && selectedColorName) {
+        // Function to set the initial state
+        const setInitialState = () => {
+            const activeChip = colorChipsContainer.querySelector('.color-chip-container.active .color-chip');
+            if (activeChip) {
+                selectedColor = activeChip.dataset.colorName;
+                selectedColorName.textContent = selectedColor;
+            } else {
+                // Fallback to the first chip if none are marked active initially
+                const firstChip = colorChipsContainer.querySelector('.color-chip');
+                if (firstChip) {
+                    selectedColor = firstChip.dataset.colorName;
+                    selectedColorName.textContent = selectedColor;
+                }
+            }
+        };
+
+        // Set initial state on load
+        setInitialState();
+
+        // Handle hover events
+        colorChipsContainer.addEventListener('mouseover', (event) => {
+          const chip = event.target.closest('.color-chip');
+          if (chip) {
+            selectedColorName.textContent = chip.dataset.colorName;
+          }
+        });
+
+        // Handle mouse leaving the container
+        colorChipsContainer.addEventListener('mouseleave', () => {
+          // Revert to the last clicked color's name
+          selectedColorName.textContent = selectedColor;
+        });
+
+        // Handle click events
+        colorChipsContainer.addEventListener('click', (event) => {
+          const chip = event.target.closest('.color-chip');
+          if (chip) {
+            // Update the officially selected color
+            selectedColor = chip.dataset.colorName;
+            selectedColorName.textContent = selectedColor;
+
+            // Update the 'active' class on the container
+            const allChipContainers = colorChipsContainer.querySelectorAll('.color-chip-container');
+            allChipContainers.forEach(container => container.classList.remove('active'));
+            chip.closest('.color-chip-container').classList.add('active');
+
+            // The existing onclick="selectVariant(...)" will handle the form update
+          }
+        });
+      }
+
+      const mobileColorChipsContainer = document.getElementById('mobile-color-chips-container');
+      const mobileSelectedColorName = document.getElementById('mobile-selected-color-name');
+
+      if (mobileColorChipsContainer && mobileSelectedColorName) {
+        const setMobileInitialState = () => {
+          const activeChip = mobileColorChipsContainer.querySelector('.color-chip-container.active .color-chip');
+          if (activeChip) {
+            mobileSelectedColorName.textContent = activeChip.dataset.colorName;
+          } else {
+            const firstChip = mobileColorChipsContainer.querySelector('.color-chip');
+            if (firstChip) {
+              mobileSelectedColorName.textContent = firstChip.dataset.colorName;
+            }
+          }
+        };
+
+        setMobileInitialState();
+
+        mobileColorChipsContainer.addEventListener('click', (event) => {
+          const chip = event.target.closest('.color-chip');
+          if (chip) {
+            // Update selected color name
+            mobileSelectedColorName.textContent = chip.dataset.colorName;
+
+            // Update active class
+            const allChipContainers = mobileColorChipsContainer.querySelectorAll('.color-chip-container');
+            allChipContainers.forEach(container => container.classList.remove('active'));
+            chip.closest('.color-chip-container').classList.add('active');
+          }
+        });
+      }
+    });
+  </script>
 {% endif %}
 <style>
   {% comment %} TODO: restylw scrollbar to match Khaite website {% endcomment %}
@@ -1714,6 +1909,29 @@
     scrollbar-width: thin;
     scrollbar-color: rgba(68, 68, 68, 0.3) transparent;
     scrollbar-width: none;
+  }
+
+  /* TODO: color chips style */
+  .color-chip {
+    width: 22px;
+    height: 14px;
+    border-radius: 5%;
+    border: 1px solid #d1d5db;
+    cursor: pointer;
+    outline: none;
+    opacity: 1;
+  }
+
+  .color-chip-container {
+    display: inline-block;
+    padding-bottom: 4px; /* Space for the underline */
+    border-bottom: 1px solid transparent; /* Hidden border by default */
+    transition: border-color 0.2s ease; /* Smooth transition */
+  }
+
+  .color-chip-container:hover,
+  .color-chip-container.active {
+    border-bottom-color: #000; /* Show black underline on hover */
   }
   
   /* Enhanced spacing for popup content */
