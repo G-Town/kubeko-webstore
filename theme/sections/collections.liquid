@@ -1,17 +1,46 @@
 {% paginate collection.products by 24 %}
-  {% comment %} TODO: investigate dynamic col rule here (isdrop?) - checks whether regular shop or collection shop? {% endcomment %}
+  {% comment %} TODO: investigate dynamic col rule here (isdrop?) - checks whether regular shop or named collection drop? {% endcomment %}
    {% comment %} TODO: congifure reflexive spacing and column numbers {% endcomment %}
-  <div class="grid grid-cols-2 md:grid-cols-{% if collection.metafields.custom.isdrop == true %}3{% else %}3{% endif %} lg:grid-cols-4 max-w-[1260px] mx-auto gap-1 lg:px-[120px] md:pt-15 ">
-    {% for product in collection.products %}
-      {% assign variant_metafields = product.variants | map: 'metafields' %}
-      {% if product.handle != 'routeins' %}
-        {% comment %} TODO: adjust custom height classes {% endcomment %}
-        <div class="h-[45%] md:h-[60%] relative">
-          {% render 'product-card', product: product %}
+
+  {% comment %} TODO: replace this temporary custom grid for named collection drops with possibly new section file {% endcomment %}
+  {% if collection.metafields.custom.isdrop == true %}
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 max-w-[1260px] mx-auto gap-1 lg:px-[120px] md:pt-15 ">
+    {% comment %} {% if collection.metafields.custom.lookbook %} test {% endif %} {% endcomment %}
+      {% for look in collection.metafields.custom.lookbook.value %}
+        {% comment %} {% assign  %} {% endcomment %}
+        <div class="h-auto">
+          <img
+            class="w-full h-full object-cover"
+            alt="{{ look.alt | escape }}"
+            src="{{ look | img_url: '480x' }}"
+            srcset="
+              {{ look | img_url: '480x' }} 480w,
+              {{ look | img_url: '768x' }} 768w,
+              {{ look | img_url: '1024x' }} 1024w
+            "
+            sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+            loading="lazy"
+            width="{{ look.width }}"
+            height="{{ look.height }}"
+          />
         </div>
-      {% endif %}
-    {% endfor %}
-  </div>
+      {% endfor %}
+    </div>
+    
+  {% else %}
+
+    <div class="grid grid-cols-2 md:grid-cols-{% if collection.metafields.custom.isdrop == true %}3{% else %}3{% endif %} lg:grid-cols-4 max-w-[1260px] mx-auto gap-1 lg:px-[120px] md:pt-15 ">
+      {% for product in collection.products %}
+        {% assign variant_metafields = product.variants | map: 'metafields' %}
+        {% if product.handle != 'routeins' %}
+          {% comment %} TODO: adjust custom height classes {% endcomment %}
+          <div class="h-[45%] md:h-[60%] max-h-[450px] relative">
+            {% render 'product-card', product: product %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
 
   {% if paginate.pages > 1 %}
     <div class="fixed bottom-0 left-0 w-full bg-black/80 p-4 flex justify-center gap-4 z-50">

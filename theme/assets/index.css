@@ -832,6 +832,9 @@ video {
 .max-h-\[calc\(120px\*3\+30px\*2\)\]{
   max-height: calc(120px * 3 + 30px * 2);
 }
+.max-h-\[450px\]{
+  max-height: 450px;
+}
 .max-h-full{
   max-height: 100%;
 }
@@ -2344,6 +2347,9 @@ shopify-payment-terms{
 @media (min-width: 1024px){
   .lg\:grid-cols-4{
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .lg\:grid-cols-5{
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
   
 }
