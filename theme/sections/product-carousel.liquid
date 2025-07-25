@@ -1,0 +1,187 @@
+{% comment %}
+  Product Carousel Section
+  - Displays a swipeable carousel of products from a selected collection.
+  - Uses Swiper.js for carousel functionality.
+  - Customizable via the theme editor.
+{% endcomment %}
+
+{{ 'swiper-bundle.min.css' | asset_url | stylesheet_tag }}
+
+<div class="product-carousel-section isolate py-10 md:py-16 h-screen" data-section-id="{{ section.id }}">
+  <div class="w-full md:px-8 relative">
+    {%- if section.settings.title != blank -%}
+      <h2 class="text-2xl md:text-3xl text-center mb-0">{{ section.settings.title | escape }}</h2>
+    {%- endif -%}
+
+    {%- assign collection = collections[section.settings.featured_collection] -%}
+    {%- assign products_limit = section.settings.products_to_show -%}
+
+    {%- if collection != blank and collection.products.size > 0 -%}
+      <div class="swiper-container relative overflow-hidden" id="product-carousel-{{ section.id }}">
+        <div class="swiper-wrapper">
+          {%- for product in collection.products limit: products_limit -%}
+            <div class="swiper-slide">
+              {% render 'product-card', product: product %}
+            </div>
+          {%- endfor -%}
+        </div>
+        <!-- Add Pagination -->
+        <div class="swiper-pagination"></div>
+      </div>
+      <!-- Add Navigation -->
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-button-next"></div>
+    {%- else -%}
+      {%- if request.design_mode -%}
+        <div class="text-center">
+          <p>Please select a collection in the theme editor to display products.</p>
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</div>
+
+<script src="{{ 'swiper-bundle.min.js' | asset_url }}" defer="defer"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const carouselContainer = document.getElementById('product-carousel-{{ section.id }}');
+    if (carouselContainer) {
+      const swiper = new Swiper(carouselContainer, {
+        loop: true,
+        slidesPerView: 'auto',
+        centeredSlides: true,
+        spaceBetween: 0, // Use padding for spacing
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true,
+        },
+        navigation: {
+          nextEl: '[data-section-id="{{ section.id }}"] .swiper-button-next',
+          prevEl: '[data-section-id="{{ section.id }}"] .swiper-button-prev',
+        },
+        breakpoints: {
+          768: {
+            slidesPerView: {{ section.settings.products_per_view | default: 3 }},
+            spaceBetween: 10,
+            centeredSlides: false,
+          },
+          1024: {
+            slidesPerView: {{ section.settings.products_per_view | default: 4 }},
+            spaceBetween: 20,
+            centeredSlides: false,
+          }
+        }
+      });
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Product Carousel",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Featured"
+    },
+    {
+      "type": "collection",
+      "id": "featured_collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 3,
+      "max": 20,
+      "step": 1,
+      "label": "Number of products to show",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "products_per_view",
+      "min": 3,
+      "max": 5,
+      "step": 1,
+      "label": "Products per view (Desktop)",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Carousel",
+      "category": "Products"
+    }
+  ]
+}
+{% endschema %}
+
+{% style %}
+  [data-section-id="{{ section.id }}"] .swiper-container {
+    padding-bottom: 40px; /* Space for pagination */
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  [data-section-id="{{ section.id }}"] .swiper-button-next,
+  [data-section-id="{{ section.id }}"] .swiper-button-prev {
+    color: #000; /* Or use a theme variable */
+    top: 45%;
+    transform: translateY(-50%);
+    height: 20px;
+  }
+
+  [data-section-id="{{ section.id }}"] .swiper-button-prev {
+    left: 5px;
+  }
+
+  [data-section-id="{{ section.id }}"] .swiper-button-next {
+    right: 5px;
+  }
+
+  [data-section-id="{{ section.id }}"] .swiper-pagination {
+    bottom: 20px; /* Nudge pagination up from the bottom */
+  }
+
+  [data-section-id="{{ section.id }}"] .swiper-pagination-bullet {
+    background: #000;
+  }
+
+  @media (max-width: 767px) {
+    [data-section-id="{{ section.id }}"] .swiper-container {
+      margin-left: 0px;
+      margin-right: 0px;
+
+    }
+
+    [data-section-id="{{ section.id }}"] .swiper-button-next,
+    [data-section-id="{{ section.id }}"] .swiper-button-prev {
+      display: none; /* Hide arrows on mobile, rely on swipe */
+    }
+
+    [data-section-id="{{ section.id }}"] .swiper-slide {
+      width: 70%;
+      height: auto; /* Let height be determined by content */
+      transition: transform 0.3s ease;
+      transform: scale(0.9);
+      padding: 0px 0px; /* Add horizontal padding for spacing */
+    }
+
+    [data-section-id="{{ section.id }}"] .swiper-slide-active {
+      transform: scale(1);
+    }
+
+    /* Set an explicit height for the card inside the carousel */
+    /* [data-section-id="{{ section.id }}"] .swiper-slide .group {
+      height: 65vh; 
+    } */
+
+    /* Ensure the image is contained, not cropped */
+    [data-section-id="{{ section.id }}"] .swiper-slide .group img {
+      object-fit: contain !important;
+    }
+  }
+{% endstyle %}

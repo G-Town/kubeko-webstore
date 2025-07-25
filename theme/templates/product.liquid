@@ -99,9 +99,15 @@
   </script>
   
   <!-- Product Layout -->
-  <div class="flex flex-col text-black md:h-screen w-full pt-[42px] md:pt-0 bg-[#f4f4f4]">
+  <div class="flex flex-col text-black md:h-4/5 w-full pt-0 bg-[#f4f4f4]">
     <!-- Product Content -->
     <div class="flex flex-col md:flex-row h-full md:h-full relative overflow-visible max-w-6xl mx-auto">
+      <!-- Back Button -->
+      <div class="absolute top-4 left-2 z-50">
+        <a href="javascript:history.back()" class="uppercase text-sm text-[#444444] p-2 hover:bg-[#D9D9D9] transition-colors">
+          &larr; Back
+        </a>
+      </div>
       <!-- Product Navigation Bar - Only visible on desktop -->
       {% comment %} <div class="hidden md:flex h-[49px] max-w-[650px] absolute top-[57px]  left-1/2 -translate-x-1/2 w-[calc(100%-8px)] justify-between items-center  z-[50] rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] nav-container transition-colors duration-300">
         <nav class="flex py-[10px] px-0 flex-row relative w-full items-center uppercase">
@@ -270,7 +276,7 @@
       </div>
       
       <!-- Left Side - Main Product Image (Full width on mobile) -->
-      <div class="w-full md:w-1/2 md:h-full relative">
+      <div class="w-full md:w-1/2 md:h-full relative pb-12 md:pb-0">
         <!-- Main Image for Desktop -->
         <div class="hidden md:block w-full h-full">
           <img 
@@ -323,7 +329,7 @@
         </div>
         
         <!-- Mobile Thumbnail Gallery -->
-        <div class="block md:hidden w-full h-[80px] overflow-x-auto absolute bottom-0 left-0 z-10 mobile-gallery-container">
+        <div class="block md:hidden w-full h-[80px] overflow-x-auto absolute bottom-0 left-0 z-10 mobile-gallery-container mobile-thumbnail-wrapper">
           <div class="flex flex-row items-center h-full px-4 mobile-gallery">
             {% for image in product.images %}
               <button 
@@ -381,7 +387,7 @@
         </div>
         
         <!-- Thumbnail Column - Scrollable (Desktop only) -->
-        <div class="absolute right-4 top-0 h-full flex flex-col items-end z-10 overflow-y-auto max-h-full py-4 custom-scrollbar">
+        {% comment %} <div class="absolute right-4 top-0 h-full flex flex-col items-end z-10 overflow-y-auto max-h-full py-4 custom-scrollbar">
           <div class="flex flex-col items-end">
             {% for image in images_for_right_side %}
               <div 
@@ -404,7 +410,7 @@
               </div>
             {% endfor %}
           </div>
-        </div>
+        </div> {% endcomment %}
       </div>
       
       <!-- Mobile Product Info - Below the images on mobile, hidden on desktop -->
@@ -1890,26 +1896,43 @@
   </script>
 {% endif %}
 <style>
-  {% comment %} TODO: restylw scrollbar to match Khaite website {% endcomment %}
   /* Custom scrollbar styling */
-  /* .custom-scrollbar::-webkit-scrollbar {
+  /* This targets the entire scrollbar area in WebKit browsers (Chrome, Safari) */
+  .custom-scrollbar::-webkit-scrollbar {
     width: 3px;
   }
-  
+
+  /* This targets the track (the background line) of the scrollbar */
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+    background: #e0e0e0; /* Sets the track to a light gray color */
   }
-  
+
+  /* This targets the thumb (the draggable part) of the scrollbar */
   .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #666666; /* Sets the thumb to a darker gray */
+    border-radius: 0; /* Removes any rounded corners from the thumb */
+  }
+
+  /* This hides the up and down arrow buttons */
+  .custom-scrollbar::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  /* This provides similar styling for Firefox */
+  /* .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #666666 #e0e0e0;
+    display: block;
+  } */
+  
+  /* .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  } */
+  
+  /* .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: rgba(68, 68, 68, 0.3);
     border-radius: 3px;
   } */
-  
-  .custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(68, 68, 68, 0.3) transparent;
-    scrollbar-width: none;
-  }
 
   /* TODO: color chips style */
   .color-chip {
@@ -1994,6 +2017,14 @@
   }
   
   /* Mobile gallery swipe styling */
+  .mobile-thumbnail-wrapper {
+    pointer-events: none; /* The container ignores touch events... */
+  }
+
+  .mobile-thumbnail-wrapper .mobile-thumbnail {
+    /* pointer-events: auto; ...but the buttons inside it are still clickable. */
+  }
+
   #mobile-gallery-container {
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory;
@@ -2663,7 +2694,7 @@
 
   /* Ensure smooth transitions */
   .product-info-container * {
-    transition: all 0.3s ease;
+    transition: all 0.5s ease;
   }
 
   /* Add margin to the gap when container is expanded */

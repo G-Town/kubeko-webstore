@@ -567,6 +567,9 @@ video {
 .top-2{
   top: 0.5rem;
 }
+.top-4{
+  top: 1rem;
+}
 .top-\[127px\]{
   top: 127px;
 }
@@ -635,6 +638,14 @@ video {
 .mx-auto{
   margin-left: auto;
   margin-right: auto;
+}
+.my-4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+.my-12 {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
 }
 .-ml-\[8px\]{
   margin-left: -8px;
@@ -1234,6 +1245,9 @@ video {
 .p-4{
   padding: 1rem;
 }
+.p-8{
+  padding: 2rem;
+}
 .p-\[10px\]{
   padding: 10px;
 }
@@ -1268,6 +1282,10 @@ video {
 .px-6{
   padding-left: 1.5rem;
   padding-right: 1.5rem;
+}
+.px-8{
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 .px-12{
   padding-left: 3rem;
@@ -1373,7 +1391,7 @@ video {
   padding-bottom: 2rem;
 }
 .pb-12{
-  padding-bottom: 3rem;
+  padding-bottom: 5rem;
 }
 .pb-\[30px\]{
   padding-bottom: 30px;
@@ -1424,6 +1442,9 @@ video {
 }
 .pt-6{
   padding-top: 1.5rem;
+}
+.pt-8{
+  padding-top: 2rem;
 }
 .pt-12{
   padding-top: 3rem;
@@ -2149,6 +2170,9 @@ shopify-payment-terms{
   .sm\:pt-0{
     padding-top: 0px;
   }
+  .sm\:pt-12{
+    padding-top: 3rem;
+  }
   .sm\:pt-\[80px\]{
     padding-top: 80px;
   }
@@ -2218,11 +2242,17 @@ shopify-payment-terms{
   .md\:h-full{
     height: 100%;
   }
+  .md\:h-4\/5{
+    height: 80vh;
+  }
   .md\:h-3\/4{
     height: 75vh;
   }
   .md\:h-2\/3{
     height: 67vh;
+  }
+  .md\:h-3\/5{
+    height: 60vh;
   }
   .md\:h-1\/2{
     height: 55vh;
@@ -2239,6 +2269,9 @@ shopify-payment-terms{
   }
   .md\:max-h-\[calc\(120px\*4\+30px\*3\)\]{
     max-height: calc(120px * 4 + 30px * 3);
+  }
+  .md\:w-3\/4{
+    width: 75vw;
   }
   .md\:w-1\/2{
     width: 50%;
@@ -2299,19 +2332,33 @@ shopify-payment-terms{
     padding-left: 120px;
     padding-right: 120px;
   }
+  .md\:px-8{
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
   .md\:py-\[2px\]{
     padding-top: 2px;
     padding-bottom: 2px;
   }
+  .md\:py-16{
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
   .md\:pt-0{
     padding-top: 0px;
   }
-  
+  .md\:pt-12{
+    padding-top: 3rem;
+  }
   .md\:pt-15{
     padding-top: 3.75rem;
   }
   .md\:pt-20{
     padding-top: 5rem;
+  }
+  
+  .md\:pb-0{
+    padding-bottom: 0px;
   }
 
   .md\:text-base{
@@ -2352,4 +2399,13 @@ shopify-payment-terms{
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
   
+  .lg\:max-w-\[1256px\]{
+    max-width: 1256px;
+  }
+}
+
+@media (min-width: 1560px) {
+  .xl\:max-w-\[1580px\]{
+    max-width: 1500px;
+  }
 }

@@ -6,15 +6,15 @@
   - Products are rendered using the product-card snippet
 {% endcomment %}
 
-<div class="side-by-side-assets flex flex-col md:flex-row w-full">
+<div class="side-by-side-assets flex flex-col md:flex-row w-full bg-[#f4f4f4]">
   {%- comment -%} Left Column {%- endcomment -%}
-  <div class="side-by-side-column w-full md:w-1/2 h-screen max-h-screen relative">
+  <div class="side-by-side-column w-full md:w-1/2 relative">
     {% assign product_1 = all_products[section.settings.product_1] %}
     {% assign image_1 = section.settings.image_1 %}
     
     {% if image_1 %}
       <img
-        class="w-full h-screen min-h-screen object-cover blur-up"
+        class="w-full h-full object-contain blur-up"
         alt="{{ product_1.title | default: section.settings.image_1_alt | default: 'Left column image' }}"
         src="{{ image_1 | img_url: '100x' }}"
         data-src="{{ image_1 | image_url }}"
@@ -31,20 +31,20 @@
         onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
       >
     {% elsif product_1 %}
-      <div class="h-screen w-full">
+      <div class="h-full w-full md:px-8 py-4">
         {% render 'product-card', product: product_1 %}
       </div>
     {% endif %}
   </div>
   
   {%- comment -%} Right Column {%- endcomment -%}
-  <div class="side-by-side-column w-full md:w-1/2 h-screen max-h-screen relative">
+  <div class="side-by-side-column w-full md:w-1/2 relative">
     {% assign product_2 = all_products[section.settings.product_2] %}
     {% assign image_2 = section.settings.image_2 %}
     
     {% if image_2 %}
       <img
-        class="w-full h-screen min-h-screen object-cover blur-up"
+        class="w-full h-full object-cover blur-up"
         alt="{{ product_2.title | default: section.settings.image_2_alt | default: 'Right column image' }}"
         src="{{ image_2 | img_url: '100x' }}"
         data-src="{{ image_2 | image_url }}"
@@ -61,7 +61,7 @@
         onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
       >
     {% elsif product_2 %}
-      <div class="h-screen w-full">
+      <div class="h-full w-full md:px-8 py-4">
         {% render 'product-card', product: product_2 %}
       </div>
     {% endif %}
@@ -69,15 +69,20 @@
 </div>
 
 <style>
-  /* Make sure the side-by-side section maintains full height */
   .side-by-side-assets {
-    min-height: 100vh;
+    height: 100vh;
   }
   
-  /* Custom mobile styling */
-  @media (max-width: 767px) {
+  .side-by-side-column {
+    height: 100%;
+  }
 
-    
+  /* On mobile, stack them and give each a height of 100vh */
+  @media (max-width: 767px) {
+    .side-by-side-assets {
+      height: auto; /* Let the container grow with the columns */
+    }
+
     .side-by-side-column {
       height: 100vh;
     }
@@ -111,6 +116,12 @@
       z-index: 30 !important;
     }
   }
+
+  /* @media (max-width: 1024px) {
+    .side-by-side-assets {
+      height: 95vh;
+    }
+  } */
 </style>
 
 {% schema %}

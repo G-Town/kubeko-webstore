@@ -53,9 +53,37 @@
     {% section 'video-intro' %}
     {% section 'header' %}
     {% comment %} TODO: min height removed? was min-h-screen {% endcomment %}
-    <div class="min-h- {% if canonical_url != 'https://kubeko-dev.myshopify.com/' %} pt-12 {% endif %}">
+    <div class="min-h- {% if canonical_url != 'https://kubeko-dev.myshopify.com/' %} pt-8 md:pt-12 {% endif %}">
+    {% comment %} <div class=""> {% endcomment %}
+      {% comment %} {{canonical_url}} {% endcomment %}
       {{ content_for_layout }}
     </div>
     {% section 'footer' %}
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const scrollPositionKey = 'scrollPosition';
+        const scrollPathKey = 'scrollPath';
+
+        // Save scroll position and path when a product link is clicked
+        document.body.addEventListener('click', function(e) {
+          const productLink = e.target.closest('a[href*="/products/"]');
+          if (productLink) {
+            sessionStorage.setItem(scrollPositionKey, window.scrollY);
+            sessionStorage.setItem(scrollPathKey, window.location.pathname);
+          }
+        });
+
+        // Restore scroll position on page load if the path matches
+        const savedPosition = sessionStorage.getItem(scrollPositionKey);
+        const savedPath = sessionStorage.getItem(scrollPathKey);
+
+        if (savedPosition && savedPath && savedPath === window.location.pathname) {
+          window.scrollTo(0, parseInt(savedPosition, 10));
+          sessionStorage.removeItem(scrollPositionKey);
+          sessionStorage.removeItem(scrollPathKey);
+        }
+      });
+    </script>
   </body>
 </html>

@@ -33,7 +33,7 @@
 {% endschema %}
 
 {%- if section.settings.image != blank -%}
-<div class="hero-image w-screen h-screen md:h-min relative">
+<div class="hero-image w-full h-screen relative">
   {%- assign desktop_img_url_tiny = section.settings.image | image_url: width: 100 -%}
   {%- assign desktop_img_url = section.settings.image | image_url: width: 2000 -%}
   {%- assign desktop_img_url_800 = section.settings.image | image_url: width: 800 -%}
@@ -50,20 +50,20 @@
     <source
       media="(min-width: 768px)"
       srcset="{{ desktop_img_url_tiny }} 100w, {{ desktop_img_url_400 }} 400w, {{ desktop_img_url_800 }} 800w, {{ desktop_img_url }} 2000w"
-      sizes="100vw"
+      sizes="(min-width: 1260px) 1260px, 100vw"
       type="image/webp"
     >
     <!-- Mobile image -->
     <source
       srcset="{{ mobile_img_url_tiny }} 100w, {{ mobile_img_url_400 }} 400w, {{ mobile_img_url_600 }} 600w, {{ mobile_img_url }} 1000w"
-      sizes="100vw"
+      sizes="(min-width: 1260px) 1260px, 100vw"
       type="image/webp"
     >
     <img
       src="{{ mobile_img_url_tiny }}"
       data-src="{{ mobile_image | image_url }}"
       srcset="{{ mobile_img_url_tiny }} 100w, {{ mobile_img_url_400 }} 400w, {{ mobile_img_url_600 }} 600w, {{ mobile_img_url }} 1000w"
-      sizes="100vw"
+      sizes="(min-width: 1260px) 1260px, 100vw"
       alt="{{ mobile_image.alt | escape }}"
       width="{{ mobile_image.width }}"
       height="{{ mobile_image.height }}"
@@ -144,7 +144,7 @@
   
   @media screen and (max-width: 767px) {
     .hero-image {
-      height: 65vh; /* adjusted from 100vh */
+      height: 100vh; /* adjusted from 100vh */
       padding-top: 40px; /* Add space for header on mobile */
     }
     

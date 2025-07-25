@@ -533,12 +533,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<div class="group relative block text-black {% unless custom_aspect_ratio %}aspect-[3/4]{% endunless %} overflow-visible h-full pb-12" data-product-card="{{ unique_id }}">
+<div class="group relative flex flex-col text-black {% unless custom_aspect_ratio %}aspect-[3/4]{% endunless %} overflow-visible h-full" data-product-card="{{ unique_id }}">
   <!-- Product link (image only) -->
-  <a href="{{ product.url }}" class="block relative w-full h-full overflow-hidden product-card-link" id="product-link-{{ product.id }}" onclick="handleProductCardClick(event, '{{ product.id }}')">
+  <a href="{{ product.url }}" class="block relative w-full flex-1 overflow-hidden product-card-link" id="product-link-{{ product.id }}" onclick="handleProductCardClick(event, '{{ product.id }}')">
     <!-- First image with LQIP -->
     <img
-      class="w-full h-full object-cover md:group-hover:opacity-0 blur-up"
+      class="w-full h-full object-contain md:group-hover:opacity-0 blur-up"
       alt="{{ product.title }}"
       src="{{ first_image | img_url: '100x' }}"
       data-src="{{ first_image | image_url }}"
@@ -620,7 +620,7 @@ document.addEventListener('DOMContentLoaded', function() {
   </button>
 
   <!-- Product info and dropdown container -->
-  <div class="absolute bottom-0 left-0 right-0 z-10">
+  <div class="relative z-10">
     <!-- Product info bar (always visible) -->
     {% comment %} TODO: edit height (was 49px) {% endcomment %}
     <div class="product-info-bar relative rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] px-4 py-3">
