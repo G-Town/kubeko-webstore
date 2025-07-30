@@ -647,6 +647,10 @@ video {
   margin-top: 3rem;
   margin-bottom: 3rem;
 }
+.my-24 {
+  margin-top: 6rem;
+  margin-bottom: 6rem;
+}
 .-ml-\[8px\]{
   margin-left: -8px;
 }
@@ -1359,9 +1363,9 @@ video {
   padding-top: 10px;
   padding-bottom: 10px;
 }
-.py-\[13\.5px\]{
-  padding-top: 13.5px;
-  padding-bottom: 13.5px;
+.py-\[17\.5px\]{
+  padding-top: 17.5px;
+  padding-bottom: 17.5px;
 }
 .py-\[15px\]{
   padding-top: 15px;
@@ -1386,6 +1390,9 @@ video {
 .py-\[5px\]{
   padding-top: 5px;
   padding-bottom: 5px;
+}
+.pb-4{
+  padding-bottom: 1rem;
 }
 .pb-8{
   padding-bottom: 2rem;
@@ -2213,6 +2220,10 @@ shopify-payment-terms{
   .md\:col-span-2{
     grid-column: span 2 / span 2;
   }
+  .md\:my-36 {
+    margin-top: 9rem;
+    margin-bottom: 9rem;
+  }
   .md\:mb-0{
     margin-bottom: 0px;
   }
@@ -2235,9 +2246,9 @@ shopify-payment-terms{
     display: none;
   }
   /* TODO: adjust header height here (changed from 49px) */
-  .md\:h-\[48px\]{
+  .md\:h-\[52px\]{
     /* height: 3.5rem; */
-    height: 48px;
+    height: 52px;
   }
   .md\:h-full{
     height: 100%;
@@ -2373,6 +2384,10 @@ shopify-payment-terms{
     font-size: 0.75rem;
     line-height: 1rem;
   }
+  .md\:text-lg{
+    font-size: 16px;
+    line-height: 1rem;
+  }
   .md\:backdrop-blur-\[12\.5px\]{
     --tw-backdrop-blur: blur(12.5px);
     -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
@@ -2404,8 +2419,14 @@ shopify-payment-terms{
   }
 }
 
-@media (min-width: 1560px) {
-  .xl\:max-w-\[1580px\]{
-    max-width: 1500px;
+@media (min-width: 1280px) {
+  .xl\:max-w-\[1400px\]{
+    max-width: 1400px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .\2xl\:max-w-\[1580px\]{
+    max-width: 1580px;
   }
 }

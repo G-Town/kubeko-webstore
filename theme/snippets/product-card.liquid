@@ -533,12 +533,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<div class="group relative flex flex-col text-black {% unless custom_aspect_ratio %}aspect-[3/4]{% endunless %} overflow-visible h-full" data-product-card="{{ unique_id }}">
+<div class="group relative flex flex-col text-black {% if custom_aspect_ratio %}h-full{% endif %} overflow-visible " data-product-card="{{ unique_id }}">
   <!-- Product link (image only) -->
-  <a href="{{ product.url }}" class="block relative w-full flex-1 overflow-hidden product-card-link" id="product-link-{{ product.id }}" onclick="handleProductCardClick(event, '{{ product.id }}')">
+  <a href="{{ product.url }}" class="block relative w-full overflow-hidden product-card-link {% if custom_aspect_ratio %}flex-grow{% endif %}" id="product-link-{{ product.id }}" {% unless custom_aspect_ratio %}style="aspect-ratio: {{ first_image.aspect_ratio | default: 1.0 }};"{% endunless %} onclick="handleProductCardClick(event, '{{ product.id }}')">
     <!-- First image with LQIP -->
     <img
-      class="w-full h-full object-contain md:group-hover:opacity-0 blur-up"
+      class="relative h-full object-contain md:group-hover:opacity-0 blur-up"
       alt="{{ product.title }}"
       src="{{ first_image | img_url: '100x' }}"
       data-src="{{ first_image | image_url }}"
@@ -552,13 +552,13 @@ document.addEventListener('DOMContentLoaded', function() {
       width="{{ first_image.width }}"
       height="{{ first_image.height }}"
       loading="eager"
-      style="position: absolute; inset: 0; z-index: 2; opacity: 1; will-change: opacity; transition: none;"
+      style="position: relative; z-index: 2; opacity: 1; will-change: opacity; transition: none;"
       id="primary-image-{{ product.id }}"
       onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
     >
     <!-- Second image (hover image) with LQIP -->
     <img
-      class="absolute inset-0 w-full h-full object-cover opacity-0 md:group-hover:opacity-100 blur-up"
+      class="absolute inset-0 h-full w-auto mx-auto object-contain opacity-0 md:group-hover:opacity-100 blur-up"
       alt="{{ product.title }} (hover)"
       src="{{ second_image | img_url: '100x' }}"
       data-src="{{ second_image | image_url }}"
@@ -1144,8 +1144,8 @@ img#secondary-image-{{ product.id }} {
     inset: 0 !important;
     transition: none !important;
     width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
+    height: auto !important;
+    object-fit: contain !important;
     will-change: opacity !important;
   }
   

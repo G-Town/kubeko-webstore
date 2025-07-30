@@ -7,17 +7,17 @@
 
 {{ 'swiper-bundle.min.css' | asset_url | stylesheet_tag }}
 
-<div class="product-carousel-section isolate py-10 md:py-16 h-screen" data-section-id="{{ section.id }}">
+<div class="product-carousel-section mx-auto isolate py-10 md:my-12" data-section-id="{{ section.id }}">
   <div class="w-full md:px-8 relative">
     {%- if section.settings.title != blank -%}
-      <h2 class="text-2xl md:text-3xl text-center mb-0">{{ section.settings.title | escape }}</h2>
+      <h2 class="text-2xl md:text-lg text-center font-helvetica uppercase my-4">{{ section.settings.title | escape }}</h2>
     {%- endif -%}
 
     {%- assign collection = collections[section.settings.featured_collection] -%}
     {%- assign products_limit = section.settings.products_to_show -%}
 
     {%- if collection != blank and collection.products.size > 0 -%}
-      <div class="swiper-container relative overflow-hidden" id="product-carousel-{{ section.id }}">
+      <div class="swiper-container relative overflow-hidden " id="product-carousel-{{ section.id }}">
         <div class="swiper-wrapper">
           {%- for product in collection.products limit: products_limit -%}
             <div class="swiper-slide">
@@ -48,6 +48,7 @@
     if (carouselContainer) {
       const swiper = new Swiper(carouselContainer, {
         loop: true,
+        autoHeight: true,
         slidesPerView: 'auto',
         centeredSlides: true,
         spaceBetween: 0, // Use padding for spacing
@@ -60,14 +61,29 @@
           prevEl: '[data-section-id="{{ section.id }}"] .swiper-button-prev',
         },
         breakpoints: {
+          // Tablet screens (768px and up)
           768: {
-            slidesPerView: {{ section.settings.products_per_view | default: 3 }},
+            // slidesPerView: {{ section.settings.products_per_view | default: 3 }},
+            slidesPerView: 3,
+            spaceBetween: 5,
+            centeredSlides: false,
+          },
+          // Desktop screens (1024px and up)
+          1024: {
+            slidesPerView: 4, // EDIT THIS: Number of slides for desktops
             spaceBetween: 10,
             centeredSlides: false,
           },
-          1024: {
-            slidesPerView: {{ section.settings.products_per_view | default: 4 }},
-            spaceBetween: 20,
+          // Large desktop screens (1280px and up)
+          1280: {
+            slidesPerView: 4, // EDIT THIS: Number of slides for large desktops
+            spaceBetween: 10,
+            centeredSlides: false,
+          },
+          // Extra Large desktop screens (1536px and up)
+          1280: {
+            slidesPerView: 4, // EDIT THIS: Number of slides for large desktops
+            spaceBetween: 10,
             centeredSlides: false,
           }
         }
@@ -120,6 +136,11 @@
 {% endschema %}
 
 {% style %}
+  .swiper-slide {
+    height: auto;
+    margin: 0px 0px;
+  }
+
   [data-section-id="{{ section.id }}"] .swiper-container {
     padding-bottom: 40px; /* Space for pagination */
     margin-left: 18px;
@@ -143,7 +164,7 @@
   }
 
   [data-section-id="{{ section.id }}"] .swiper-pagination {
-    bottom: 20px; /* Nudge pagination up from the bottom */
+    bottom: 20px;
   }
 
   [data-section-id="{{ section.id }}"] .swiper-pagination-bullet {
@@ -154,7 +175,11 @@
     [data-section-id="{{ section.id }}"] .swiper-container {
       margin-left: 0px;
       margin-right: 0px;
+      padding-bottom: 20px; /* Reduced padding for mobile */
+    }
 
+    [data-section-id="{{ section.id }}"] .swiper-pagination {
+      /* bottom: 0px; Adjust pagination position */
     }
 
     [data-section-id="{{ section.id }}"] .swiper-button-next,
@@ -163,8 +188,9 @@
     }
 
     [data-section-id="{{ section.id }}"] .swiper-slide {
-      width: 70%;
-      height: auto; /* Let height be determined by content */
+      /* width: 60%; */
+      width: 250px;
+      height: auto;
       transition: transform 0.3s ease;
       transform: scale(0.9);
       padding: 0px 0px; /* Add horizontal padding for spacing */
@@ -174,14 +200,73 @@
       transform: scale(1);
     }
 
-    /* Set an explicit height for the card inside the carousel */
-    /* [data-section-id="{{ section.id }}"] .swiper-slide .group {
-      height: 65vh; 
-    } */
-
     /* Ensure the image is contained, not cropped */
     [data-section-id="{{ section.id }}"] .swiper-slide .group img {
       object-fit: contain !important;
     }
   }
+
+  /*
+   * --- Responsive Height Control for Product Carousel ---
+   * Use the rules below to set the height of the product cards for different screen sizes.
+   * On desktop, height is usually automatic. Uncomment the rules for tablets or desktops
+   * if you want to enforce a specific height.
+  */
+
+  /* Mobile screens (up to 767px) */
+  @media (max-width: 767px) {
+    /* [data-section-id="{{ section.id }}"] .swiper-slide .group {
+      height: 65vh; 
+    } */
+  }
+
+  /* Tablet screens (e.g., between 768px and 1024px) */
+  
+  @media (min-width: 768px)  {
+    [data-section-id="{{ section.id }}"] .swiper-slide .group {
+      height: 60vh;
+      height: auto;
+    }
+
+    .product-carousel-section {
+      max-width: 850px;
+    }
+  }
+
+
+
+  /* Large desktop screens (e.g., wider than 1024px) */
+  
+  @media (min-width: 1025px) {
+    [data-section-id="{{ section.id }}"] .swiper-slide .group {
+      height: 55vh;
+      height: auto;
+    }
+
+    .product-carousel-section {
+      max-width: 1100px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    /* [data-section-id="{{ section.id }}"] .swiper-slide .group {
+      height: 50vh;
+    } */
+
+    .product-carousel-section {
+      max-width: 1250px;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    
+    [data-section-id="{{ section.id }}"] .swiper-slide .group {
+      height: 65vh;
+      height: auto;
+    }
+    .product-carousel-section {
+      max-width: 1350px;
+    }
+  }
+
 {% endstyle %}

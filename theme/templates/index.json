@@ -23,7 +23,7 @@
     "product_carousel_gK7BqX": {
       "type": "product-carousel",
       "settings": {
-        "title": "Featured Products",
+        "title": "Crying Boy Collection",
         "featured_collection": "crying-boy-collection",
         "products_to_show": 8,
         "products_per_view": 4
@@ -42,7 +42,7 @@
     "hero_image_pL9mRj": {
       "type": "hero-image",
       "settings": {
-        "image": ""
+        "image": "shopify://shop_images/000038610035.jpg",
       }
     }
   },

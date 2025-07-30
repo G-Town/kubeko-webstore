@@ -6,15 +6,15 @@
   - Products are rendered using the product-card snippet
 {% endcomment %}
 
-<div class="side-by-side-assets flex flex-col md:flex-row w-full bg-[#f4f4f4]">
+<div class="side-by-side-assets flex flex-col md:flex-row w-full mx-auto bg-[#f4f4f4] md:my-36">
   {%- comment -%} Left Column {%- endcomment -%}
-  <div class="side-by-side-column w-full md:w-1/2 relative">
+  <div class="side-by-side-column w-full md:w-1/2  relative">
     {% assign product_1 = all_products[section.settings.product_1] %}
     {% assign image_1 = section.settings.image_1 %}
     
     {% if image_1 %}
       <img
-        class="w-full h-full object-contain blur-up"
+        class="h-full object-cover blur-up"
         alt="{{ product_1.title | default: section.settings.image_1_alt | default: 'Left column image' }}"
         src="{{ image_1 | img_url: '100x' }}"
         data-src="{{ image_1 | image_url }}"
@@ -31,8 +31,8 @@
         onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
       >
     {% elsif product_1 %}
-      <div class="h-full w-full md:px-8 py-4">
-        {% render 'product-card', product: product_1 %}
+      <div class="h-full w-full pb-4">
+        {% render 'product-card', product: product_1, custom_aspect_ratio: true %}
       </div>
     {% endif %}
   </div>
@@ -61,32 +61,70 @@
         onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
       >
     {% elsif product_2 %}
-      <div class="h-full w-full md:px-8 py-4">
-        {% render 'product-card', product: product_2 %}
+      <div class="h-full w-full pb-4">
+        {% render 'product-card', product: product_2, custom_aspect_ratio: true %}
       </div>
     {% endif %}
   </div>
 </div>
 
 <style>
+  /*
+   * Responsive Height Control for Side-by-Side Section
+   *
+   * Use this block to set the maximum height of the section at different screen sizes.
+   * - `max-height` prevents the section from exceeding a certain height while allowing it to be shorter if content is smaller.
+   * - `vh` stands for "viewport height", where 100vh is the full browser window height.
+  */
+
+  /* Default height for mobile screens */
   .side-by-side-assets {
-    height: 100vh;
+    /* height: auto; */
   }
-  
   .side-by-side-column {
-    height: 100%;
+    height: 100vh;
+    max-height: 900px; /* Optional: cap the max height on very tall devices */
   }
 
-  /* On mobile, stack them and give each a height of 100vh */
-  @media (max-width: 767px) {
+  /* Tablet screens (e.g., between 768px and 1024px) */
+  @media (min-width: 768px) {
     .side-by-side-assets {
-      height: auto; /* Let the container grow with the columns */
+      height: 75vh;
+      max-width: 850px;
+    }
+    .side-by-side-column {
+      height: 100%; /* Columns fill the container height */
+    }
+  }
+
+  /* Large desktop screens (e.g., wider than 1024px) */
+  @media (min-width: 1025px) {
+    .side-by-side-assets {
+      max-width: 1100px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .side-by-side-assets {
+      max-width: 1150px;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .side-by-side-assets {
+      max-width: 1200px;
+      /* height: 90vh; */
     }
 
-    .side-by-side-column {
-      height: 100vh;
+  @media (min-width: 1720px) {
+    .side-by-side-assets {
+      max-width: 1300px;
+      /* height: 90vh; */
     }
-    
+  }
+
+  /* --- Other existing styles --- */
+  @media (max-width: 767px) {
     /* Update to use the click-based dropdown behavior */
     .side-by-side-column .product-dropdown {
       /* Remove styles that force visibility */
@@ -116,12 +154,6 @@
       z-index: 30 !important;
     }
   }
-
-  /* @media (max-width: 1024px) {
-    .side-by-side-assets {
-      height: 95vh;
-    }
-  } */
 </style>
 
 {% schema %}
