@@ -1,0 +1,34 @@
+<div>
+  <div class="text-center mb-2 font-helvetica text-sm ">
+    {{ look_index }}
+  </div>
+  {% for photo in look.look_photos.value limit:1 %}
+    {%- assign look_id = photo.id | split: '/' | last -%}
+
+    {% comment %} DEBUG - Remove after testing {% endcomment %}
+    {% comment %} <div style="background: pink; padding: 5px; font-size: 10px;">
+      <p>Look Index: {{ look_index }}</p>
+      <p>Photo ID: {{ photo.id }}</p>
+      <p>Extracted Look ID: {{ look_id }}</p>
+    </div> {% endcomment %}
+
+    <a href="?look={{ look_id }}" class="block">
+      <div class="h-auto">
+        <img
+          class="w-full h-full object-cover"
+          alt="{{ photo.alt | escape }}"
+          src="{{ photo | img_url: '480x' }}"
+          srcset="
+            {{ photo | img_url: '480x' }} 480w,
+            {{ photo | img_url: '768x' }} 768w,
+            {{ photo | img_url: '1024x' }} 1024w
+          "
+          sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+          loading="lazy"
+          width="{{ photo.width }}"
+          height="{{ photo.height }}"
+        />
+      </div>
+    </a>
+  {% endfor %}
+</div>

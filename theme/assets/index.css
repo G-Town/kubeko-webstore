@@ -639,6 +639,10 @@ video {
   margin-left: auto;
   margin-right: auto;
 }
+.mx-12 {
+  margin-left: 3rem;
+  margin-right: 3rem;
+}
 .my-4 {
   margin-top: 1rem;
   margin-bottom: 1rem;
@@ -771,7 +775,7 @@ video {
 .h-\[100px\]{
   height: 100px;
 }
-.h-\[100vw\]{
+.h-\[100v\]{
   height: 100vw;
 }
 .h-\[120px\]{
@@ -815,6 +819,12 @@ video {
 }
 .h-screen{
   height: 100vh;
+}
+.h-\[65vh\]{
+  height: 65vh;
+}
+.h-\[50vh\]{
+  height: 50vh;
 }
 /* TODO: custom heights used in product cards (eg. for 4 column display in collections.liquid) */
 .h-4\/5{
@@ -1091,8 +1101,17 @@ video {
 .gap-\[9px\]{
   gap: 9px;
 }
+.gap-x-1{
+  column-gap: 0.25rem;
+}
+.gap-x-4{
+  column-gap: 1rem;
+}
 .gap-y-\[6px\]{
   row-gap: 6px;
+}
+.gap-y-8{
+  row-gap: 4rem;
 }
 .space-y-2 > :not([hidden]) ~ :not([hidden]){
   --tw-space-y-reverse: 0;
@@ -1442,16 +1461,17 @@ video {
 .pr-\[60px\]{
   padding-right: 60px;
 }
-/* TODO: adjust this for space between body and header */
-.pt-12{
-  /* about 48px same as header height */
-  padding-top: 3rem;
-}
 .pt-6{
   padding-top: 1.5rem;
 }
 .pt-8{
   padding-top: 2rem;
+}
+.pt-10{
+  padding-top: 2.5rem;
+}
+.pt-12{
+  padding-top: 3rem;
 }
 .pt-12{
   padding-top: 3rem;
@@ -1505,6 +1525,10 @@ video {
 }
 .font-mono{
   font-family: LLValentine, Courier, monospace;
+}
+.text-2xl{
+  font-size: 1.6rem;
+  line-height: 2rem;
 }
 .text-3xl{
   font-size: 1.875rem;
@@ -2253,6 +2277,9 @@ shopify-payment-terms{
   .md\:h-full{
     height: 100%;
   }
+  .md\:h-90{
+    height: 89vh;
+  }
   .md\:h-4\/5{
     height: 80vh;
   }
@@ -2310,6 +2337,12 @@ shopify-payment-terms{
   }
   .md\:grid-cols-8{
     grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+  .md\:gap-x-2{
+    column-gap: 0.5rem;
+  }
+  .md\:gap-y-16{
+    row-gap: 4rem;
   }
   .md\:flex-row{
     flex-direction: row;

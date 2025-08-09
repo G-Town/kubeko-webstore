@@ -669,8 +669,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
       <!-- Row 1: Title and Price -->
       <div class="flex justify-between items-center mb-1">
-        <a href="{{ product.url }}" class="uppercase text-xs md:text-sm text-black tracking-wide">{{ product.title }}</a>
-        <div class="text-xs md:text-sm text-black">
+        <a href="{{ product.url }}" class="uppercase text-xs text-black tracking-wide">{{ product.title }}</a>
+        <div class="text-xs text-black">
           {% if product.available %}
             {{ product.price | money_without_trailing_zeros }}
             {% if product.inventory_quantity <= 10 and product.inventory_quantity > 0 and product.inventory_management == 'shopify' %}

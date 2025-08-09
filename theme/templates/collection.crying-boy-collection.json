@@ -1,1 +1,18 @@
-{"sections":{"hero":{"type":"hero-image","settings":{"image":"shopify:\/\/shop_images\/Image_Compressor_RedKetchup.jpg","title":"Crying Boy Collection","description":""}},"main":{"type":"collections","settings":{}}},"order":["hero","main"]}
+{
+  "sections": {
+    "hero": {
+      "type": "hero-image",
+      "settings": {
+        "image": "shopify://shop_images/Image_Compressor_RedKetchup.jpg",
+        "title": "Crying Boy Collection",
+        "description": "",
+        "hero_height": "h-[65vh]"
+      }
+    },
+    "main": {
+      "type": "collections",
+      "settings": {}
+    }
+  },
+  "order": ["hero", "main"]
+}

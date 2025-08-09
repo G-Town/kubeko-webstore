@@ -1,165 +1,227 @@
-{% schema %}
-{
-  "name": "Hero Image",
-  "settings": [
-    {
-      "type": "image_picker",
-      "id": "image",
-      "label": "Desktop Image"
-    },
-    {
-      "type": "image_picker",
-      "id": "mobile_image",
-      "label": "Mobile Image"
-    },
-    {
-      "type": "text",
-      "id": "title",
-      "label": "Title"
-    },
-    {
-      "type": "textarea",
-      "id": "description",
-      "label": "Description"
-    }
-  ],
-  "presets": [
-    {
-      "name": "Hero Image",
-      "category": "Image"
-    }
-  ]
-}
-{% endschema %}
+{% comment %} DEBUG INFO - Remove this after testing {% endcomment %}
+{% comment %} <div style="background: yellow; padding: 10px; margin: 10px;">
+  <p><strong>DEBUG INFO:</strong></p>
+  {%- capture contentForQuerystring -%}{{ content_for_header }}{%- endcapture -%}
+  {%- assign pageUrl = contentForQuerystring
+    | split: '"pageurl":"'
+    | last
+    | split: '"'
+    | first
+    | split: '.myshopify.com'
+    | last
+    | replace: '\/', '/'
+    | replace: '%20', ' '
+    | replace: '\u0026', '&'
+  -%}
+  {%- assign requested_look_id = pageUrl | split: 'look=' | last | split: '&' | first -%}
+  {%- assign has_look_param = false -%}
+  {%- if requested_look_id != pageUrl -%}
+    {%- assign has_look_param = true -%}
+  {% endif %}
+  <p>URL: {{ pageUrl }}</p>
+  <p>Requested Look ID: "{{ requested_look_id }}"</p>
+  <P>has look param: {{ has_look_param }}</P>
+  <p id="js-debug"></p>
+</div> {% endcomment %}
 
-{%- if section.settings.image != blank -%}
-<div class="hero-image w-full h-screen relative">
-  {%- assign desktop_img_url_tiny = section.settings.image | image_url: width: 100 -%}
-  {%- assign desktop_img_url = section.settings.image | image_url: width: 2000 -%}
-  {%- assign desktop_img_url_800 = section.settings.image | image_url: width: 800 -%}
-  {%- assign desktop_img_url_400 = section.settings.image | image_url: width: 400 -%}
+{% comment %} Only show hero if we're not viewing a specific look {% endcomment %}
+{%- capture contentForQuerystring -%}{{ content_for_header }}{%- endcapture -%}
+{%- assign pageUrl = contentForQuerystring | split: '"pageurl":"' | last | split: '"' | first | split: '.myshopify.com' | last | replace: '\/', '/' | replace: '%20', ' ' | replace: '\u0026', '&' -%}
 
-  {%- assign mobile_image = section.settings.mobile_image | default: section.settings.image -%}
-  {%- assign mobile_img_url_tiny = mobile_image | image_url: width: 100 -%}
-  {%- assign mobile_img_url = mobile_image | image_url: width: 1000 -%}
-  {%- assign mobile_img_url_600 = mobile_image | image_url: width: 600 -%}
-  {%- assign mobile_img_url_400 = mobile_image | image_url: width: 400 -%}
+{%- assign has_look_param = false -%}
+{%- if pageUrl contains 'look=' -%}
+  {%- assign has_look_param = true -%}
+{%- endif -%}
 
-  <picture>
-    <!-- Desktop image -->
-    <source
-      media="(min-width: 768px)"
-      srcset="{{ desktop_img_url_tiny }} 100w, {{ desktop_img_url_400 }} 400w, {{ desktop_img_url_800 }} 800w, {{ desktop_img_url }} 2000w"
-      sizes="(min-width: 1260px) 1260px, 100vw"
-      type="image/webp"
-    >
-    <!-- Mobile image -->
-    <source
-      srcset="{{ mobile_img_url_tiny }} 100w, {{ mobile_img_url_400 }} 400w, {{ mobile_img_url_600 }} 600w, {{ mobile_img_url }} 1000w"
-      sizes="(min-width: 1260px) 1260px, 100vw"
-      type="image/webp"
-    >
-    <img
-      src="{{ mobile_img_url_tiny }}"
-      data-src="{{ mobile_image | image_url }}"
-      srcset="{{ mobile_img_url_tiny }} 100w, {{ mobile_img_url_400 }} 400w, {{ mobile_img_url_600 }} 600w, {{ mobile_img_url }} 1000w"
-      sizes="(min-width: 1260px) 1260px, 100vw"
-      alt="{{ mobile_image.alt | escape }}"
-      width="{{ mobile_image.width }}"
-      height="{{ mobile_image.height }}"
-      loading="eager"
-      class="w-full h-full object-cover blur-up"
-      onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
-    >
-  </picture>
-  
-  {%- if section.settings.title != blank or section.settings.description != blank -%}
-    <div class="text-container">
-      {%- if section.settings.title != blank -%}
-        <div class="title-container">
-          <h2>{{ section.settings.title }}</h2>
-        </div>
-      {%- endif -%}
-      
-      {%- if section.settings.description != blank -%}
-        <div class="description-container">
-          <p>{{ section.settings.description }}</p>
+{% unless has_look_param %}
+  {%- if section.settings.image != blank -%}
+    <div class="hero-image w-full {{ section.settings.hero_height }} relative">
+      {%- assign desktop_img_url_tiny = section.settings.image | image_url: width: 100 -%}
+      {%- assign desktop_img_url = section.settings.image | image_url: width: 2000 -%}
+      {%- assign desktop_img_url_800 = section.settings.image | image_url: width: 800 -%}
+      {%- assign desktop_img_url_400 = section.settings.image | image_url: width: 400 -%}
+
+      {%- assign mobile_image = section.settings.mobile_image | default: section.settings.image -%}
+      {%- assign mobile_img_url_tiny = mobile_image | image_url: width: 100 -%}
+      {%- assign mobile_img_url = mobile_image | image_url: width: 1000 -%}
+      {%- assign mobile_img_url_600 = mobile_image | image_url: width: 600 -%}
+      {%- assign mobile_img_url_400 = mobile_image | image_url: width: 400 -%}
+
+        <picture>
+          <!-- Desktop image -->
+        <source
+          media="(min-width: 768px)"
+          srcset="{{ desktop_img_url_tiny }} 100w, {{ desktop_img_url_400 }} 400w, {{ desktop_img_url_800 }} 800w, {{ desktop_img_url }} 2000w"
+          sizes="(min-width: 1260px) 1260px, 100vw"
+          type="image/webp">
+          <!-- Mobile image -->
+        <source
+          srcset="{{ mobile_img_url_tiny }} 100w, {{ mobile_img_url_400 }} 400w, {{ mobile_img_url_600 }} 600w, {{ mobile_img_url }} 1000w"
+          sizes="(min-width: 1260px) 1260px, 100vw"
+          type="image/webp">
+        <img
+          src="{{ mobile_img_url_tiny }}"
+          data-src="{{ mobile_image | image_url }}"
+          srcset="{{ mobile_img_url_tiny }} 100w, {{ mobile_img_url_400 }} 400w, {{ mobile_img_url_600 }} 600w, {{ mobile_img_url }} 1000w"
+          sizes="(min-width: 1260px) 1260px, 100vw"
+          alt="{{ mobile_image.alt | escape }}"
+          width="{{ mobile_image.width }}"
+          height="{{ mobile_image.height }}"
+          loading="eager"
+          class="w-full h-full object-cover blur-up"
+          onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }">
+      </picture>
+
+      {%- if section.settings.title != blank or section.settings.description != blank -%}
+        <div class="text-container">
+          {%- if section.settings.title != blank -%}
+            <div class="title-container">
+              <h2>{{ section.settings.title }}</h2>
+            </div>
+          {%- endif -%}
+
+          {%- if section.settings.description != blank -%}
+            <div class="description-container">
+              <p>{{ section.settings.description }}</p>
+            </div>
+          {%- endif -%}
         </div>
       {%- endif -%}
     </div>
+
+    <style>
+      .hero-image {
+        position: relative;
+      }
+
+      .hero-image img {
+        aspect-ratio: 21 / 9;
+        width: 100%;
+      }
+
+      .text-container {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 4px;
+      }
+
+      .title-container,
+      .description-container {
+        background: rgba(254, 254, 254, 0.60);
+        backdrop-filter: blur(4.087094783782959px);
+        -webkit-backdrop-filter: blur(4.087094783782959px);
+        border-radius: 1px;
+        padding: 4.9px 12px;
+        color: var(--Black, #444);
+      }
+
+      .title-container h2,
+      .description-container p {
+        color: var(--Black, #444);
+      }
+
+      .title-container h2 {
+        margin: 0;
+        font-size: 13px;
+        font-family: Helvetica
+        , Arial
+        , sans-serif;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 4.9;
+      }
+
+      .description-container p {
+        margin: 0;
+        font-size: 16px;
+        font-family: adobe-garamond-pro
+        , "Adobe Garamond Pro"
+        , AGaramondPro-Regular
+        , "EB Garamond"
+        , Garamond
+        , serif;
+        padding: 0;
+      }
+
+      /* TODO: add/edit rules to change image size for mobile */
+
+      @media screen and (max-width: 767px) {
+        .hero-image {
+          max-height: 100vh;
+          /* adjusted from 100vh */
+          padding-top: 40px;
+          /* Add space for header on mobile */
+        }
+
+        .hero-image img {
+          height: 100%;
+          aspect-ratio: auto;
+          object-fit: cover;
+        }
+
+        .text-container {
+          width: 80%;
+          bottom: 0;
+          right: 0;
+          padding: 4px;
+        }
+      }
+    </style>
   {%- endif -%}
-</div>
+{% endunless %}
 
-<style>
-  .hero-image {
-    position: relative;
+{% schema %}
+  {
+    "name": "Hero Image",
+    "settings": [
+      {
+        "type": "select",
+        "id": "hero_height",
+        "label": "Hero Height",
+        "options": [
+          {
+            "value": "h-screen",
+            "label": "Full screen"
+          }, {
+            "value": "h-[65vh]",
+            "label": "Medium"
+          }, {
+            "value": "h-[30vh]",
+            "label": "Small"
+          }
+        ],
+        "default": "h-screen"
+      },
+      {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Desktop Image"
+      },
+      {
+        "type": "image_picker",
+        "id": "mobile_image",
+        "label": "Mobile Image"
+      },
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title"
+      }, {
+        "type": "textarea",
+        "id": "description",
+        "label": "Description"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Hero Image",
+        "category": "Image"
+      }
+    ]
   }
-  
-  .hero-image img {
-    aspect-ratio: 21/9;
-    width: 100%;
-  }
-  
-  .text-container {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 50%;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 4px;
-  }
-  
-  .title-container, .description-container {
-    background: rgba(254, 254, 254, 0.60);
-    backdrop-filter: blur(4.087094783782959px);
-    -webkit-backdrop-filter: blur(4.087094783782959px);
-    border-radius: 1px;
-    padding: 4.9px 12px;
-    color: var(--Black, #444);
-  }
-  
-  .title-container h2, .description-container p {
-    color: var(--Black, #444);
-  }
-  
-  .title-container h2 {
-    margin: 0;
-    font-size: 13px;
-    font-family: Helvetica, Arial, sans-serif;
-    text-transform: uppercase;
-    font-weight: 400;
-    padding: 4.9;
-  }
-  
-  .description-container p {
-    margin: 0;
-    font-size: 16px;
-    font-family: adobe-garamond-pro, "Adobe Garamond Pro", AGaramondPro-Regular, "EB Garamond", Garamond, serif;
-    padding: 0;
-  }
-
-  /* TODO: add/edit rules to change image size for mobile */
-  
-  @media screen and (max-width: 767px) {
-    .hero-image {
-      max-height: 100vh; /* adjusted from 100vh */
-      padding-top: 40px; /* Add space for header on mobile */
-    }
-    
-    .hero-image img {
-      height: 100%;
-      aspect-ratio: auto;
-      object-fit: cover;
-    }
-    
-    .text-container {
-      width: 80%;
-      bottom: 0;
-      right: 0;
-      padding: 4px;
-    }
-  }
-</style>
-{%- endif -%}
+{% endschema %}

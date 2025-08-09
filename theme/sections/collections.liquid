@@ -1,81 +1,114 @@
-{% paginate collection.products by 24 %}
-  {% comment %} TODO: investigate dynamic col rule here (isdrop?) - checks whether regular shop or named collection drop? {% endcomment %}
-   {% comment %} TODO: congifure reflexive spacing and column numbers {% endcomment %}
+{% comment %} Get URL parameters properly {% endcomment %}
+{%- capture contentForQuerystring -%}{{ content_for_header }}{%- endcapture -%}
+{%- assign pageUrl = contentForQuerystring | split: '"pageurl":"' | last | split: '"' | first | split: '.myshopify.com' | last | replace: '\/', '/' | replace: '%20', ' ' | replace: '\u0026', '&'
+-%}
 
-  {% comment %} TODO: replace this temporary custom grid for named collection drops with possibly new section file {% endcomment %}
-  {% if collection.metafields.custom.isdrop == true %}
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 max-w-[1260px] mx-auto gap-1 md:pt-15 ">
-    {% comment %} {% if collection.metafields.custom.lookbook %} test {% endif %} {% endcomment %}
-      {% for look in collection.metafields.custom.lookbook.value %}
-        {% comment %} {% assign  %} {% endcomment %}
-        <div class="h-auto">
-          <img
-            class="w-full h-full object-cover"
-            alt="{{ look.alt | escape }}"
-            src="{{ look | img_url: '480x' }}"
-            srcset="
-              {{ look | img_url: '480x' }} 480w,
-              {{ look | img_url: '768x' }} 768w,
-              {{ look | img_url: '1024x' }} 1024w
-            "
-            sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-            loading="lazy"
-            width="{{ look.width }}"
-            height="{{ look.height }}"
-          />
+{%- assign requested_look_id = '' -%}
+{%- if pageUrl contains 'look=' -%}
+  {%- assign requested_look_id = pageUrl | split: 'look=' | last | split: '&' | first -%}
+{%- endif -%}
+
+{% comment %} DEBUG - Remove after testing {% endcomment %}
+{% comment %} <div style="background: yellow; padding: 10px; margin: 10px;">
+    <p><strong>Collections DEBUG:</strong></p>
+    <p>Page URL: {{ pageUrl }}</p>
+    <p>Contains 'look=': {{ pageUrl contains 'look=' }}</p>
+    <p>Requested Look ID: "{{ requested_look_id }}"</p>
+    <p>Look ID blank: {{ requested_look_id == blank }}</p>
+    <p>Should show main: {{ requested_look_id == blank }}</p>
+    <p>Should show detail: {{ requested_look_id != blank }}</p>
+</div> {% endcomment %}
+
+{% if requested_look_id != blank and collection.metafields.custom.isdrop == true %}
+  {% comment %} LOOK DETAIL VIEW {% endcomment %}
+  {% assign found_look = false %}
+  {% for look in collection.metafields.custom.lookbook.value %}
+    {% for photo in look.look_photos.value limit: 1 %}
+      {%- assign current_look_id = photo.id | split: '/' | last -%}
+    {% endfor %}
+
+    {% if current_look_id == requested_look_id %}
+      {% assign found_look = true %}
+      {% render 'look-detail'
+        , look: look
+        , collection: collection
+        , look_index: forloop.index %}
+      {% break %}
+    {% endif %}
+  {% endfor %}
+
+  {% unless found_look %}
+    <div class="text-center py-12">
+      <p>Look not found. Requested ID: {{ requested_look_id }}</p>
+      <a href="{{ collection.url }}" class="uppercase text-sm text-[#444444] p-2 hover:bg-[#D9D9D9] transition-colors mt-4 inline-block">
+        &larr; Back to {{ collection.title }}
+      </a>
+    </div>
+  {% endunless %}
+
+{% else %}
+  {% comment %} MAIN COLLECTION VIEW {% endcomment %}
+  {% paginate collection.products by 24 %}
+    {% if collection.metafields.custom.isdrop == true %}
+      <div class="max-w-[1260px] mx-auto md:px-[120px]">
+        <h1 class="text-center text-2xl font-helvetica font-semibold tracking-wide uppercase my-12">Lookbook</h1>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-8 md:gap-x-2 md:gap-y-16">
+          {% for look in collection.metafields.custom.lookbook.value %}
+            {% render 'collection-card'
+              , look: look
+              , look_index: forloop.index %}
+          {% endfor %}
         </div>
-      {% endfor %}
-    </div>
-    
-  {% else %}
+      </div>
+    {% else %}
+      <div class="max-w-[1260px] mx-auto md:px-[120px] md:pt-15">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-[6px] md:gap-x-2 ">
+          {% for product in collection.products %}
+            {% assign variant_metafields = product.variants | map: 'metafields' %}
+            {% if product.handle != 'routeins' %}
+              <div class="h-[45%] md:h-[60%] max-h-[450px] relative">
+                {% render 'product-card'
+                  , product: product %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
 
-    <div class="grid grid-cols-2 md:grid-cols-{% if collection.metafields.custom.isdrop == true %}3{% else %}3{% endif %} lg:grid-cols-4 max-w-[1260px] mx-auto gap-1 lg:px-[120px] md:pt-15 ">
-      {% for product in collection.products %}
-        {% assign variant_metafields = product.variants | map: 'metafields' %}
-        {% if product.handle != 'routeins' %}
-          {% comment %} TODO: adjust custom height classes {% endcomment %}
-          <div class="h-[45%] md:h-[60%] max-h-[450px] relative">
-            {% render 'product-card', product: product %}
-          </div>
+    {% if paginate.pages > 1 %}
+      <div class="fixed bottom-0 left-0 w-full bg-black/80 p-4 flex justify-center gap-4 z-50">
+        {% if paginate.previous %}
+          <a href="{{ paginate.previous.url }}" class="text-white hover:opacity-80">Previous</a>
         {% endif %}
-      {% endfor %}
-    </div>
-  {% endif %}
-
-  {% if paginate.pages > 1 %}
-    <div class="fixed bottom-0 left-0 w-full bg-black/80 p-4 flex justify-center gap-4 z-50">
-      {% if paginate.previous %}
-        <a href="{{ paginate.previous.url }}" class="text-white hover:opacity-80">Previous</a>
-      {% endif %}
-      
-      <span class="text-white">Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
-      
-      {% if paginate.next %}
-        <a href="{{ paginate.next.url }}" class="text-white hover:opacity-80">Next</a>
-      {% endif %}
-    </div>
-  {% endif %}
-{% endpaginate %}
+        <span class="text-white">Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
+        {% if paginate.next %}
+          <a href="{{ paginate.next.url }}" class="text-white hover:opacity-80">Next</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endpaginate %}
+{% endif %}
 
 {% schema %}
-{
-  "name": "Collections Grid",
-  "settings": [],
-  "presets": [
-    {
-      "name": "Collections Grid",
-      "category": "Products"
-    }
-  ]
-}
+  {
+    "name": "Collections Grid",
+    "settings": [],
+    "presets": [
+      {
+        "name": "Collections Grid",
+        "category": "Products"
+      }
+    ]
+  }
 {% endschema %}
 
 {% style %}
-.group:hover .group-hover\:opacity-100 {
-  opacity: 1 !important;
-}
+  .group:hover .group-hover\:opacity-100 {
+    opacity: 1 !important;
+  }
 
-.group:hover .group-hover\:opacity-0 {
-  opacity: 0 !important;
-}
+  .group:hover .group-hover\:opacity-0 {
+    opacity: 0 !important;
+  }
 {% endstyle %}

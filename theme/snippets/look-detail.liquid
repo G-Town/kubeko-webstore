@@ -1,0 +1,90 @@
+{% comment %}
+  Accepts:
+  - look: The look object from the collection metafield.
+  - collection: The parent collection object.
+  - look_index: The index of the look in the loop.
+{% endcomment %}
+
+<div class="flex flex-col md:flex-row h-full md:h-90 relative overflow-hidden mx-auto max-w-[1260px] bg-[#f4f4f4]">
+  <!-- Back Button -->
+  <div class="absolute top-4 left-4 z-50">
+    <a href="{{ collection.url }}" class="uppercase text-sm text-[#444444] p-2 hover:bg-[#D9D9D9] transition-colors">
+      &larr; Back to {{ collection.title }}
+    </a>
+  </div>
+
+  <!-- Left Side - Scrollable Image Gallery -->
+  <div class="w-full md:w-1/2 h-1/2 md:h-full relative">
+    <div class="w-full h-full overflow-y-auto custom-scrollbar scroll-snap-container">
+      {% for photo in look.look_photos.value %}
+        <div class="w-full h-full snap-center image-scroll-item">
+          <img
+            src="{{ photo | img_url: '100x' }}"
+            data-src="{{ photo | image_url }}"
+            alt="{{ photo.alt | escape }}"
+            class="w-full h-full object-cover blur-up"
+            width="{{ photo.width }}"
+            height="{{ photo.height }}"
+            loading="lazy"
+            srcset="
+              {{ photo | img_url: '400x' }} 400w,
+              {{ photo | img_url: '600x' }} 600w,
+              {{ photo | img_url: '800x' }} 800w,
+              {{ photo | img_url: '1200x' }} 1200w,
+              {{ photo | img_url: 'master' }} {{ photo.width }}w
+            "
+            sizes="(max-width: 767px) 100vw, 50vw"
+            onload="this.classList.remove('blur-up')"
+          >
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Right Side - Title and Description -->
+  <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center items-center text-center">
+    <div class="max-w-md">
+      <h1 class="text-3xl md:text-4xl font-bold mb-4">{{ collection.title }} - Look {{ look_index }}</h1>
+      {% if look.description %}
+        <div class="prose prose-lg mx-auto">
+          <p>{{ look.description }}</p>
+        </div>
+      {% else %}
+        <div class="prose prose-lg mx-auto">
+          <p>Details about this look will be available soon. Check back for updates on the pieces featured and styling inspiration.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 3px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #e0e0e0;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #666666;
+  }
+  .custom-scrollbar::-webkit-scrollbar-button {
+    display: none;
+  }
+  .scroll-snap-container {
+    scroll-snap-type: y mandatory;
+    direction: rtl; /* Move scrollbar to the left */
+  }
+  .scroll-snap-container > * {
+    direction: ltr; /* Reset content direction */
+  }
+  .scroll-snap-container .snap-center {
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    min-height: 100%;
+  }
+  .blur-up {
+    filter: blur(5px);
+    transition: filter 0.2s;
+  }
+</style>
