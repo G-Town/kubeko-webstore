@@ -872,6 +872,9 @@ video {
 .min-h-\[100px\]{
   min-height: 100px;
 }
+.min-h-\[75px\]{
+  min-height: 75px;
+}
 .min-h-\[30px\]{
   min-height: 30px;
 }
@@ -929,6 +932,9 @@ video {
 }
 .min-w-\[70px\]{
   min-width: 70px;
+}
+.min-w-\[475px\]{
+  min-width: 475px;
 }
 .max-w-\[120px\]{
   max-width: 120px;
@@ -2309,7 +2315,7 @@ shopify-payment-terms{
     max-height: calc(120px * 4 + 30px * 3);
   }
   .md\:w-3\/4{
-    width: 75vw;
+    width: 75%;
   }
   .md\:w-1\/2{
     width: 50%;

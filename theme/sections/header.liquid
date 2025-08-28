@@ -367,13 +367,12 @@
 </div>
 
 <!-- Menu Dropdowns -->
-{% comment %} TODO: edit position of dropwodn to left side {% endcomment %}
 {% for link in linklists.main-menu.links %}
   {% if link.links.size > 0 %}
     {% if link.title == 'Collections' or link.title == 'Collection' %}
     <div class="w-full flex justify-center">
-      <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[1024px] relative">
-        <div data-menu="{{ link.title | handleize }}" class="absolute hidden text-sm text-black uppercase top-[43px] mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] left-0">
+      <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] relative">
+        <div data-menu="{{ link.title | handleize }}" class="absolute hidden text-sm text-black uppercase top-[43px] mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)]  left-0">
           <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]">
             <div class="p-[15px] pl-[15px]">
               <div class="flex relative">
@@ -416,8 +415,8 @@
     </div>
     {% else %}
     <div class="w-full flex justify-center">
-      <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[1024px] relative">
-        <div data-menu="{{ link.title | handleize }}" class="absolute hidden text-sm text-black uppercase top-[43px] mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-0">
+      <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] relative">
+        <div data-menu="{{ link.title | handleize }}" class="fixed hidden text-sm text-black uppercase top-[43px] mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[650px] left-2">
           <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]">
             <div class="p-[15px] mt-[5px] pl-[15px]">
               <div class="flex relative">
@@ -451,11 +450,10 @@
 
 {% comment %} TODO: expand shopping cart functionality and link to separate shopping cart page {% endcomment %}
 <!-- Cart dropdown -->
-{% comment %} TODO: edit position of dropdown to right side {% endcomment %}
 <div class="w-full flex justify-center">
-  <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[1024px] relative">
+  <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] relative">
     {% comment %} hidden {% endcomment %}
-    <div class="absolute hidden text-sm text-black uppercase top-[43px] mt-[4px] md:top-[55px] md:mt-[6px] z-[90] cart-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] right-0">
+    <div class="fixed hidden text-sm text-black uppercase top-[43px] mt-[4px] md:top-[55px] md:mt-[6px] z-[90] cart-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[650px] right-2">
       <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] md:bg-[rgba(254,254,254,0.60)] md:backdrop-blur-[12.5px] bg-white flex flex-col">
         <div class="p-[5px] pl-[5px] mt-[5px] flex flex-col h-full">
           {% if cart.item_count > 0 %}

@@ -33,7 +33,7 @@
     } 
 
     /* Keep existing styles */
-    .product-info-container {
+    /* .product-info-container {
       transition: all 300ms ease;
     }
 
@@ -43,7 +43,7 @@
 
     .popup-content {
       transition: all 300ms ease;
-    }
+    } */
 
     /* Ensure consistent timing when popup is active */
     body.popup-active .nav-container,
@@ -53,18 +53,20 @@
     }
   </style>
 
-  <script>
+  {% comment %} <script>
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('Header hover init');
+
       const productInfoContainer = document.querySelector('.product-info-container');
       const headerOverlay = document.querySelector('#header-overlay');
       const navContainer = document.querySelector('.nav-container');
       
       if (productInfoContainer && headerOverlay && navContainer) {
         productInfoContainer.addEventListener('mouseenter', function() {
-          {% comment %} requestAnimationFrame(() => {
-            headerOverlay.style.backgroundColor = 'white';
-            navContainer.style.backgroundColor = 'white';
-          }); {% endcomment %}
+          // requestAnimationFrame(() => {
+          //   headerOverlay.style.backgroundColor = 'white';
+          //   navContainer.style.backgroundColor = 'white';
+          // });
         });
         
         productInfoContainer.addEventListener('mouseleave', function() {
@@ -75,7 +77,7 @@
         });
       }
     });
-  </script>
+  </script> {% endcomment %}
 </head>
 
 {%- assign show_recently_viewed = false -%}
@@ -172,9 +174,9 @@
       </div> {% endcomment %}
       
       <!-- Popups for Materials, Size Guide, and Shipping -->
-      <div id="popup-overlay" class="hidden fixed inset-0 bg-transparent z-[54]"></div>
+      {% comment %} <div id="popup-overlay" class="hidden fixed inset-0 bg-transparent z-[54]"></div> {% endcomment %}
       
-      <div id="shipping-popup" class="hidden absolute max-w-[864px] w-[calc(100%-8px)] left-1/2 -translate-x-1/2 top-[1px] md:top-[127px] z-[55] popup-container">
+      {% comment %} <div id="shipping-popup" class="hidden absolute max-w-[864px] w-[calc(100%-8px)] left-1/2 -translate-x-1/2 top-[1px] md:top-[127px] z-[55] popup-container">
         <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-4 popup-content transition-colors duration-300">
           <div class="flex justify-between items-center mb-4">
             <h2 class="uppercase text-sm font-medium">SHIPPING</h2>
@@ -273,7 +275,7 @@
             {% endif %}
           </div>
         </div>
-      </div>
+      </div> {% endcomment %}
       
       <!-- Left Side - Main Product Image (Full width on mobile) -->
       <div class="w-full md:w-1/2 md:h-full relative pb-12 md:pb-0">
@@ -563,7 +565,114 @@
       </div>
       
       <!-- Product Info Overlay - Desktop only -->
-      <div class="hidden md:block absolute bottom-0 left-1/2 -translate-x-1/2 max-w-[864px] w-[calc(100%-8px)] z-20 product-info-container">
+      <div id="popup-overlay" class="hidden fixed inset-0 bg-transparent z-[54]"></div>
+      <div class="hidden md:block absolute bottom-0 left-1/2 -translate-x-1/2 min-w-[475px] w-[60%] product-info-container">
+        
+
+        <div id="shipping-popup" class="hidden popup-container">
+          <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-4 popup-content transition-colors ">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="uppercase text-sm font-medium">SHIPPING</h2>
+              <button onclick="closePopup('shipping-popup')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
+                CLOSE
+              </button>
+            </div>
+            <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content">
+              {% if settings.default_shipping_info != blank %}
+                {{ settings.default_shipping_info | newline_to_br }}
+              {% elsif product.metafields.custom.shipping %}
+                {{ product.metafields.custom.shipping | newline_to_br }}
+              {% else %}
+                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For ready-to-ship items, please allow 2-3 days for the item to dispatch.</p>
+                
+                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For made-to-order items, please allow 3-4 weeks for the item to dispatch.</p>
+                
+                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">You will receive an email notification to confirm your order has been dispatched.</p>
+                
+                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">If you require any additional information please contact <span class="underline">info@kubeko.co</span></p>
+                
+                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">We offer complimentary shipping for orders above $350 within the USA and South Korea.</p>
+                
+                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">Please note that customers outside the USA and South Korea will be responsible for all import duties and tax charges that may be applied by their local customs office on delivery to country of destination.</p>
+                
+                <p class="text-[13px] leading-relaxed text-[#444444]">For return requests, please contact <span class="underline">info@kubeko.co</span> within 14 days of the order's delivery date. After confirming the condition of the returning item(s), we will email you with return instructions. Items must be returned new, unused, unworn, unwashed, unaltered, and undamaged condition, with its original tags attached.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div id="size-guide-popup" class="hidden popup-container">
+          <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-5 popup-content transition-colors duration-300">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="uppercase text-sm font-medium">SIZE GUIDE</h2>
+              <button onclick="closePopup('size-guide-popup')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
+                CLOSE
+              </button>
+            </div>
+            <div class="popup-formatted-content text-center">
+              {% if product.metafields.custom.size_guide %}
+                <!-- Using the recommended metafield_tag filter from Shopify docs -->
+                <div class="w-full md:w-3/4 ">
+                  {{ product.metafields.custom.size_guide | metafield_tag }}
+                </div>
+              {% else %}
+                <!-- No size guide available message -->
+                <div class="w-full md:w-1/2 mx-auto">
+                  <p class="text-[13px] text-black leading-relaxed">No size guide available for this product.</p>
+                </div>
+              {% endif %}
+              <p class="text-[13px] text-gray-600 mt-4">For any specific sizing questions, please contact us at <span class="underline">info@kubeko.co</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div id="materials-popup" class="hidden popup-container">
+          <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] px-5 py-6 popup-content transition-colors duration-300">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="uppercase text-sm font-medium">MATERIALS</h2>
+              <button onclick="closePopup('materials-popup')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
+                CLOSE
+              </button>
+            </div>
+            <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content" id="materials-content-container">
+              {% if product.metafields.custom.materials %}
+                <div id="materials-content-wrapper">
+                  {% if product.metafields.custom.materials.type == 'json' %}
+                    {{ product.metafields.custom.materials | metafield_tag }}
+                  {% else %}
+                    {{ product.metafields.custom.materials }}
+                  {% endif %}
+                </div>
+
+                <style>
+                  /* Add styling to properly format the metafield content */
+                  #materials-content-wrapper p {
+                    font-size: 13px;
+                    line-height: 1.7;
+                    margin-bottom: 1.5rem;
+                  }
+                  
+                  #materials-content-wrapper > div > p {
+                    font-size: 13px;
+                    line-height: 1.7;
+                    margin-bottom: 1.5rem;
+                  }
+                  
+                  #materials-content-wrapper > p:last-child,
+                  #materials-content-wrapper > div > p:last-child {
+                    margin-bottom: 0;
+                  }
+                </style>
+              {% else %}
+                <p class="text-[13px] leading-relaxed">Materials information not available for this product.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Visible gap - transparent divider -->
+        <div class="h-[4px] bg-transparent"></div>
+
         <!-- Product Header Row with bottom gap -->
         <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] h-[38px] px-4 py-3 product-info-item transition-colors duration-300">
           <div class="flex justify-between items-center">
@@ -576,8 +685,8 @@
         <div class="h-[4px] bg-transparent"></div>
         
         <!-- Rest of the content in a single container - hidden by default -->
-        {% comment %} max-h-0 product-details-container {% endcomment %}
-        <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] product-info-item transition-all duration-300 overflow-hidden max-h-0 product-details-container">
+        {% comment %} max-h-0 product-details-container - transition-all duration-300 {% endcomment %}
+        <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] product-info-item  overflow-hidden ">
           <!-- Variant Options and Add to Cart -->
           <div class="flex flex-col">
             {% if product.has_only_default_variant == false %}
@@ -585,7 +694,7 @@
               
               <!-- First option row with Add to Cart inline -->
               {% comment %} TODO: consider replacing min-h- with flexing height {% endcomment %}
-              <div class="w-full px-6 py-2 flex justify-between items-start min-h-[100px] relative">
+              <div class="w-full px-6 py-2 flex justify-between items-start min-h-[75px] relative">
                 <!-- Variant Options in Columns -->
                 <div class="flex flex-1 gap-[8px] w-full relative">
                   <!-- First Column (usually Color) -->
@@ -596,7 +705,7 @@
                       </span>
 
                       <div class="flex items-center gap-1 pt-2" id="color-chips-container">
-                        {%- for option in product.options_with_values -%}
+                        {%- for option in options -%}
                           {%- if option.name == 'Color' -%}
                             {%- for value in option.values -%}
                               {%- assign variant_for_color = null -%}
@@ -636,17 +745,20 @@
                   <!-- Second Column (usually Size) -->
                   {% if options.size > 1 %}
                     <div class="flex flex-col items-center absolute left-1/2 -translate-x-1/2 w-[90px] text-center">
-                      {% for value in options[1].values %}
-                        <button 
-                          type="button"
-                          class="variant-button text-center uppercase text-[13px] text-[#444444] bg-transparent hover:bg-[#D9D9D9] w-full {% if forloop.first %}font-medium{% endif %}" 
-                          data-option-position="{{ options[1].position }}" 
-                          data-value="{{ value | escape }}"
-                          onclick="selectVariant(this, '{{ options[1].position }}', '{{ value | escape }}')"
-                        >
-                          {{ value }}
-                        </button>
-                      {% endfor %}
+                      <span class="uppercase text-[13px] text-[#444444] mb-2">SIZE</span>
+                      <div class="flex flex-row justify-center w-full text-center">
+                        {% for value in options[1].values %}
+                          <button
+                            type="button"
+                            class="variant-button text-center uppercase text-[13px] text-[#444444] bg-transparent hover:bg-[#D9D9D9] w-full {% if forloop.first %}font-medium{% endif %}"
+                            data-option-position="{{ options[1].position }}"
+                            data-value="{{ value | escape }}"
+                            onclick="selectVariant(this, '{{ options[1].position }}', '{{ value | escape }}')"
+                          >
+                            {{ value }}
+                          </button>
+                        {% endfor %}
+                      </div>
                     </div>
                   {% endif %}
                 </div>
@@ -672,36 +784,18 @@
               </div>
             {% endif %}
           </div>
-
-          <!-- START: VARIANT DEBUGGING -->
-          {% comment %} <div style="padding: 10px 24px; font-size: 10px; background: rgba(255,0,0,0.05); border-top: 1px solid rgba(255,0,0,0.1); font-family: monospace;">
-            <h4 style="font-weight: bold; color: red; margin-bottom: 5px;">VARIANT DEBUGGER:</h4>
-            <ul style="max-height: 100px; overflow-y: auto;">
-              {% for variant in product.variants %}
-                <li>
-                  <strong>{{ variant.title }}:</strong> 
-                  {% if variant.featured_image %}
-                    <span style="color: green;">Featured Image FOUND</span>
-                  {% else %}
-                    <span style="color: red; font-weight: bold;">Featured Image MISSING</span>
-                  {% endif %}
-                </li>
-              {% endfor %}
-            </ul>
-          </div> {% endcomment %}
-          <!-- END: VARIANT DEBUGGING -->
           
           {% comment %} TODO: consider this flex box putting description in same row as info links {% endcomment %}
           <div class="flex">
             <!-- Product Description -->
-             {% comment %} max-w-[480px] {% endcomment %}
-            <div class="prose px-4 py-4 w-[80%] prose-sm">
+            {% comment %} max-w-[480px] px-4 w-3/4 {% endcomment %}
+            <div class="prose px-4 py-4 w-3/4 prose-sm">
               <p class="font-garamond text-[16px] text-[#444444] font-normal ">{{ product.description | strip_html }}</p>
             </div>
             
             <!-- Info Links -->
-            <div class="px-4 py-3 flex flex-col space-y-2 flex-1">
-              <button onclick="openPopup('materials-popup')" class="flex flex-row justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+            <div class="px-2 py-3 flex flex-col space-y-2 flex-1">
+              <button onclick="openPopup('materials-popup')" class="justify-between px-[5px] py-[2px] hover:bg-[#D9D9D9] transition-colors">
                 <span class="uppercase text-[13px] text-[#444444]">MATERIALS</span>
                 <span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
@@ -710,7 +804,7 @@
                 </span>
               </button>
               
-              <button onclick="openPopup('size-guide-popup')" class="flex justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+              <button onclick="openPopup('size-guide-popup')" class="justify-between px-[5px] py-[2px] hover:bg-[#D9D9D9] transition-colors">
                 <span class="uppercase text-[13px] text-[#444444]">SIZE GUIDE</span>
                 <span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
@@ -719,7 +813,7 @@
                 </span>
               </button>
               
-              <button onclick="openPopup('shipping-popup')" class="flex justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+              <button onclick="openPopup('shipping-popup')" class="justify-between px-[5px] py-[2px] hover:bg-[#D9D9D9] transition-colors">
                 <span class="uppercase text-[13px] text-[#444444]">SHIPPING</span>
                 <span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
@@ -854,20 +948,72 @@
     document.getElementById('popup-overlay').addEventListener('click', function() {
       closeAllPopups();
     });
-      
-      // Add click handlers for header elements on mobile
-      const mobileHeaderElements = ['site-header', 'header-overlay'].map(id => 
-        document.querySelector('#' + id)
-      ).filter(Boolean);
-      
-      mobileHeaderElements.forEach(element => {
-        element.addEventListener('click', function() {
-          if (window.innerWidth < 768) {
-            closeAllPopups();
-          }
-        });
-      });
+
+    // Add click handlers for header elements on mobile
+    const mobileHeaderElements = ['site-header', 'header-overlay'].map(id => 
+      document.querySelector('#' + id)
+    ).filter(Boolean);
     
+    mobileHeaderElements.forEach(element => {
+      element.addEventListener('click', function() {
+        if (window.innerWidth < 768) {
+          closeAllPopups();
+        }
+      });
+    });
+
+    console.log('Popup functions loaded');
+
+    // selectVariant() helper functions
+    // Use the globals you already set in <script> from Liquid
+    const variants = window.productVariants || [];
+    const images = window.allProductImages || [];
+    const productOptions = window.productOptions || [];
+
+    // Returns an array of image objects that belong to the selected variant's color
+    function getImagesForVariantColor(variant) {
+      if (!variant || !variant.featured_image) return [];
+
+      const startIndex = images.findIndex(img => String(img.id) === String(variant.featured_image.id));
+      if (startIndex === -1) return [];
+
+      const out = [];
+      for (let i = startIndex; i < images.length; i++) {
+        const isAnotherFeatured =
+          i > startIndex &&
+          variants.some(v => v.featured_image && String(v.featured_image.id) === String(images[i].id));
+        if (isAnotherFeatured) break;
+        out.push(images[i]);
+      }
+      return out;
+    }
+
+    // Hide/show the right-side gallery items based on image IDs
+    function showOnlyRightSideImages(imageSet) {
+      const allowedIds = new Set(imageSet.map(img => String(img.id)));
+      const rightItems = document.querySelectorAll('#image-scroll-container [data-image-id]');
+
+      rightItems.forEach(el => {
+        const id = String(el.getAttribute('data-image-id'));
+        if (allowedIds.has(id)) {
+          el.classList.remove('hidden');   // Tailwind's .hidden is fine
+        } else {
+          el.classList.add('hidden');
+        }
+      });
+    }
+
+    // Optional but nice: also ensure the big main image matches the first image in the set
+    function syncMainImage(imageSet, fallbackFeatured) {
+      const mainImage = document.getElementById('main-image');
+      if (!mainImage) return;
+      if (imageSet && imageSet.length) {
+        mainImage.src = imageSet[0].src;
+      } else if (fallbackFeatured && fallbackFeatured.src) {
+        mainImage.src = fallbackFeatured.src;
+      }
+    }
+
     // Function to handle variant selection
     function selectVariant(element, optionPosition, optionValue) {
       // Define selectable items for the current option group
@@ -948,7 +1094,9 @@
         }
       }
     }
-    
+
+    console.log('Variant helpers and selection loaded');
+
     // Function to update add to cart buttons based on variant selection and inventory
     function updateAddToCartButtons(allSelected, selectedVariant, isUnavailableCombination) {
       const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
@@ -1024,99 +1172,78 @@
     }
     
     document.addEventListener('DOMContentLoaded', function() {
-      // Simple mobile gallery implementation
-      function setupMobileGallery() {
-        const container = document.getElementById('mobile-gallery-container');
-        const thumbnails = document.querySelectorAll('.mobile-thumbnail');
-        
-        if (!container || thumbnails.length === 0) return;
-        
-        // Set initial state - first thumbnail active
-        thumbnails.forEach((thumb, index) => {
-          if (index === 0) {
-            thumb.classList.remove('opacity-30');
-            thumb.classList.add('opacity-100');
-          } else {
-            thumb.classList.remove('opacity-100');
-            thumb.classList.add('opacity-30');
+
+      // TODO: filter displayed images for selected color
+      const variants = window.productVariants;
+      const images = window.allProductImages;
+
+      // 1. Get first available variant
+      const firstVariant = variants.find(v => v.available);
+      if (!firstVariant) return; // No available variants
+
+      // 2. Filter images for this variant's color
+      function getImagesForVariant(variant) {
+        const startIndex = images.findIndex(img => img.id === variant.featured_image.id);
+        if (startIndex === -1) return [];
+
+        const result = [];
+        for (let i = startIndex; i < images.length; i++) {
+          if (i > startIndex && variants.some(v => v.featured_image && v.featured_image.id === images[i].id)) {
+            break; // Stop at next variant's featured image
           }
-        });
-        
-        let isScrolling;
-        
-        // Update thumbnails when scrolling stops
-        container.addEventListener('scroll', function() {
-          // Clear timeout if it exists
-          window.clearTimeout(isScrolling);
-          
-          // Run immediately for better responsiveness
-          const containerWidth = container.clientWidth;
-          const scrollPosition = container.scrollLeft;
-          const currentIndex = Math.round(scrollPosition / containerWidth);
-          
-          // Update the active thumbnail
-          updateActiveThumbnail(currentIndex);
-          
-          // Set a timeout to detect when scrolling ends (for momentum scrolling)
-          isScrolling = setTimeout(function() {
-            const containerWidth = container.clientWidth;
-            const scrollPosition = container.scrollLeft;
-            const currentIndex = Math.round(scrollPosition / containerWidth);
-            
-            // Update the active thumbnail
-            updateActiveThumbnail(currentIndex);
-          }, 150);
-        }, { passive: true });
-        
-        // Force update on touchend
-        container.addEventListener('touchend', function() {
-          setTimeout(function() {
-            const containerWidth = container.clientWidth;
-            const scrollPosition = container.scrollLeft;
-            const currentIndex = Math.round(scrollPosition / containerWidth);
-            
-            // Update the active thumbnail
-            updateActiveThumbnail(currentIndex);
-          }, 200);
-        }, { passive: true });
-        
-        // Function to update the active thumbnail
-        function updateActiveThumbnail(activeIndex) {
-          thumbnails.forEach((thumb, index) => {
-            if (index === activeIndex) {
-              thumb.classList.add('opacity-100');
-              thumb.classList.remove('opacity-30');
-            } else {
-              thumb.classList.add('opacity-30');
-              thumb.classList.remove('opacity-100');
-            }
+          result.push(images[i]);
+        }
+        return result;
+      }
+
+      const colorImages = getImagesForVariant(firstVariant);
+
+      // 3. Update the gallery
+      function updateGallery(imageSet) {
+        // Desktop main image
+        const mainImage = document.getElementById('main-image');
+        if (mainImage && imageSet[0]) {
+          mainImage.src = imageSet[0].src;
+        }
+
+        // Mobile gallery container
+        const mobileGallery = document.getElementById('mobile-gallery-container');
+        if (mobileGallery) {
+          mobileGallery.innerHTML = '';
+          imageSet.forEach((img, idx) => {
+            const slide = document.createElement('div');
+            slide.className = "w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative";
+            slide.dataset.index = idx;
+            slide.innerHTML = `
+              <img src="${img.src}" alt="${img.alt || ''}" class="w-full h-full object-cover" />
+            `;
+            mobileGallery.appendChild(slide);
           });
         }
       }
-      
-      // Initialize the mobile gallery
-      setupMobileGallery();
-      
-      // Mobile popup handling enhancement
-      const popupTriggers = document.querySelectorAll('button[onclick*="openPopup"]');
-      
-      popupTriggers.forEach(trigger => {
-        const originalOnClick = trigger.getAttribute('onclick');
-        
-        if (window.innerWidth < 768 && originalOnClick) {
-          // Add data attribute to track which element triggered the popup
-          trigger.setAttribute('data-source-element', true);
-          
-          // Get the popup id from the onclick attribute
-          const popupIdMatch = originalOnClick.match(/openPopup\(['"](.+?)['"]\)/);
-          if (popupIdMatch && popupIdMatch[1]) {
-            const popupId = popupIdMatch[1];
-            
-            // We don't need additional event listeners since we've updated openPopup
-            // to handle the scroll behavior consistently
-          }
-        }
+
+      updateGallery(colorImages);
+
+      // 4. Mark chips/buttons as selected
+      document.querySelectorAll(`.color-chip[data-value="${firstVariant.option1}"]`).forEach(chip => {
+        chip.setAttribute('data-selected', 'true');
+        chip.closest('.color-chip-container')?.classList.add('active');
       });
+
+      document.querySelectorAll(`.variant-button[data-value="${firstVariant.option2}"]`).forEach(btn => {
+        btn.setAttribute('data-selected', 'true');
+        btn.classList.add('bg-[#D9D9D9]');
+      });
+      
+      // Update hidden variant ID field for forms
+      const variantIdFieldDesktop = document.getElementById('variant-id');
+      if (variantIdFieldDesktop) variantIdFieldDesktop.value = firstVariant.id;
+      
+      const variantIdFieldMobile = document.getElementById('variant-id-mobile');
+      if (variantIdFieldMobile) variantIdFieldMobile.value = firstVariant.id;
+      
+      console.log('Desktop gallery init');
+      
       
       // Initialize ADD TO CART buttons based on variant selection state
       if (document.querySelector('.variant-button')) {
@@ -1250,22 +1377,24 @@
           cartCount.style.display = count > 0 ? 'block' : 'none';
         }
       }
-      
+
+      console.log('Add-to-cart init');
+
       // Only set up hover effects on desktop (screen width >= 768px)
       if (window.innerWidth >= 768) {
         // Get all product info elements
-        const productInfoItems = document.querySelectorAll('.product-info-item');
         const productInfoContainer = document.querySelector('.product-info-container');
-        const navContainer = document.querySelector('.nav-container');
+        const productInfoItems = document.querySelectorAll('.product-info-item');
         const header = document.querySelector('header');
         const headerOverlay = document.querySelector('#header-overlay');
+        const navContainer = document.querySelector('.nav-container');
         
         // Function to handle mouse enter
         function handleMouseEnter() {
           // Apply white background to all items
-          {% comment %} productInfoItems.forEach(item => {
-            item.style.backgroundColor = 'white';
-          }); {% endcomment %}
+          // productInfoItems.forEach(item => {
+          //   item.style.backgroundColor = 'white';
+          // });
           
           // Show background for selected variants
           document.querySelectorAll('.variant-button[data-selected="true"]').forEach(button => {
@@ -1281,9 +1410,9 @@
           });
 
           // Change nav background to white
-          {% comment %} if (navContainer) {
-            navContainer.style.backgroundColor = 'white';
-          } {% endcomment %}
+          // if (navContainer) {
+          //   navContainer.style.backgroundColor = 'white';
+          // }
         }
 
         // Function to handle mouse leave
@@ -1346,18 +1475,34 @@
             });
           }
         });
-      }
 
+        console.log('Header hover init');
+      }
+      
+      
       // Update desktop section toggles to open popups instead
-      document.querySelector('button[onclick="toggleSection(\'materials\')"]').setAttribute('onclick', 'openPopup("materials-popup")');
-      document.querySelector('button[onclick="toggleSection(\'size-guide\')"]').setAttribute('onclick', 'openPopup("size-guide-popup")');
-      document.querySelector('button[onclick="toggleSection(\'shipping\')"]').setAttribute('onclick', 'openPopup("shipping-popup")');
+      const desktopButtons = {
+        'materials': document.querySelector('button[onclick*="materials"]'),
+        'size-guide': document.querySelector('button[onclick*="size-guide"]'),
+        'shipping': document.querySelector('button[onclick*="shipping"]')
+      };
+      
+      if (mobileButtons['materials']) {
+        mobileButtons['materials'].setAttribute('onclick', 'openPopup("materials-popup")');
+      }
+      if (mobileButtons['size-guide']) {
+        mobileButtons['size-guide'].setAttribute('onclick', 'openPopup("size-guide-popup")');
+      }
+      if (mobileButtons['shipping']) {
+        mobileButtons['shipping'].setAttribute('onclick', 'openPopup("shipping-popup")');
+      }
+      
       
       // Update mobile section toggles to open popups instead - if they exist
       const mobileButtons = {
-        'materials-mobile': document.querySelector('button[onclick="toggleSection(\'materials-mobile\')"]'),
-        'size-guide-mobile': document.querySelector('button[onclick="toggleSection(\'size-guide-mobile\')"]'),
-        'shipping-mobile': document.querySelector('button[onclick="toggleSection(\'shipping-mobile\')"]')
+        'materials-mobile': document.querySelector('button[onclick*="materials-mobile"]'),
+        'size-guide-mobile': document.querySelector('button[onclick*="size-guide-mobile"]'),
+        'shipping-mobile': document.querySelector('button[onclick*="shipping-mobile"]')
       };
       
       if (mobileButtons['materials-mobile']) {
@@ -1370,164 +1515,168 @@
         mobileButtons['shipping-mobile'].setAttribute('onclick', 'openPopup("shipping-popup")');
       }
 
+      //TODO: compare this to the simpler version below
       // Completely revised mobile gallery initialization and synchronization
-      function initMobileSwipeGallery() {
-        const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
-        const mobileThumbnails = document.querySelectorAll('.mobile-thumbnail');
+      // function initMobileSwipeGallery() {
+      //   const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
+      //   const mobileThumbnails = document.querySelectorAll('.mobile-thumbnail');
         
-        if (!mobileGalleryContainer || mobileThumbnails.length === 0) return;
+      //   if (!mobileGalleryContainer || mobileThumbnails.length === 0) return;
         
-        // Direct fix: Force the first image to be shown and first thumbnail to be highlighted
-        setTimeout(function() {
-          // Reset scroll position to first image
-          mobileGalleryContainer.scrollTo({
-            left: 0,
-            behavior: 'auto'
-          });
+      //   // Direct fix: Force the first image to be shown and first thumbnail to be highlighted
+      //   setTimeout(function() {
+      //     // Reset scroll position to first image
+      //     mobileGalleryContainer.scrollTo({
+      //       left: 0,
+      //       behavior: 'auto'
+      //     });
           
-          // Force highlight the first thumbnail
-          mobileThumbnails.forEach((thumb, index) => {
-            if (index === 0) {
-              thumb.classList.remove('opacity-30');
-              thumb.classList.add('opacity-100');
-            } else {
-              thumb.classList.remove('opacity-100');
-              thumb.classList.add('opacity-30');
-            }
-          });
+      //     // Force highlight the first thumbnail
+      //     mobileThumbnails.forEach((thumb, index) => {
+      //       if (index === 0) {
+      //         thumb.classList.remove('opacity-30');
+      //         thumb.classList.add('opacity-100');
+      //       } else {
+      //         thumb.classList.remove('opacity-100');
+      //         thumb.classList.add('opacity-30');
+      //       }
+      //     });
           
-          // Update pagination
-          const paginationIndicator = document.getElementById('mobile-pagination-indicator');
-          if (paginationIndicator) {
-            paginationIndicator.textContent = `1 / ${mobileThumbnails.length}`;
-          }
-        }, 100);
+      //     // Update pagination
+      //     const paginationIndicator = document.getElementById('mobile-pagination-indicator');
+      //     if (paginationIndicator) {
+      //       paginationIndicator.textContent = `1 / ${mobileThumbnails.length}`;
+      //     }
+      //   }, 100);
         
-        // Function to scroll to a specific image in the mobile gallery
-        window.scrollToMobileImage = function(index) {
-          const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
-          if (mobileGalleryContainer) {
-            const imageElements = mobileGalleryContainer.children;
-            if (index >= 0 && index < imageElements.length) {
-              const targetImage = imageElements[index];
+      //   // Function to scroll to a specific image in the mobile gallery
+      //   window.scrollToMobileImage = function(index) {
+      //     console.log('[SwipeGallery] scrollToMobileImage called with', index);
+      //     const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
+      //     if (mobileGalleryContainer) {
+      //       const imageElements = mobileGalleryContainer.children;
+      //       if (index >= 0 && index < imageElements.length) {
+      //         const targetImage = imageElements[index];
               
-              // Scroll to the target image with smooth behavior
-              targetImage.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+      //         // Scroll to the target image with smooth behavior
+      //         targetImage.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
               
-              // Update thumbnails to reflect the new active image
-              updateActiveMobileThumbnail(index);
-            }
-          }
-        };
+      //         // Update thumbnails to reflect the new active image
+      //         updateActiveMobileThumbnail(index);
+      //       }
+      //     }
+      //   };
         
-        // Update which mobile thumbnail is active
-        function updateActiveMobileThumbnail(activeIndex) {
-          const mobileThumbnails = document.querySelectorAll('.mobile-thumbnail');
-          mobileThumbnails.forEach((thumb, index) => {
-            if (index === activeIndex) {
-              thumb.classList.remove('opacity-30');
-              thumb.classList.add('opacity-100');
-            } else {
-              thumb.classList.remove('opacity-100');
-              thumb.classList.add('opacity-30');
-            }
-          });
-        }
+      //   // Update which mobile thumbnail is active
+      //   function updateActiveMobileThumbnail(activeIndex) {
+      //     const mobileThumbnails = document.querySelectorAll('.mobile-thumbnail');
+      //     mobileThumbnails.forEach((thumb, index) => {
+      //       if (index === activeIndex) {
+      //         thumb.classList.remove('opacity-30');
+      //         thumb.classList.add('opacity-100');
+      //       } else {
+      //         thumb.classList.remove('opacity-100');
+      //         thumb.classList.add('opacity-30');
+      //       }
+      //     });
+      //   }
         
-        // Enhanced touch handling for mobile swipe
-        let startX, moveX;
-        let startTime, isSwiping = false;
+      //   // Enhanced touch handling for mobile swipe
+      //   let startX, moveX;
+      //   let startTime, isSwiping = false;
         
-        mobileGalleryContainer.addEventListener('touchstart', function(e) {
-          startX = e.touches[0].clientX;
-          startTime = new Date().getTime();
-          isSwiping = false;
-        }, { passive: true });
+      //   mobileGalleryContainer.addEventListener('touchstart', function(e) {
+      //     startX = e.touches[0].clientX;
+      //     startTime = new Date().getTime();
+      //     isSwiping = false;
+      //   }, { passive: true });
         
-        mobileGalleryContainer.addEventListener('touchmove', function(e) {
-          if (!startX) return;
-          moveX = e.touches[0].clientX;
-          isSwiping = true;
-        }, { passive: true });
+      //   mobileGalleryContainer.addEventListener('touchmove', function(e) {
+      //     if (!startX) return;
+      //     moveX = e.touches[0].clientX;
+      //     isSwiping = true;
+      //   }, { passive: true });
         
-        mobileGalleryContainer.addEventListener('touchend', function(e) {
-          if (!isSwiping) return;
+      //   mobileGalleryContainer.addEventListener('touchend', function(e) {
+      //     if (!isSwiping) return;
           
-          const endX = e.changedTouches[0].clientX;
-          const endTime = new Date().getTime();
-          const timeDiff = endTime - startTime;
-          const distX = endX - startX;
+      //     const endX = e.changedTouches[0].clientX;
+      //     const endTime = new Date().getTime();
+      //     const timeDiff = endTime - startTime;
+      //     const distX = endX - startX;
           
-          // For very quick swipes, or significant distance swipes
-          if ((Math.abs(distX) > 50 && timeDiff < 300) || Math.abs(distX) > mobileGalleryContainer.offsetWidth / 3) {
-            const containerWidth = mobileGalleryContainer.offsetWidth;
-            const currentPosition = mobileGalleryContainer.scrollLeft;
-            const currentIndex = Math.round(currentPosition / containerWidth);
+      //     // For very quick swipes, or significant distance swipes
+      //     if ((Math.abs(distX) > 50 && timeDiff < 300) || Math.abs(distX) > mobileGalleryContainer.offsetWidth / 3) {
+      //       const containerWidth = mobileGalleryContainer.offsetWidth;
+      //       const currentPosition = mobileGalleryContainer.scrollLeft;
+      //       const currentIndex = Math.round(currentPosition / containerWidth);
             
-            // Determine direction and target slide
-            let targetIndex;
-            if (distX < 0) { // Swipe left, go next
-              targetIndex = Math.min(currentIndex + 1, mobileGalleryContainer.children.length - 1);
-            } else { // Swipe right, go prev
-              targetIndex = Math.max(currentIndex - 1, 0);
-            }
+      //       // Determine direction and target slide
+      //       let targetIndex;
+      //       if (distX < 0) { // Swipe left, go next
+      //         targetIndex = Math.min(currentIndex + 1, mobileGalleryContainer.children.length - 1);
+      //       } else { // Swipe right, go prev
+      //         targetIndex = Math.max(currentIndex - 1, 0);
+      //       }
             
-            // Programmatically scroll to the target slide
-            scrollToMobileImage(targetIndex);
-          }
+      //       // Programmatically scroll to the target slide
+      //       scrollToMobileImage(targetIndex);
+      //     }
           
-          // Reset variables
-          startX = null;
-          moveX = null;
-          isSwiping = false;
-        }, { passive: true });
+      //     // Reset variables
+      //     startX = null;
+      //     moveX = null;
+      //     isSwiping = false;
+      //   }, { passive: true });
         
-        // Improved scroll event handling with IntersectionObserver for better performance
-        const imageObserver = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting && entry.intersectionRatio > 0.8) {
-              const index = Array.from(mobileGalleryContainer.children).indexOf(entry.target);
-              if (index !== -1) {
-                updateActiveMobileThumbnail(index);
-              }
-            }
-          });
-        }, {
-          root: mobileGalleryContainer,
-          threshold: [0.8],
-          rootMargin: '0px'
-        });
+      //   // Improved scroll event handling with IntersectionObserver for better performance
+      //   const imageObserver = new IntersectionObserver((entries) => {
+      //     entries.forEach(entry => {
+      //       if (entry.isIntersecting && entry.intersectionRatio > 0.8) {
+      //         const index = Array.from(mobileGalleryContainer.children).indexOf(entry.target);
+      //         if (index !== -1) {
+      //           updateActiveMobileThumbnail(index);
+      //         }
+      //       }
+      //     });
+      //   }, {
+      //     root: mobileGalleryContainer,
+      //     threshold: [0.8],
+      //     rootMargin: '0px'
+      //   });
         
-        // Observe all gallery images
-        Array.from(mobileGalleryContainer.children).forEach(image => {
-          imageObserver.observe(image);
-        });
+      //   // Observe all gallery images
+      //   Array.from(mobileGalleryContainer.children).forEach(image => {
+      //     imageObserver.observe(image);
+      //   });
         
-        // Backup solution: listen for scroll events with debounce
-        let scrollTimeout;
-        mobileGalleryContainer.addEventListener('scroll', function() {
-          clearTimeout(scrollTimeout);
+      //   // Backup solution: listen for scroll events with debounce
+      //   let scrollTimeout;
+      //   mobileGalleryContainer.addEventListener('scroll', function() {
+      //     clearTimeout(scrollTimeout);
           
-          scrollTimeout = setTimeout(() => {
-            const containerWidth = mobileGalleryContainer.offsetWidth;
-            const scrollPosition = mobileGalleryContainer.scrollLeft;
-            const imageIndex = Math.round(scrollPosition / containerWidth);
+      //     scrollTimeout = setTimeout(() => {
+      //       const containerWidth = mobileGalleryContainer.offsetWidth;
+      //       const scrollPosition = mobileGalleryContainer.scrollLeft;
+      //       const imageIndex = Math.round(scrollPosition / containerWidth);
             
-            if (imageIndex >= 0 && imageIndex < mobileThumbnails.length) {
-              updateActiveMobileThumbnail(imageIndex);
-            }
-          }, 50);
-        }, { passive: true });
+      //       if (imageIndex >= 0 && imageIndex < mobileThumbnails.length) {
+      //         updateActiveMobileThumbnail(imageIndex);
+      //       }
+      //     }, 50);
+      //   }, { passive: true });
         
-        // Add click handlers to mobile thumbnails
-        mobileThumbnails.forEach((thumb, index) => {
-          thumb.addEventListener('click', function() {
-            scrollToMobileImage(index);
-          });
-        });
-      }
+      //   // Add click handlers to mobile thumbnails
+      //   mobileThumbnails.forEach((thumb, index) => {
+      //     thumb.addEventListener('click', function() {
+      //       scrollToMobileImage(index);
+      //     });
+      //   });
+      // }
+
       
       // Initialize the mobile gallery
+      console.log("mobile swipe gallery init")
       initMobileSwipeGallery();
       
       // Setup click outside to close popups
@@ -1561,183 +1710,6 @@
       // Remove the old click-outside handlers
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
-    });
-  </script>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Setup for vertical scroll gallery on desktop
-      const scrollContainer = document.getElementById('image-scroll-container');
-      const thumbnails = document.querySelectorAll('.thumbnail-image');
-      const mainImage = document.getElementById('main-image');
-      
-      if (scrollContainer && thumbnails.length > 0) {
-        // Make the first thumbnail active by default (which is now the second image)
-        if (thumbnails[0]) {
-          thumbnails[0].classList.remove('opacity-60');
-          thumbnails[0].classList.add('opacity-100');
-          
-          // Also scroll the first item in the right-side gallery into view
-          const firstItemId = thumbnails[0].dataset.targetScrollId;
-          const firstElement = document.getElementById(firstItemId);
-          if (firstElement) {
-            firstElement.scrollIntoView({ behavior: 'auto' });
-          }
-        }
-        
-        // Improve scroll detection for faster response
-        let isScrolling = false;
-        scrollContainer.addEventListener('scroll', function() {
-          // Set flag to indicate scrolling is happening
-          isScrolling = true;
-          
-          // Call handler immediately for faster response
-          handleScroll();
-          
-          // Then debounce for final position
-          clearTimeout(window.scrollDebounce);
-          window.scrollDebounce = setTimeout(function() {
-            isScrolling = false;
-            handleScroll();
-          }, 50);
-        });
-        
-        // Function to handle scroll events - extracted for reuse
-        function handleScroll() {
-          // Find which image is most visible with lower threshold
-          let maxVisibleRatio = 0;
-          let mostVisibleImageId = null;
-          let mostVisibleImageUrl = null;
-          
-          document.querySelectorAll('.image-scroll-item').forEach(item => {
-            const rect = item.getBoundingClientRect();
-            const containerRect = scrollContainer.getBoundingClientRect();
-            
-            // Calculate how much of the item is visible in the container
-            const visibleTop = Math.max(rect.top, containerRect.top);
-            const visibleBottom = Math.min(rect.bottom, containerRect.bottom);
-            const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-            const visibleRatio = visibleHeight / rect.height;
-            
-            // Use much lower threshold of 20% visibility for faster updates
-            if (visibleRatio > 0.2 && visibleRatio > maxVisibleRatio) {
-              maxVisibleRatio = visibleRatio;
-              mostVisibleImageId = item.dataset.imageId;
-              mostVisibleImageUrl = item.querySelector('img').src;
-            }
-          });
-          
-          if (mostVisibleImageId) {
-            updateActiveThumbnail(mostVisibleImageId);
-            
-            // Update main image to match
-            if (mainImage && mostVisibleImageUrl) {
-              mainImage.src = mostVisibleImageUrl;
-            }
-          }
-        }
-        
-        // Update active thumbnail based on which image is in viewport
-        const observer = new IntersectionObserver((entries) => {
-          // Skip observer updates while actively scrolling for smoother experience
-          if (isScrolling) return;
-          
-          entries.forEach(entry => {
-            if (entry.isIntersecting && entry.intersectionRatio > 0.3) {  // Lower threshold to 30%
-              const imageId = entry.target.dataset.imageId;
-              updateActiveThumbnail(imageId);
-              
-              // Also update the main image to match the scrolled image
-              const imageUrl = entry.target.querySelector('img').src;
-              if (mainImage) {
-                mainImage.src = imageUrl;
-              }
-            }
-          });
-        }, {
-          root: scrollContainer,
-          threshold: [0.2, 0.3, 0.5]  // Lower thresholds for earlier detection
-        });
-        
-        // Function to update which thumbnail is active
-        function updateActiveThumbnail(imageId) {
-          thumbnails.forEach(thumb => {
-            if (thumb.dataset.imageId === imageId) {
-              thumb.classList.remove('opacity-60');
-              thumb.classList.add('opacity-100');
-            } else {
-              thumb.classList.remove('opacity-100');
-              thumb.classList.add('opacity-60');
-            }
-          });
-        }
-        
-        // Observe all image items in the scroll container
-        document.querySelectorAll('.image-scroll-item').forEach(item => {
-          observer.observe(item);
-        });
-        
-        // Add click handlers to thumbnails to scroll to corresponding image
-        thumbnails.forEach(thumb => {
-          thumb.addEventListener('click', function() {
-            const targetId = this.dataset.targetScrollId;
-            const targetElement = document.getElementById(targetId);
-            const imageId = this.dataset.imageId;
-            
-            if (targetElement) {
-              targetElement.scrollIntoView({ behavior: 'smooth' });
-              
-              // Update thumbnails immediately on click
-              updateActiveThumbnail(imageId);
-              
-              // Also update main image when thumbnail is clicked
-              const imageUrl = this.querySelector('img').src;
-              if (mainImage) {
-                // Make sure we get the full-sized image URL
-                const fullSizeUrl = imageUrl.replace(/_(60x|120x|200x)\./, '_master.');
-                mainImage.src = fullSizeUrl;
-              }
-            }
-          });
-        });
-      }
-      
-      // Also update mobile gallery to match initial image
-      initMobileGalleryToMatchMain();
-      
-      function initMobileGalleryToMatchMain() {
-        const mobileThumbnails = document.querySelectorAll('.mobile-thumbnail');
-        const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
-        
-        if (mainImage && mobileThumbnails.length > 0 && mobileGalleryContainer) {
-          // For mobile, we always start with the first image (unlike desktop where first image is on left, rest on right)
-          // Simply ensure the first mobile thumbnail is active and scroll to first image
-          setTimeout(function() {
-            // Reset scroll position to first image
-            mobileGalleryContainer.scrollTo({
-              left: 0,
-              behavior: 'auto'
-            });
-            
-            // Force highlight the first thumbnail
-            mobileThumbnails.forEach((thumb, index) => {
-              if (index === 0) {
-                thumb.classList.remove('opacity-30');
-                thumb.classList.add('opacity-100');
-              } else {
-                thumb.classList.remove('opacity-100');
-                thumb.classList.add('opacity-30');
-              }
-            });
-            
-            // Update pagination
-            const paginationIndicator = document.getElementById('mobile-pagination-indicator');
-            if (paginationIndicator) {
-              paginationIndicator.textContent = `1 / ${mobileThumbnails.length}`;
-            }
-          }, 100);
-        }
-      }
     });
   </script>
   
@@ -2108,11 +2080,11 @@
   }
   
   /* Navigation containers consistent styling */
-  .max-w-[864px] {
+  /* .max-w-[864px] {
     width: calc(100% - 8px);
     margin-left: 4px;
     margin-right: 4px;
-  }
+  } */
   
   /* Button styling */
   .add-to-cart-btn {
@@ -2172,13 +2144,13 @@
   
   /* Popup styling */
   #shipping-popup, #size-guide-popup, #materials-popup {
-    position: absolute;
-    top: 114px; /* Changed from 115px to 114px (13px up from original 127px) */
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 8px);
+    /* position: absolute; */
+    /* top: 114px; Changed from 115px to 114px (13px up from original 127px) */
+    /* left: 50%; */
+    /* transform: translateX(-50%); */
+    /* width: calc(100% - 8px); */
     max-width: 864px;
-    z-index: 55;
+    z-index: 61;
     transition: opacity 0.3s ease;
   }
   
@@ -2199,7 +2171,7 @@
       top: 0 !important; /* Removed gap completely */
       left: 50%;
       transform: translateX(-50%);
-      width: calc(100% - 8px);
+      /* width: calc(100% - 8px); */
       max-width: 864px;
       max-height: 80vh;
       overflow-y: auto;
@@ -2665,16 +2637,20 @@
 <style>
   /* Add these new styles */
   .product-info-container {
-    transition: all 0.3s ease;
+    /* transition: all 0.3s ease; */
+    /* position: relative; */
+    /* max-height: 80vh; */
+    z-index: 60;
   }
 
   .product-info-container:hover .product-details-container {
     max-height: 1000px; /* Adjust this value based on your content */
-    padding-top: 4px;
+    /* padding-top: 4px; */
   }
 
   .product-details-container {
-    transition: all 0.3s ease;
+    /* transition: all 0.3s ease; */
+    transition: max-height 0.3s ease;
     max-height: 0;
     overflow: hidden;
   }
@@ -2683,7 +2659,7 @@
   .product-details-container:focus-within,
   .product-details-container:hover {
     max-height: 1000px;
-    padding-top: 4px;
+    /* padding-top: 4px; */
   }
 
   /* Keep the title/price container visible */
@@ -2692,10 +2668,11 @@
     overflow: visible;
   }
 
+  /* TODO: look for any traansitions that were covered by removed "transition all" and add paarticular transition properties */
   /* Ensure smooth transitions */
-  .product-info-container * {
+  /* .product-info-container * {
     transition: all 0.5s ease;
-  }
+  } */
 
   /* Add margin to the gap when container is expanded */
   .product-info-container:hover .h-\\[4px\\] {
@@ -2715,7 +2692,7 @@
         const detailsContainer = this.querySelector('.product-details-container');
         if (detailsContainer) {
           detailsContainer.style.maxHeight = '1000px';
-          detailsContainer.style.paddingTop = '4px';
+          // detailsContainer.style.paddingTop = '4px';
         }
       });
 
@@ -2724,7 +2701,7 @@
         const detailsContainer = this.querySelector('.product-details-container');
         if (detailsContainer) {
           detailsContainer.style.maxHeight = '0';
-          detailsContainer.style.paddingTop = '0';
+          // detailsContainer.style.paddingTop = '0';
         }
       });
     }
@@ -2774,7 +2751,7 @@
       if (detailsContainer) {
         requestAnimationFrame(() => {
           detailsContainer.style.maxHeight = '1000px';
-          detailsContainer.style.paddingTop = '4px';
+          // detailsContainer.style.paddingTop = '4px';
         });
       }
       
@@ -2791,7 +2768,7 @@
       if (detailsContainer) {
         requestAnimationFrame(() => {
           detailsContainer.style.maxHeight = '0';
-          detailsContainer.style.paddingTop = '0';
+          // detailsContainer.style.paddingTop = '0';
         });
       }
       
