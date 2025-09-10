@@ -94,6 +94,7 @@
   {% assign second_image = product.images[1] | default: first_image %}
 
   <script>
+    // TODO: update this to avoid Security Error in development
     // Store all product images in a global variable for client-side filtering
     window.allProductImages = {{ product.images | json }};
     window.productOptions = {{ product.options_with_values | json }};
@@ -281,9 +282,9 @@
       <div class="w-full md:w-1/2 md:h-full relative pb-12 md:pb-0">
         <!-- Main Image for Desktop -->
         <div class="hidden md:block w-full h-full">
-          <img 
+          <img
             id="main-image"
-            src="{{ first_image | img_url: '100x' }}" 
+            src="{{ first_image | img_url: '100x' }}"
             data-src="{{ first_image | image_url }}"
             alt="{{ product.title }}"
             {% comment %} TODO: contain vs cover to prevent img cutoff {% endcomment %}
@@ -355,8 +356,8 @@
           </div>
         </div>
       </div>
-      
-      <!-- Right Side - Second Image with Thumbnails (Hidden on mobile) -->
+
+      <!-- Right Side - Second Image (Hidden on mobile) -->
       <div class="hidden md:block md:w-1/2 h-full relative">
         <!-- Right Main Image replaced with scrollable gallery -->
         <div id="image-scroll-container" class="w-full h-full overflow-y-auto custom-scrollbar scroll-snap-container">
@@ -674,8 +675,9 @@
         <div class="h-[4px] bg-transparent"></div>
 
         <!-- Product Header Row with bottom gap -->
-        <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] h-[38px] px-4 py-3 product-info-item transition-colors duration-300">
-          <div class="flex justify-between items-center">
+        {% comment %} <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] h-[49px] backdrop-blur-[12.5px] px-4 py-3 flex justify-between items-center product-info-item transition-colors duration-300"></div> {% endcomment %}
+        <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] py-[10px] px-4 product-info-item transition-colors duration-300">
+          <div class="flex justify-between items-end">
             <h1 class="uppercase text-[13px] font-medium text-[#444444]">{{ product.title }}</h1>
             <span class="text-[13px] text-[#444444]">${{ product.price | money_without_currency }}</span>
           </div>
@@ -962,62 +964,212 @@
       });
     });
 
-    console.log('Popup functions loaded');
-
     // selectVariant() helper functions
     // Use the globals you already set in <script> from Liquid
-    const variants = window.productVariants || [];
-    const images = window.allProductImages || [];
-    const productOptions = window.productOptions || [];
+    // const variants = window.productVariants || [];
+    // const images = window.allProductImages || [];
+    // const productOptions = window.productOptions || [];
 
-    // Returns an array of image objects that belong to the selected variant's color
-    function getImagesForVariantColor(variant) {
-      if (!variant || !variant.featured_image) return [];
+    // // Returns an array of image objects that belong to the selected variant's color
+    // function getImagesForVariantColor(variant) {
+    //   if (!variant || !variant.featured_image) return [];
 
-      const startIndex = images.findIndex(img => String(img.id) === String(variant.featured_image.id));
-      if (startIndex === -1) return [];
+    //   const startIndex = images.findIndex(img => String(img.id) === String(variant.featured_image.id));
+    //   if (startIndex === -1) return [];
 
-      const out = [];
-      for (let i = startIndex; i < images.length; i++) {
-        const isAnotherFeatured =
-          i > startIndex &&
-          variants.some(v => v.featured_image && String(v.featured_image.id) === String(images[i].id));
-        if (isAnotherFeatured) break;
-        out.push(images[i]);
-      }
-      return out;
-    }
+    //   const out = [];
+    //   for (let i = startIndex; i < images.length; i++) {
+    //     const isAnotherFeatured =
+    //       i > startIndex &&
+    //       variants.some(v => v.featured_image && String(v.featured_image.id) === String(images[i].id));
+    //     if (isAnotherFeatured) break;
+    //     out.push(images[i]);
+    //   }
+    //   return out;
+    // }
 
-    // Hide/show the right-side gallery items based on image IDs
-    function showOnlyRightSideImages(imageSet) {
-      const allowedIds = new Set(imageSet.map(img => String(img.id)));
-      const rightItems = document.querySelectorAll('#image-scroll-container [data-image-id]');
+    // // Hide/show the right-side gallery items based on image IDs
+    // function showOnlyRightSideImages(imageSet) {
+    //   const allowedIds = new Set(imageSet.map(img => String(img.id)));
+    //   const rightItems = document.querySelectorAll('#image-scroll-container [data-image-id]');
 
-      rightItems.forEach(el => {
-        const id = String(el.getAttribute('data-image-id'));
-        if (allowedIds.has(id)) {
-          el.classList.remove('hidden');   // Tailwind's .hidden is fine
-        } else {
-          el.classList.add('hidden');
+    //   rightItems.forEach(el => {
+    //     const id = String(el.getAttribute('data-image-id'));
+    //     if (allowedIds.has(id)) {
+    //       el.classList.remove('hidden');   // Tailwind's .hidden is fine
+    //     } else {
+    //       el.classList.add('hidden');
+    //     }
+    //   });
+    // }
+
+    // // Optional but nice: also ensure the big main image matches the first image in the set
+    // function syncMainImage(imageSet, fallbackFeatured) {
+    //   const mainImage = document.getElementById('main-image');
+    //   if (!mainImage) return;
+    //   if (imageSet && imageSet.length) {
+    //     mainImage.src = imageSet[0].src;
+    //   } else if (fallbackFeatured && fallbackFeatured.src) {
+    //     mainImage.src = fallbackFeatured.src;
+    //   }
+    // }
+
+    // TODO: configure
+    function updateGalleryForVariant(variant) {
+      // console.log("🚀 ~ updateGalleryForVariant ~ variant:", variant)
+
+      // TODO: defensively access data for now to avoid security error in development
+      const images = {{ product.images | json }};
+      // console.log("🚀 ~ updateGalleryForVariant ~ images:", images);
+      const variants = {{ product.variants | json }};
+      // console.log("🚀 ~ updateGalleryForVariant ~ variants:", variants)
+
+      const normalize = url => url ? url.replace(/^https?:/, '') : '';
+
+      function getImagesForVariant(v) {
+        if (!v.featured_image) return [];
+        console.log("🚀 ~ getImagesForVariant ~ v.featured_image:", v.featured_image)
+
+        // const startIndex = images.findIndex(imgUrl => {
+        //   return imgUrl.includes(v.featured_image.src); 
+        // });
+        const featuredSrc = normalize(v.featured_image.src);
+        const startIndex = images.findIndex(imgUrl => normalize(imgUrl).includes(featuredSrc));
+
+        console.log('   -> featuredSrc:', featuredSrc, 'startIndex:', startIndex);
+
+        if (startIndex === -1) return [];
+
+        const result = [];
+        for (let i = startIndex; i < images.length; i++) {
+          const current = normalize(images[i]);
+          // stop if we hit another variant's featured image
+          const isAnotherFeatured = i > startIndex && variants.some(other =>
+            other.featured_image && normalize(other.featured_image.src) === current
+          );
+          if (isAnotherFeatured) break;
+
+          result.push(images[i]); // we keep raw URL string
         }
-      });
-    }
-
-    // Optional but nice: also ensure the big main image matches the first image in the set
-    function syncMainImage(imageSet, fallbackFeatured) {
-      const mainImage = document.getElementById('main-image');
-      if (!mainImage) return;
-      if (imageSet && imageSet.length) {
-        mainImage.src = imageSet[0].src;
-      } else if (fallbackFeatured && fallbackFeatured.src) {
-        mainImage.src = fallbackFeatured.src;
+        console.log('   -> getImagesForVariant result count:', result.length);
+        return result;
       }
+
+      const imageSet = getImagesForVariant(variant);
+
+      // Update desktop main image
+      const mainImage = document.getElementById('main-image');
+      if (mainImage && imageSet[0]) {
+        console.log("🚀 ~ imageSet[0]:", imageSet[0])
+        
+        mainImage.setAttribute('src', imageSet[0]);
+        mainImage.setAttribute('data-src', imageSet[0]);
+        mainImage.removeAttribute('srcset');
+        mainImage.removeAttribute('onload');
+
+        mainImage.onload = () => {
+          console.log('[setMainImage] loaded successfully:', imageSet[0]);
+          mainImage.dataset.highResLoaded = true;
+          mainImage.classList.remove('blur-sm');
+        };
+      }
+
+      // Update desktop right side gallery (skip first image since it's shown on left)
+      const rightSideGallery = document.getElementById('image-scroll-container');
+      if (rightSideGallery && imageSet.length > 1) {
+        // Clear existing images
+        rightSideGallery.innerHTML = '';
+        
+        // Add all images except the first one (which is shown as main image)
+        const rightSideImages = imageSet.slice(1);
+        
+        rightSideImages.forEach((imgUrl, idx) => {
+          const scrollItem = document.createElement('div');
+          scrollItem.className = 'w-full h-full snap-center image-scroll-item';
+          scrollItem.dataset.imageId = `variant-${variant.id}-${idx + 1}`;
+          scrollItem.id = `scroll-image-variant-${variant.id}-${idx + 1}`;
+          
+          const baseUrl = imgUrl.split('?')[0]; // Clean URL
+          
+          scrollItem.innerHTML = `
+            <img
+              src="${baseUrl}" 
+              data-src="${baseUrl}"
+              alt="${variant.title || 'Product image'}"
+              class="w-full h-full object-contain blur-up"
+              width="${variant.featured_image?.width || 800}"
+              height="${variant.featured_image?.height || 1200}"
+              loading="${idx === 0 ? 'eager' : 'lazy'}"
+              onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage && window.loadHighResImage(this); }"
+            >
+          `;
+          
+          rightSideGallery.appendChild(scrollItem);
+        });
+        
+        console.log(`Updated right side gallery with ${rightSideImages.length} images for variant ${variant.id}`);
+      } else if (rightSideGallery && imageSet.length === 1) {
+        // If only one image, clear the right side gallery
+        rightSideGallery.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400">No additional images</div>';
+      }
+
+      // update mobile gallery slides
+      const mobileGallery = document.getElementById('mobile-gallery-container');
+      if (mobileGallery) {
+        mobileGallery.innerHTML = '';
+        imageSet.forEach((imgUrl, idx) => {
+          const slide = document.createElement('div');
+          slide.className = "w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative";
+          slide.dataset.index = idx;
+          slide.innerHTML = `
+            <img src="${imgUrl}" alt="${variant.featured_image.alt || ''}" class="w-full h-full object-cover" />
+          `;
+          mobileGallery.appendChild(slide);
+        });
+      }
+
+      // Update mobile thumbnail gallery
+      const mobileThumbnailWrapper = document.querySelector('.mobile-thumbnail-wrapper .mobile-gallery');
+      if (mobileThumbnailWrapper && imageSet.length > 0) {
+        // Clear existing thumbnails
+        mobileThumbnailWrapper.innerHTML = '';
+        
+        imageSet.forEach((imgUrl, idx) => {
+          const thumbnailButton = document.createElement('button');
+          thumbnailButton.type = 'button';
+          thumbnailButton.className = 'flex-shrink-0 h-[70px] w-[45.5px] mr-3 mobile-thumbnail bg-transparent border-0 p-0';
+          thumbnailButton.dataset.index = idx;
+          thumbnailButton.onclick = () => scrollToMobileImage(idx);
+          
+          const baseUrl = imgUrl.split('?')[0]; // Clean URL
+          
+          thumbnailButton.innerHTML = `
+            <img 
+              src="${baseUrl}" 
+              alt="${variant.title || 'Product thumbnail'}" 
+              class="w-full h-full object-cover"
+              width="45.5"
+              height="70"
+              loading="lazy"
+              srcset="${baseUrl} 46w"
+              sizes="45.5px"
+            >
+          `;
+          
+          mobileThumbnailWrapper.appendChild(thumbnailButton);
+        });
+        
+        console.log(`Updated mobile thumbnails with ${imageSet.length} images for variant ${variant.id}`);
+      }
+
     }
 
     // Function to handle variant selection
     function selectVariant(element, optionPosition, optionValue) {
       // Define selectable items for the current option group
-      const selectableItems = document.querySelectorAll(`.variant-button[data-option-position="${optionPosition}"], .color-chip[data-option-position="${optionPosition}"]`);
+      const selectableItems = document.querySelectorAll(
+        `.variant-button[data-option-position="${optionPosition}"], .color-chip[data-option-position="${optionPosition}"]`
+      );
 
       // Clear previous selection for this option group
       selectableItems.forEach(item => {
@@ -1055,10 +1207,14 @@
         matchingVariant = variants.find(variant => {
           return Object.keys(selections).every(option => {
             const position = parseInt(option.replace('option', ''));
+            // console.log("🚀 ~ position:", position)
             return variant[`option${position}`] === selections[`option${position}`];
           });
         });
       }
+
+      console.log('[selectVariant] matchingVariant:', matchingVariant ? matchingVariant.id : null, matchingVariant);
+
 
       // Check if this is an unavailable combination of options
       let isUnavailableCombination = false;
@@ -1080,22 +1236,50 @@
 
       // If there's a matching variant, update the variant ID
       if (matchingVariant) {
+        const variantIdDesktop = document.getElementById('variant-id');
+        if (variantIdDesktop) variantIdDesktop.value = matchingVariant.id;
+
+        const variantIdMobile = document.getElementById('variant-id-mobile');
+        if (variantIdMobile) variantIdMobile.value = matchingVariant.id;
+
+        // Update gallery (desktop + mobile) for this variant
+        updateGalleryForVariant(matchingVariant);
+
         document.getElementById('variant-id').value = matchingVariant.id;
         if (document.getElementById('variant-id-mobile')) {
           document.getElementById('variant-id-mobile').value = matchingVariant.id;
         }
 
         // Update the main image to the variant's featured image
-        if (matchingVariant.featured_image) {
-          const mainImage = document.getElementById('main-image');
-          if (mainImage) {
-            mainImage.src = matchingVariant.featured_image.src;
-          }
-        }
+        // if (matchingVariant.featured_image) {
+        //   const mainImage = document.getElementById('main-image');
+        //   if (mainImage) {
+        //     mainImage.src = matchingVariant.featured_image.src;
+        //   }
+        // }
       }
     }
 
-    console.log('Variant helpers and selection loaded');
+    document.addEventListener('DOMContentLoaded', () => {
+      const firstVariant = window.productVariants.find(v => v.available);
+      console.log("🚀 ~ firstVariant option 1:", firstVariant.option1)
+      if (firstVariant) {
+        // simulate a selection
+        selectVariant(
+          document.querySelector(`.color-chip[data-value="${firstVariant.option1}"]`),
+          1,
+          firstVariant.option1
+        );
+        // also select size if needed
+        if (firstVariant.option2) {
+          selectVariant(
+            document.querySelector(`.variant-button[data-value="${firstVariant.option2}"]`),
+            2,
+            firstVariant.option2
+          );
+        }
+      }
+    });
 
     // Function to update add to cart buttons based on variant selection and inventory
     function updateAddToCartButtons(allSelected, selectedVariant, isUnavailableCombination) {
@@ -1174,75 +1358,75 @@
     document.addEventListener('DOMContentLoaded', function() {
 
       // TODO: filter displayed images for selected color
-      const variants = window.productVariants;
-      const images = window.allProductImages;
+      // const variants = window.productVariants;
+      // const images = window.allProductImages;
 
-      // 1. Get first available variant
-      const firstVariant = variants.find(v => v.available);
-      if (!firstVariant) return; // No available variants
+      // // 1. Get first available variant
+      // const firstVariant = variants.find(v => v.available);
+      // if (!firstVariant) return; // No available variants
 
-      // 2. Filter images for this variant's color
-      function getImagesForVariant(variant) {
-        const startIndex = images.findIndex(img => img.id === variant.featured_image.id);
-        if (startIndex === -1) return [];
+      // // 2. Filter images for this variant's color
+      // function getImagesForVariant(variant) {
+      //   const startIndex = images.findIndex(img => img.id === variant.featured_image.id);
+      //   if (startIndex === -1) return [];
 
-        const result = [];
-        for (let i = startIndex; i < images.length; i++) {
-          if (i > startIndex && variants.some(v => v.featured_image && v.featured_image.id === images[i].id)) {
-            break; // Stop at next variant's featured image
-          }
-          result.push(images[i]);
-        }
-        return result;
-      }
+      //   const result = [];
+      //   for (let i = startIndex; i < images.length; i++) {
+      //     if (i > startIndex && variants.some(v => v.featured_image && v.featured_image.id === images[i].id)) {
+      //       break; // Stop at next variant's featured image
+      //     }
+      //     result.push(images[i]);
+      //   }
+      //   return result;
+      // }
 
-      const colorImages = getImagesForVariant(firstVariant);
+      // const colorImages = getImagesForVariant(firstVariant);
 
-      // 3. Update the gallery
-      function updateGallery(imageSet) {
-        // Desktop main image
-        const mainImage = document.getElementById('main-image');
-        if (mainImage && imageSet[0]) {
-          mainImage.src = imageSet[0].src;
-        }
+      // // 3. Update the gallery
+      // function updateGallery(imageSet) {
+      //   // Desktop main image
+      //   const mainImage = document.getElementById('main-image');
+      //   if (mainImage && imageSet[0]) {
+      //     mainImage.src = imageSet[0].src;
+      //   }
 
-        // Mobile gallery container
-        const mobileGallery = document.getElementById('mobile-gallery-container');
-        if (mobileGallery) {
-          mobileGallery.innerHTML = '';
-          imageSet.forEach((img, idx) => {
-            const slide = document.createElement('div');
-            slide.className = "w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative";
-            slide.dataset.index = idx;
-            slide.innerHTML = `
-              <img src="${img.src}" alt="${img.alt || ''}" class="w-full h-full object-cover" />
-            `;
-            mobileGallery.appendChild(slide);
-          });
-        }
-      }
+      //   // Mobile gallery container
+      //   const mobileGallery = document.getElementById('mobile-gallery-container');
+      //   if (mobileGallery) {
+      //     mobileGallery.innerHTML = '';
+      //     imageSet.forEach((img, idx) => {
+      //       const slide = document.createElement('div');
+      //       slide.className = "w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative";
+      //       slide.dataset.index = idx;
+      //       slide.innerHTML = `
+      //         <img src="${img.src}" alt="${img.alt || ''}" class="w-full h-full object-cover" />
+      //       `;
+      //       mobileGallery.appendChild(slide);
+      //     });
+      //   }
+      // }
 
-      updateGallery(colorImages);
+      // updateGallery(colorImages);
 
-      // 4. Mark chips/buttons as selected
-      document.querySelectorAll(`.color-chip[data-value="${firstVariant.option1}"]`).forEach(chip => {
-        chip.setAttribute('data-selected', 'true');
-        chip.closest('.color-chip-container')?.classList.add('active');
-      });
+      // // 4. Mark chips/buttons as selected
+      // document.querySelectorAll(`.color-chip[data-value="${firstVariant.option1}"]`).forEach(chip => {
+      //   chip.setAttribute('data-selected', 'true');
+      //   chip.closest('.color-chip-container')?.classList.add('active');
+      // });
 
-      document.querySelectorAll(`.variant-button[data-value="${firstVariant.option2}"]`).forEach(btn => {
-        btn.setAttribute('data-selected', 'true');
-        btn.classList.add('bg-[#D9D9D9]');
-      });
+      // document.querySelectorAll(`.variant-button[data-value="${firstVariant.option2}"]`).forEach(btn => {
+      //   btn.setAttribute('data-selected', 'true');
+      //   btn.classList.add('bg-[#D9D9D9]');
+      // });
       
-      // Update hidden variant ID field for forms
-      const variantIdFieldDesktop = document.getElementById('variant-id');
-      if (variantIdFieldDesktop) variantIdFieldDesktop.value = firstVariant.id;
+      // // Update hidden variant ID field for forms
+      // const variantIdFieldDesktop = document.getElementById('variant-id');
+      // if (variantIdFieldDesktop) variantIdFieldDesktop.value = firstVariant.id;
       
-      const variantIdFieldMobile = document.getElementById('variant-id-mobile');
-      if (variantIdFieldMobile) variantIdFieldMobile.value = firstVariant.id;
+      // const variantIdFieldMobile = document.getElementById('variant-id-mobile');
+      // if (variantIdFieldMobile) variantIdFieldMobile.value = firstVariant.id;
       
-      console.log('Desktop gallery init');
+      // console.log('Desktop gallery init');
       
       
       // Initialize ADD TO CART buttons based on variant selection state
@@ -1378,8 +1562,6 @@
         }
       }
 
-      console.log('Add-to-cart init');
-
       // Only set up hover effects on desktop (screen width >= 768px)
       if (window.innerWidth >= 768) {
         // Get all product info elements
@@ -1475,8 +1657,6 @@
             });
           }
         });
-
-        console.log('Header hover init');
       }
       
       
@@ -1675,9 +1855,9 @@
       // }
 
       
-      // Initialize the mobile gallery
-      console.log("mobile swipe gallery init")
-      initMobileSwipeGallery();
+      // // Initialize the mobile gallery
+      // console.log("mobile swipe gallery init")
+      // initMobileSwipeGallery();
       
       // Setup click outside to close popups
       document.addEventListener('click', function(event) {

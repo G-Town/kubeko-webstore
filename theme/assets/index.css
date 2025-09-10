@@ -635,13 +635,13 @@ video {
   margin-left: 18px;
   margin-right: 18px;
 }
-.mx-auto{
-  margin-left: auto;
-  margin-right: auto;
-}
 .mx-12 {
   margin-left: 3rem;
   margin-right: 3rem;
+}
+.mx-auto{
+  margin-left: auto;
+  margin-right: auto;
 }
 .my-4 {
   margin-top: 1rem;
@@ -654,6 +654,10 @@ video {
 .my-24 {
   margin-top: 6rem;
   margin-bottom: 6rem;
+}
+.my-auto{
+  margin-top: auto;
+  margin-bottom: auto;
 }
 .-ml-\[8px\]{
   margin-left: -8px;
@@ -729,6 +733,9 @@ video {
 }
 .mt-6{
   margin-top: 1.5rem;
+}
+.mt-12{
+  margin-top: 3rem;
 }
 .mt-\[21px\]{
   margin-top: 21px;

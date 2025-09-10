@@ -51,8 +51,8 @@
   {% paginate collection.products by 24 %}
     {% if collection.metafields.custom.isdrop == true %}
       <div class="max-w-[1260px] mx-auto md:px-[120px]">
-        <h1 class="text-center text-2xl font-helvetica font-semibold tracking-wide uppercase my-12">Lookbook</h1>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-8 md:gap-x-2 md:gap-y-16">
+        {% comment %} <h1 class="text-center text-2xl font-helvetica font-semibold tracking-wide uppercase my-12">Lookbook</h1> {% endcomment %}
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-8 md:gap-x-2 md:gap-y-16 mt-12">
           {% for look in collection.metafields.custom.lookbook.value %}
             {% render 'collection-card'
               , look: look
