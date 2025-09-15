@@ -282,12 +282,30 @@
       <div class="w-full md:w-1/2 md:h-full relative pb-12 md:pb-0">
         <!-- Main Image for Desktop -->
         <div class="hidden md:block w-full h-full">
-          <img
+          {% comment %} {% assign first_variant = product.variants | where: 'available', true | first %}
+          {% if first_variant.featured_image %}
+            <img 
+              id="main-image"
+              src="{{ first_variant.featured_image | img_url: '100x' }}" 
+              data-src="{{ first_variant.featured_image | image_url }}"
+              alt="{{ product.title }}"
+              class="w-full h-full object-contain blur-up"
+              width="{{ first_variant.featured_image.width }}"
+              height="{{ first_variant.featured_image.height }}"
+              loading="eager"
+              srcset="{{ first_variant.featured_image | img_url: '400x' }} 400w,
+                      {{ first_variant.featured_image | img_url: '600x' }} 600w,
+                      {{ first_variant.featured_image | img_url: '800x' }} 800w,
+                      {{ first_variant.featured_image | img_url: '1200x' }} 1200w,
+                      {{ first_variant.featured_image | img_url: 'master' }} {{ first_variant.featured_image.width }}w"
+              sizes="(max-width: 767px) 100vw, 50vw"
+            >
+          {% endif %} {% endcomment %}
+          {% comment %} <img
             id="main-image"
             src="{{ first_image | img_url: '100x' }}"
             data-src="{{ first_image | image_url }}"
             alt="{{ product.title }}"
-            {% comment %} TODO: contain vs cover to prevent img cutoff {% endcomment %}
             class="w-full h-full object-contain blur-up"
             width="{{ first_image.width }}"
             height="{{ first_image.height }}"
@@ -299,12 +317,23 @@
                     {{ first_image | img_url: 'master' }} {{ first_image.width }}w"
             sizes="(max-width: 767px) 100vw, 50vw"
             onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
+          > {% endcomment %}
+          <img 
+            id="main-image"
+            src="" 
+            data-src=""
+            alt="{{ product.title }}"
+            class="w-full h-full object-contain"
+            width="800"
+            height="1200"
+            loading="eager"
+            style="opacity: 0;"
           >
         </div>
         
         <!-- Mobile Main Image (Slideshow on mobile) -->
         <div id="mobile-gallery-container" class="block md:hidden w-full aspect-[45.5/70] overflow-x-auto snap-x snap-mandatory whitespace-nowrap" style="display: flex; flex-direction: row;">
-          {% for image in product.images %}
+          {% comment %} {% for image in product.images %}
             <div 
               class="w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative" 
               data-index="{{ forloop.index0 }}"
@@ -328,13 +357,13 @@
                 onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
               >
             </div>
-          {% endfor %}
+          {% endfor %} {% endcomment %}
         </div>
         
         <!-- Mobile Thumbnail Gallery -->
         <div class="block md:hidden w-full h-[80px] overflow-x-auto absolute bottom-0 left-0 z-10 mobile-gallery-container mobile-thumbnail-wrapper">
           <div class="flex flex-row items-center h-full px-4 mobile-gallery">
-            {% for image in product.images %}
+            {% comment %} {% for image in product.images %}
               <button 
                 type="button"
                 class="flex-shrink-0 h-[70px] w-[45.5px] mr-3 mobile-thumbnail bg-transparent border-0 p-0" 
@@ -352,7 +381,7 @@
                   sizes="45.5px"
                 >
               </button>
-            {% endfor %}
+            {% endfor %} {% endcomment %}
           </div>
         </div>
       </div>
@@ -361,7 +390,7 @@
       <div class="hidden md:block md:w-1/2 h-full relative">
         <!-- Right Main Image replaced with scrollable gallery -->
         <div id="image-scroll-container" class="w-full h-full overflow-y-auto custom-scrollbar scroll-snap-container">
-          {% assign images_for_right_side = product.images | slice: 1, product.images.size %}
+          {% comment %} {% assign images_for_right_side = product.images | slice: 1, product.images.size %}
           {% for image in images_for_right_side %}
             <div 
               class="w-full h-full snap-center image-scroll-item" 
@@ -372,7 +401,6 @@
                 src="{{ image | img_url: '100x' }}" 
                 data-src="{{ image | image_url }}"
                 alt="{{ product.title }}"
-                {% comment %} TODO: contain vs cover to prevent img cutoff {% endcomment %}
                 class="w-full h-full object-contain blur-up"
                 width="{{ image.width }}"
                 height="{{ image.height }}"
@@ -386,8 +414,30 @@
                 onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
               >
             </div>
-          {% endfor %}
+          {% endfor %} {% endcomment %}
+          
+          {% comment %} <img
+            src="{{ second_image | img_url: '100x' }}"
+            data-src="{{ second_image | image_url }}"
+            alt="{{ product.title }}"
+            class="w-full h-full object-contain blur-up"
+            width="{{ second_image.width }}"
+            height="{{ second_image.height }}"
+            loading="eager"
+            srcset="{{ second_image | img_url: '400x' }} 400w,
+                    {{ second_image | img_url: '600x' }} 600w,
+                    {{ second_image | img_url: '800x' }} 800w,
+                    {{ second_image | img_url: '1200x' }} 1200w,
+                    {{ second_image | img_url: 'master' }} {{ second_image.width }}w"
+            sizes="(max-width: 767px) 100vw, 50vw"
+            onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
+          > {% endcomment %}
         </div>
+
+        <!-- Preload link for first variant images (optional performance boost) -->
+        {% if first_variant.featured_image %}
+          <link rel="preload" as="image" href="{{ first_variant.featured_image | img_url: '800x' }}">
+        {% endif %}
         
         <!-- Thumbnail Column - Scrollable (Desktop only) -->
         {% comment %} <div class="absolute right-4 top-0 h-full flex flex-col items-end z-10 overflow-y-auto max-h-full py-4 custom-scrollbar">
@@ -964,205 +1014,290 @@
       });
     });
 
-    // selectVariant() helper functions
-    // Use the globals you already set in <script> from Liquid
-    // const variants = window.productVariants || [];
-    // const images = window.allProductImages || [];
-    // const productOptions = window.productOptions || [];
+    class ProductImageManager {
+      constructor(product) {
+        this.product = product;
+        this.variants = product.variants;
+        this.allImages = product.images;
+        this.imageCache = new Map();
+        this.loadedVariants = new Set();
+        this.currentVariant = null;
+        
+        this.init();
+      }
 
-    // // Returns an array of image objects that belong to the selected variant's color
-    // function getImagesForVariantColor(variant) {
-    //   if (!variant || !variant.featured_image) return [];
+      init() {
+        const firstVariant = this.variants.find(v => v.available);
+        // if (firstVariant) {
+        //   this.loadVariant(firstVariant, true); // true = immediate load
+        // }
+        if (firstVariant) {
+          // Get images for first variant
+          const images = this.getImagesForVariant(firstVariant);
+          console.log("🚀 ~ init ~ Loading first variant images:", images.length);
+          
+          // Load main and second image immediately on page load
+          if (images.length > 0) {
+            this.updateMainImageImmediate(firstVariant, images[0]);
+          }
+          if (images.length > 1) {
+            // Load second image immediately too
+            this.updateRightGallery(firstVariant, images.slice(1));
+          }
+          
+          // Load mobile gallery
+          this.updateMobileGallery(firstVariant, images);
+          this.updateMobileThumbnails(firstVariant, images);
+          
+          // Mark this variant as loaded
+          this.loadedVariants.add(firstVariant.id);
+          this.currentVariant = firstVariant;
+          
+          // Initialize mobile gallery after a short delay
+          setTimeout(() => initMobileGallery(false), 100);
+        }
+      }
 
-    //   const startIndex = images.findIndex(img => String(img.id) === String(variant.featured_image.id));
-    //   if (startIndex === -1) return [];
-
-    //   const out = [];
-    //   for (let i = startIndex; i < images.length; i++) {
-    //     const isAnotherFeatured =
-    //       i > startIndex &&
-    //       variants.some(v => v.featured_image && String(v.featured_image.id) === String(images[i].id));
-    //     if (isAnotherFeatured) break;
-    //     out.push(images[i]);
-    //   }
-    //   return out;
-    // }
-
-    // // Hide/show the right-side gallery items based on image IDs
-    // function showOnlyRightSideImages(imageSet) {
-    //   const allowedIds = new Set(imageSet.map(img => String(img.id)));
-    //   const rightItems = document.querySelectorAll('#image-scroll-container [data-image-id]');
-
-    //   rightItems.forEach(el => {
-    //     const id = String(el.getAttribute('data-image-id'));
-    //     if (allowedIds.has(id)) {
-    //       el.classList.remove('hidden');   // Tailwind's .hidden is fine
-    //     } else {
-    //       el.classList.add('hidden');
-    //     }
-    //   });
-    // }
-
-    // // Optional but nice: also ensure the big main image matches the first image in the set
-    // function syncMainImage(imageSet, fallbackFeatured) {
-    //   const mainImage = document.getElementById('main-image');
-    //   if (!mainImage) return;
-    //   if (imageSet && imageSet.length) {
-    //     mainImage.src = imageSet[0].src;
-    //   } else if (fallbackFeatured && fallbackFeatured.src) {
-    //     mainImage.src = fallbackFeatured.src;
-    //   }
-    // }
-
-    // TODO: configure
-    function updateGalleryForVariant(variant) {
-      // console.log("🚀 ~ updateGalleryForVariant ~ variant:", variant)
-
-      // TODO: defensively access data for now to avoid security error in development
-      const images = {{ product.images | json }};
-      // console.log("🚀 ~ updateGalleryForVariant ~ images:", images);
-      const variants = {{ product.variants | json }};
-      // console.log("🚀 ~ updateGalleryForVariant ~ variants:", variants)
-
-      const normalize = url => url ? url.replace(/^https?:/, '') : '';
-
-      function getImagesForVariant(v) {
-        if (!v.featured_image) return [];
-        console.log("🚀 ~ getImagesForVariant ~ v.featured_image:", v.featured_image)
-
-        // const startIndex = images.findIndex(imgUrl => {
-        //   return imgUrl.includes(v.featured_image.src); 
-        // });
-        const featuredSrc = normalize(v.featured_image.src);
-        const startIndex = images.findIndex(imgUrl => normalize(imgUrl).includes(featuredSrc));
-
-        console.log('   -> featuredSrc:', featuredSrc, 'startIndex:', startIndex);
-
+      getImagesForVariant(variant) {
+        if (!variant.featured_image) return [];
+        
+        const normalize = url => url ? url.replace(/^https?:/, '') : '';
+        const featuredSrc = normalize(variant.featured_image.src);
+        const startIndex = this.allImages.findIndex(imgUrl => 
+          normalize(imgUrl).includes(featuredSrc)
+        );
+        
         if (startIndex === -1) return [];
-
+        
         const result = [];
-        for (let i = startIndex; i < images.length; i++) {
-          const current = normalize(images[i]);
-          // stop if we hit another variant's featured image
-          const isAnotherFeatured = i > startIndex && variants.some(other =>
+        for (let i = startIndex; i < this.allImages.length; i++) {
+          const current = normalize(this.allImages[i]);
+          const isAnotherFeatured = i > startIndex && this.variants.some(other =>
             other.featured_image && normalize(other.featured_image.src) === current
           );
           if (isAnotherFeatured) break;
-
-          result.push(images[i]); // we keep raw URL string
+          result.push(this.allImages[i]);
         }
-        console.log('   -> getImagesForVariant result count:', result.length);
+        
         return result;
       }
 
-      const imageSet = getImagesForVariant(variant);
-
-      // Update desktop main image
-      const mainImage = document.getElementById('main-image');
-      if (mainImage && imageSet[0]) {
-        console.log("🚀 ~ imageSet[0]:", imageSet[0])
+      preloadVariantImages(variant) {
+        if (this.loadedVariants.has(variant.id)) return Promise.resolve();
         
-        mainImage.setAttribute('src', imageSet[0]);
-        mainImage.setAttribute('data-src', imageSet[0]);
+        const images = this.getImagesForVariant(variant);
+        const loadPromises = images.map(imgUrl => this.preloadImage(imgUrl));
+        
+        return Promise.all(loadPromises).then(() => {
+          this.loadedVariants.add(variant.id);
+          console.log(`✅ Preloaded ${images.length} images for variant ${variant.id}`);
+        });
+      }
+
+      preloadImage(src) {
+        if (this.imageCache.has(src)) return Promise.resolve();
+        
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            this.imageCache.set(src, img);
+            resolve(img);
+          };
+          img.onerror = reject;
+          img.src = src;
+        });
+      }
+
+      // Load variant immediately (for active variant)
+      async loadVariant(variant, immediate = false) {
+        console.log("🚀 ~ loadVariant called with variant:", variant.id, variant);
+        this.currentVariant = variant;
+        const images = this.getImagesForVariant(variant);
+        console.log("🚀 ~ loadVariant ~ images found:", images.length, images);
+        
+        if (immediate || this.loadedVariants.has(variant.id)) {
+          this.updateGalleryDOM(variant, images);
+          if (!this.loadedVariants.has(variant.id)) {
+            await this.preloadVariantImages(variant);
+          }
+        } else {
+          // this.showLoadingState();
+          await this.preloadVariantImages(variant);
+          this.updateGalleryDOM(variant, images);
+        }
+        
+        this.preloadAdjacentVariants(variant);
+      }
+
+      // Preload nearby variants for faster switching
+      preloadAdjacentVariants(currentVariant) {
+        const currentIndex = this.variants.findIndex(v => v.id === currentVariant.id);
+        const toPreload = [];
+        
+        if (currentIndex > 0) toPreload.push(this.variants[currentIndex - 1]);
+        if (currentIndex < this.variants.length - 1) toPreload.push(this.variants[currentIndex + 1]);
+        
+        toPreload.forEach(variant => {
+          if (variant.available && !this.loadedVariants.has(variant.id)) {
+            setTimeout(() => this.preloadVariantImages(variant), 500);
+          }
+        });
+      }
+
+      // showLoadingState() {
+      //   // Add loading spinner to main image
+      //   const mainImage = document.getElementById('main-image');
+      //   if (mainImage) {
+      //     mainImage.style.opacity = '0.5';
+      //     // You could add a spinner overlay here
+      //   }
+      // }
+
+      updateGalleryDOM(variant, images) {
+        this.updateMainImage(variant, images[0]);
+        this.updateRightGallery(variant, images.slice(1));
+        this.updateMobileGallery(variant, images);
+        this.updateMobileThumbnails(variant, images);
+        setTimeout(() => initMobileGallery(true), 100);
+      }
+
+      // Immediate update for page load (no loading states or transitions)
+      updateMainImageImmediate(variant, imageUrl) {
+        const mainImage = document.getElementById('main-image');
+        if (!mainImage || !imageUrl) return;
+        
+        console.log("🚀 ~ updateMainImageImmediate ~ imageUrl:", imageUrl);
+        
+        // Don't add loading states on initial load
+        mainImage.setAttribute('src', imageUrl);
+        mainImage.setAttribute('data-src', imageUrl);
+        mainImage.removeAttribute('srcset');
+        mainImage.removeAttribute('onload');
+        
+        // Set proper dimensions to prevent size jumping
+        if (variant.featured_image?.width && variant.featured_image?.height) {
+          mainImage.setAttribute('width', variant.featured_image.width);
+          mainImage.setAttribute('height', variant.featured_image.height);
+        }
+        
+        // Update alt text
+        mainImage.setAttribute('alt', variant.featured_image?.alt || variant.title || 'Product image');
+        
+        // Remove any blur classes that might be applied
+        mainImage.classList.remove('blur-up', 'blur-sm');
+        mainImage.style.opacity = '1';
+        mainImage.dataset.loaded = 'true';
+        mainImage.dataset.highResLoaded = 'true';
+      }
+
+      updateMainImage(variant, imageUrl) {
+        const mainImage = document.getElementById('main-image');
+        if (!mainImage || !imageUrl) return;
+        console.log("🚀 ~ updateMainImage ~ imageUrl:", imageUrl)
+        
+        mainImage.style.opacity = '0.5';
+        // mainImage.src = imageUrl;
+        
+        mainImage.setAttribute('src', imageUrl);
+        mainImage.setAttribute('data-src', imageUrl);
         mainImage.removeAttribute('srcset');
         mainImage.removeAttribute('onload');
 
+        mainImage.setAttribute('alt', variant.featured_image?.alt || variant.title || 'Product image');
+        if (variant.featured_image?.width) mainImage.setAttribute('width', variant.featured_image.width);
+        if (variant.featured_image?.height) mainImage.setAttribute('height', variant.featured_image.height);
+        
+        
         mainImage.onload = () => {
-          console.log('[setMainImage] loaded successfully:', imageSet[0]);
+          console.log('[updateMainImage] loaded successfully');
+          mainImage.style.opacity = '1';
           mainImage.dataset.highResLoaded = true;
           mainImage.classList.remove('blur-sm');
         };
       }
 
-      // Update desktop right side gallery (skip first image since it's shown on left)
-      const rightSideGallery = document.getElementById('image-scroll-container');
-      if (rightSideGallery && imageSet.length > 1) {
-        // Clear existing images
+      updateRightGallery(variant, images) {
+        const rightSideGallery = document.getElementById('image-scroll-container');
+        if (!rightSideGallery) return;
+        
         rightSideGallery.innerHTML = '';
         
-        // Add all images except the first one (which is shown as main image)
-        const rightSideImages = imageSet.slice(1);
+        if (images.length === 0) {
+          rightSideGallery.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400">No additional images</div>';
+          return;
+        }
         
-        rightSideImages.forEach((imgUrl, idx) => {
+        images.forEach((imgUrl, idx) => {
           const scrollItem = document.createElement('div');
           scrollItem.className = 'w-full h-full snap-center image-scroll-item';
-          scrollItem.dataset.imageId = `variant-${variant.id}-${idx + 1}`;
-          scrollItem.id = `scroll-image-variant-${variant.id}-${idx + 1}`;
-          
-          const baseUrl = imgUrl.split('?')[0]; // Clean URL
-          
           scrollItem.innerHTML = `
             <img
-              src="${baseUrl}" 
-              data-src="${baseUrl}"
+              src="${imgUrl}" 
               alt="${variant.title || 'Product image'}"
-              class="w-full h-full object-contain blur-up"
-              width="${variant.featured_image?.width || 800}"
-              height="${variant.featured_image?.height || 1200}"
-              loading="${idx === 0 ? 'eager' : 'lazy'}"
-              onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage && window.loadHighResImage(this); }"
+              class="w-full h-full object-contain"
+              loading="lazy"
             >
           `;
-          
           rightSideGallery.appendChild(scrollItem);
         });
-        
-        console.log(`Updated right side gallery with ${rightSideImages.length} images for variant ${variant.id}`);
-      } else if (rightSideGallery && imageSet.length === 1) {
-        // If only one image, clear the right side gallery
-        rightSideGallery.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400">No additional images</div>';
       }
 
-      // update mobile gallery slides
-      const mobileGallery = document.getElementById('mobile-gallery-container');
-      if (mobileGallery) {
+      updateMobileGallery(variant, images) {
+        const mobileGallery = document.getElementById('mobile-gallery-container');
+        if (!mobileGallery) return;
+        
         mobileGallery.innerHTML = '';
-        imageSet.forEach((imgUrl, idx) => {
+        images.forEach((imgUrl, idx) => {
           const slide = document.createElement('div');
           slide.className = "w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative";
           slide.dataset.index = idx;
+          slide.onclick = () => scrollToMobileImage(idx);
           slide.innerHTML = `
-            <img src="${imgUrl}" alt="${variant.featured_image.alt || ''}" class="w-full h-full object-cover" />
+            <img 
+              src="${imgUrl}" 
+              alt="${variant.title || ''}" 
+              class="w-full h-full object-cover"
+              loading="lazy"
+            />
           `;
           mobileGallery.appendChild(slide);
         });
       }
 
-      // Update mobile thumbnail gallery
-      const mobileThumbnailWrapper = document.querySelector('.mobile-thumbnail-wrapper .mobile-gallery');
-      if (mobileThumbnailWrapper && imageSet.length > 0) {
-        // Clear existing thumbnails
-        mobileThumbnailWrapper.innerHTML = '';
+      updateMobileThumbnails(variant, images) {
+        const mobileThumbnailWrapper = document.querySelector('.mobile-thumbnail-wrapper .mobile-gallery');
+        if (!mobileThumbnailWrapper) return;
         
-        imageSet.forEach((imgUrl, idx) => {
+        mobileThumbnailWrapper.innerHTML = '';
+        images.forEach((imgUrl, idx) => {
           const thumbnailButton = document.createElement('button');
           thumbnailButton.type = 'button';
           thumbnailButton.className = 'flex-shrink-0 h-[70px] w-[45.5px] mr-3 mobile-thumbnail bg-transparent border-0 p-0';
           thumbnailButton.dataset.index = idx;
           thumbnailButton.onclick = () => scrollToMobileImage(idx);
-          
-          const baseUrl = imgUrl.split('?')[0]; // Clean URL
-          
           thumbnailButton.innerHTML = `
             <img 
-              src="${baseUrl}" 
-              alt="${variant.title || 'Product thumbnail'}" 
+              src="${imgUrl}" 
+              alt="${variant.title || ''}" 
               class="w-full h-full object-cover"
-              width="45.5"
-              height="70"
               loading="lazy"
-              srcset="${baseUrl} 46w"
-              sizes="45.5px"
-            >
+            />
           `;
-          
           mobileThumbnailWrapper.appendChild(thumbnailButton);
         });
-        
-        console.log(`Updated mobile thumbnails with ${imageSet.length} images for variant ${variant.id}`);
       }
-
     }
+
+    let productImageManager;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const productData = {
+        variants: {{ product.variants | json }},
+        images: {{ product.images | json }}
+      };
+      
+      productImageManager = new ProductImageManager(productData);
+    });
 
     // Function to handle variant selection
     function selectVariant(element, optionPosition, optionValue) {
@@ -1235,7 +1370,7 @@
       }
 
       // If there's a matching variant, update the variant ID
-      if (matchingVariant) {
+      if (matchingVariant && productImageManager) {
         const variantIdDesktop = document.getElementById('variant-id');
         if (variantIdDesktop) variantIdDesktop.value = matchingVariant.id;
 
@@ -1243,20 +1378,13 @@
         if (variantIdMobile) variantIdMobile.value = matchingVariant.id;
 
         // Update gallery (desktop + mobile) for this variant
-        updateGalleryForVariant(matchingVariant);
+        // updateGalleryForVariant(matchingVariant);
+        productImageManager.loadVariant(matchingVariant);
 
         document.getElementById('variant-id').value = matchingVariant.id;
         if (document.getElementById('variant-id-mobile')) {
           document.getElementById('variant-id-mobile').value = matchingVariant.id;
         }
-
-        // Update the main image to the variant's featured image
-        // if (matchingVariant.featured_image) {
-        //   const mainImage = document.getElementById('main-image');
-        //   if (mainImage) {
-        //     mainImage.src = matchingVariant.featured_image.src;
-        //   }
-        // }
       }
     }
 
@@ -1356,78 +1484,6 @@
     }
     
     document.addEventListener('DOMContentLoaded', function() {
-
-      // TODO: filter displayed images for selected color
-      // const variants = window.productVariants;
-      // const images = window.allProductImages;
-
-      // // 1. Get first available variant
-      // const firstVariant = variants.find(v => v.available);
-      // if (!firstVariant) return; // No available variants
-
-      // // 2. Filter images for this variant's color
-      // function getImagesForVariant(variant) {
-      //   const startIndex = images.findIndex(img => img.id === variant.featured_image.id);
-      //   if (startIndex === -1) return [];
-
-      //   const result = [];
-      //   for (let i = startIndex; i < images.length; i++) {
-      //     if (i > startIndex && variants.some(v => v.featured_image && v.featured_image.id === images[i].id)) {
-      //       break; // Stop at next variant's featured image
-      //     }
-      //     result.push(images[i]);
-      //   }
-      //   return result;
-      // }
-
-      // const colorImages = getImagesForVariant(firstVariant);
-
-      // // 3. Update the gallery
-      // function updateGallery(imageSet) {
-      //   // Desktop main image
-      //   const mainImage = document.getElementById('main-image');
-      //   if (mainImage && imageSet[0]) {
-      //     mainImage.src = imageSet[0].src;
-      //   }
-
-      //   // Mobile gallery container
-      //   const mobileGallery = document.getElementById('mobile-gallery-container');
-      //   if (mobileGallery) {
-      //     mobileGallery.innerHTML = '';
-      //     imageSet.forEach((img, idx) => {
-      //       const slide = document.createElement('div');
-      //       slide.className = "w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative";
-      //       slide.dataset.index = idx;
-      //       slide.innerHTML = `
-      //         <img src="${img.src}" alt="${img.alt || ''}" class="w-full h-full object-cover" />
-      //       `;
-      //       mobileGallery.appendChild(slide);
-      //     });
-      //   }
-      // }
-
-      // updateGallery(colorImages);
-
-      // // 4. Mark chips/buttons as selected
-      // document.querySelectorAll(`.color-chip[data-value="${firstVariant.option1}"]`).forEach(chip => {
-      //   chip.setAttribute('data-selected', 'true');
-      //   chip.closest('.color-chip-container')?.classList.add('active');
-      // });
-
-      // document.querySelectorAll(`.variant-button[data-value="${firstVariant.option2}"]`).forEach(btn => {
-      //   btn.setAttribute('data-selected', 'true');
-      //   btn.classList.add('bg-[#D9D9D9]');
-      // });
-      
-      // // Update hidden variant ID field for forms
-      // const variantIdFieldDesktop = document.getElementById('variant-id');
-      // if (variantIdFieldDesktop) variantIdFieldDesktop.value = firstVariant.id;
-      
-      // const variantIdFieldMobile = document.getElementById('variant-id-mobile');
-      // if (variantIdFieldMobile) variantIdFieldMobile.value = firstVariant.id;
-      
-      // console.log('Desktop gallery init');
-      
       
       // Initialize ADD TO CART buttons based on variant selection state
       if (document.querySelector('.variant-button')) {
@@ -1959,17 +2015,15 @@
     document.addEventListener('DOMContentLoaded', function() {
       const colorChipsContainer = document.getElementById('color-chips-container');
       const selectedColorName = document.getElementById('selected-color-name');
-      let selectedColor = ''; // To store the name of the clicked color
+      let selectedColor = '';
 
       if (colorChipsContainer && selectedColorName) {
-        // Function to set the initial state
         const setInitialState = () => {
             const activeChip = colorChipsContainer.querySelector('.color-chip-container.active .color-chip');
             if (activeChip) {
                 selectedColor = activeChip.dataset.colorName;
                 selectedColorName.textContent = selectedColor;
             } else {
-                // Fallback to the first chip if none are marked active initially
                 const firstChip = colorChipsContainer.querySelector('.color-chip');
                 if (firstChip) {
                     selectedColor = firstChip.dataset.colorName;
@@ -2745,73 +2799,96 @@
 </style>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initialize mobile gallery functionality
-    function initMobileGallery() {
-      const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
-      const mobileSlides = document.querySelectorAll('.mobile-gallery-slide');
-      const mobileThumbnails = document.querySelectorAll('.mobile-thumbnail');
+  // 1. First, move initMobileGallery function outside of DOMContentLoaded so it can be called multiple times
+  // Move this function to global scope (outside the DOMContentLoaded listener):
 
-      if (!mobileGalleryContainer || !mobileSlides.length) return;
+  function initMobileGallery(preserveActiveIndex = false) {
+    const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
+    const mobileSlides = document.querySelectorAll('.mobile-gallery-slide');
+    const mobileThumbnails = document.querySelectorAll('.mobile-thumbnail');
 
-      // Function to scroll to specific image
-      window.scrollToMobileImage = function(index) {
-        if (index < 0 || index >= mobileSlides.length) return;
-        
-        const containerWidth = mobileGalleryContainer.offsetWidth;
-        const scrollPosition = index * containerWidth;
+    if (!mobileGalleryContainer || !mobileSlides.length) return;
 
-        mobileGalleryContainer.scrollTo({
-          left: scrollPosition,
-          behavior: 'smooth'
-        });
+    // Determine which thumbnail should be active
+    let activeIndex = 0;
+    
+    if (preserveActiveIndex) {
+      // Calculate current active index based on scroll position
+      const containerWidth = mobileGalleryContainer.offsetWidth;
+      const scrollPosition = mobileGalleryContainer.scrollLeft;
+      activeIndex = Math.round(scrollPosition / containerWidth);
+      
+      // Make sure the index is within bounds of new image set
+      activeIndex = Math.min(activeIndex, mobileSlides.length - 1);
+    }
 
-        // Update thumbnails
-        updateActiveMobileThumbnail(index);
-      };
+    // Function to scroll to specific image
+    window.scrollToMobileImage = function(index) {
+      const currentSlides = document.querySelectorAll('.mobile-gallery-slide');
+      if (index < 0 || index >= currentSlides.length) return;
+      
+      const containerWidth = mobileGalleryContainer.offsetWidth;
+      const scrollPosition = index * containerWidth;
 
-      // Update active thumbnail
-      function updateActiveMobileThumbnail(activeIndex) {
-        mobileThumbnails.forEach((thumb, index) => {
-          if (index === activeIndex) {
-            thumb.classList.remove('opacity-30');
-            thumb.classList.add('opacity-100');
-          } else {
-            thumb.classList.remove('opacity-100');
-            thumb.classList.add('opacity-30');
-          }
-        });
-      }
+      mobileGalleryContainer.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      });
 
-      // Initialize with first image active
-      updateActiveMobileThumbnail(0);
+      // Update thumbnails
+      updateActiveMobileThumbnail(index);
+    };
 
-      // Handle scroll events to update thumbnails
-      let scrollTimeout;
-      mobileGalleryContainer.addEventListener('scroll', function() {
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-          const containerWidth = mobileGalleryContainer.offsetWidth;
-          const scrollPosition = mobileGalleryContainer.scrollLeft;
-          const activeIndex = Math.round(scrollPosition / containerWidth);
-          updateActiveMobileThumbnail(activeIndex);
-        }, 50);
-      }, { passive: true });
-
-      // Add click handlers to slides
-      mobileSlides.forEach((slide) => {
-        slide.addEventListener('click', function(e) {
-          const index = parseInt(this.dataset.index);
-          if (!isNaN(index)) {
-            scrollToMobileImage(index);
-          }
-        });
+    // Update active thumbnail
+    function updateActiveMobileThumbnail(activeIndex) {
+      const currentThumbnails = document.querySelectorAll('.mobile-thumbnail');
+      currentThumbnails.forEach((thumb, index) => {
+        if (index === activeIndex) {
+          thumb.classList.remove('opacity-30');
+          thumb.classList.add('opacity-100');
+        } else {
+          thumb.classList.remove('opacity-100');
+          thumb.classList.add('opacity-30');
+        }
       });
     }
 
-    // Initialize mobile gallery
-    initMobileGallery();
-  });
+    // Make updateActiveMobileThumbnail globally accessible
+    window.updateActiveMobileThumbnail = updateActiveMobileThumbnail;
+
+    // Initialize with first image active
+    updateActiveMobileThumbnail(activeIndex);
+
+    // Remove existing scroll listeners to avoid duplicates
+    if (window.mobileScrollHandler) {
+      mobileGalleryContainer.removeEventListener('scroll', window.mobileScrollHandler);
+    }
+
+    // Handle scroll events to update thumbnails
+    let scrollTimeout;
+    window.mobileScrollHandler = function() {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const containerWidth = mobileGalleryContainer.offsetWidth;
+        const scrollPosition = mobileGalleryContainer.scrollLeft;
+        const activeIndex = Math.round(scrollPosition / containerWidth);
+        updateActiveMobileThumbnail(activeIndex);
+      }, 50);
+    };
+
+    mobileGalleryContainer.addEventListener('scroll', window.mobileScrollHandler, { passive: true });
+
+    // Add click handlers to slides
+    const currentSlides = document.querySelectorAll('.mobile-gallery-slide');
+    currentSlides.forEach((slide) => {
+      slide.addEventListener('click', function(e) {
+        const index = parseInt(this.dataset.index);
+        if (!isNaN(index)) {
+          scrollToMobileImage(index);
+        }
+      });
+    });
+  }
 </script>
 
 <style>
