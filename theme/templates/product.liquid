@@ -100,7 +100,7 @@
     window.productOptions = {{ product.options_with_values | json }};
     window.productVariants = {{ product.variants | json }};
   </script>
-  
+
   <!-- Product Layout -->
   <div class="flex flex-col text-black md:h-90 w-full pt-0 bg-[#f4f4f4]">
     <!-- Product Content -->
@@ -172,110 +172,6 @@
             </div>
           {% endif %}
         </nav>
-      </div> {% endcomment %}
-      
-      <!-- Popups for Materials, Size Guide, and Shipping -->
-      {% comment %} <div id="popup-overlay" class="hidden fixed inset-0 bg-transparent z-[54]"></div> {% endcomment %}
-      
-      {% comment %} <div id="shipping-popup" class="hidden absolute max-w-[864px] w-[calc(100%-8px)] left-1/2 -translate-x-1/2 top-[1px] md:top-[127px] z-[55] popup-container">
-        <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-4 popup-content transition-colors duration-300">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="uppercase text-sm font-medium">SHIPPING</h2>
-            <button onclick="closePopup('shipping-popup')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
-              CLOSE
-            </button>
-          </div>
-          <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content">
-            {% if settings.default_shipping_info != blank %}
-              {{ settings.default_shipping_info | newline_to_br }}
-            {% elsif product.metafields.custom.shipping %}
-              {{ product.metafields.custom.shipping | newline_to_br }}
-            {% else %}
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For ready-to-ship items, please allow 2-3 days for the item to dispatch.</p>
-              
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For made-to-order items, please allow 3-4 weeks for the item to dispatch.</p>
-              
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">You will receive an email notification to confirm your order has been dispatched.</p>
-              
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">If you require any additional information please contact <span class="underline">info@kubeko.co</span></p>
-              
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">We offer complimentary shipping for orders above $350 within the USA and South Korea.</p>
-              
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">Please note that customers outside the USA and South Korea will be responsible for all import duties and tax charges that may be applied by their local customs office on delivery to country of destination.</p>
-              
-              <p class="text-[13px] leading-relaxed text-[#444444]">For return requests, please contact <span class="underline">info@kubeko.co</span> within 14 days of the order's delivery date. After confirming the condition of the returning item(s), we will email you with return instructions. Items must be returned new, unused, unworn, unwashed, unaltered, and undamaged condition, with its original tags attached.</p>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-      
-      <div id="size-guide-popup" class="hidden absolute max-w-[864px] w-[calc(100%-8px)] left-1/2 -translate-x-1/2 top-[127px] md:top-[127px] z-[55] popup-container">
-        <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-6 px-5 popup-content transition-colors duration-300">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="uppercase text-sm font-medium">SIZE GUIDE</h2>
-            <button onclick="closePopup('size-guide-popup')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
-              CLOSE
-            </button>
-          </div>
-          <div class="popup-formatted-content text-center">
-            {% if product.metafields.custom.size_guide %}
-              <!-- Using the recommended metafield_tag filter from Shopify docs -->
-              <div class="w-full md:w-1/2 mx-auto">
-                {{ product.metafields.custom.size_guide | metafield_tag }}
-              </div>
-            {% else %}
-              <!-- No size guide available message -->
-              <div class="w-full md:w-1/2 mx-auto">
-                <p class="text-[13px] text-black leading-relaxed">No size guide available for this product.</p>
-              </div>
-            {% endif %}
-            <p class="text-[13px] text-gray-600 mt-4">For any specific sizing questions, please contact us at <span class="underline">info@kubeko.co</span></p>
-          </div>
-        </div>
-      </div>
-      
-      <div id="materials-popup" class="hidden absolute max-w-[864px] text-black w-[calc(100%-8px)] left-1/2 -translate-x-1/2 top-[127px] md:top-[127px] z-[55] popup-container">
-        <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] px-5 py-6 popup-content transition-colors duration-300">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="uppercase text-sm font-medium">MATERIALS</h2>
-            <button onclick="closePopup('materials-popup')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
-              CLOSE
-            </button>
-          </div>
-          <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content" id="materials-content-container">
-            {% if product.metafields.custom.materials %}
-              <div id="materials-content-wrapper">
-                {% if product.metafields.custom.materials.type == 'json' %}
-                  {{ product.metafields.custom.materials | metafield_tag }}
-                {% else %}
-                  {{ product.metafields.custom.materials }}
-                {% endif %}
-              </div>
-
-              <style>
-                /* Add styling to properly format the metafield content */
-                #materials-content-wrapper p {
-                  font-size: 13px;
-                  line-height: 1.7;
-                  margin-bottom: 1.5rem;
-                }
-                
-                #materials-content-wrapper > div > p {
-                  font-size: 13px;
-                  line-height: 1.7;
-                  margin-bottom: 1.5rem;
-                }
-                
-                #materials-content-wrapper > p:last-child,
-                #materials-content-wrapper > div > p:last-child {
-                  margin-bottom: 0;
-                }
-              </style>
-            {% else %}
-              <p class="text-[13px] leading-relaxed">Materials information not available for this product.</p>
-            {% endif %}
-          </div>
-        </div>
       </div> {% endcomment %}
       
       <!-- Left Side - Main Product Image (Full width on mobile) -->
@@ -780,7 +676,8 @@
                                     class="color-chip"
                                     style="background-color: {{ value.swatch.color }};"
                                     data-color-name="{{ value | escape }}"
-                                    data-option-position="{{ option.position }}"
+                                    {% comment %} data-option-position="{{ option.position }}" {% endcomment %}
+                                    data-option-position="1"
                                     data-value="{{ value | escape }}"
                                     onclick="selectVariant(this, '{{ option.position }}', '{{ value | escape }}')"
                                     aria-label="Select color {{ value | escape }}"
@@ -1013,6 +910,89 @@
         }
       });
     });
+
+  // Moved this function to global scope (outside the DOMContentLoaded listener):
+  function initMobileGallery(preserveActiveIndex = false) {
+    const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
+    const mobileSlides = document.querySelectorAll('.mobile-gallery-slide');
+    const mobileThumbnails = document.querySelectorAll('.mobile-thumbnail');
+
+    if (!mobileGalleryContainer || !mobileSlides.length) return;
+
+    let activeIndex = 0;
+    
+    if (preserveActiveIndex) {
+      // Calculate current active index based on scroll position
+      const containerWidth = mobileGalleryContainer.offsetWidth;
+      const scrollPosition = mobileGalleryContainer.scrollLeft;
+      activeIndex = Math.round(scrollPosition / containerWidth);
+      
+      // Make sure the index is within bounds of new image set
+      activeIndex = Math.min(activeIndex, mobileSlides.length - 1);
+    }
+
+    window.scrollToMobileImage = function(index) {
+      const currentSlides = document.querySelectorAll('.mobile-gallery-slide');
+      if (index < 0 || index >= currentSlides.length) return;
+      
+      const containerWidth = mobileGalleryContainer.offsetWidth;
+      const scrollPosition = index * containerWidth;
+
+      mobileGalleryContainer.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      });
+
+      updateActiveMobileThumbnail(index);
+    };
+
+    function updateActiveMobileThumbnail(activeIndex) {
+      const currentThumbnails = document.querySelectorAll('.mobile-thumbnail');
+      currentThumbnails.forEach((thumb, index) => {
+        if (index === activeIndex) {
+          thumb.classList.remove('opacity-30');
+          thumb.classList.add('opacity-100');
+        } else {
+          thumb.classList.remove('opacity-100');
+          thumb.classList.add('opacity-30');
+        }
+      });
+    }
+
+    window.updateActiveMobileThumbnail = updateActiveMobileThumbnail;
+
+    updateActiveMobileThumbnail(activeIndex);
+
+    // Remove existing scroll listeners to avoid duplicates
+    if (window.mobileScrollHandler) {
+      mobileGalleryContainer.removeEventListener('scroll', window.mobileScrollHandler);
+    }
+
+    // Handle scroll events to update thumbnails
+    let scrollTimeout;
+    window.mobileScrollHandler = function() {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const containerWidth = mobileGalleryContainer.offsetWidth;
+        const scrollPosition = mobileGalleryContainer.scrollLeft;
+        const activeIndex = Math.round(scrollPosition / containerWidth);
+        updateActiveMobileThumbnail(activeIndex);
+      }, 50);
+    };
+
+    mobileGalleryContainer.addEventListener('scroll', window.mobileScrollHandler, { passive: true });
+
+    // Add click handlers to slides
+    const currentSlides = document.querySelectorAll('.mobile-gallery-slide');
+    currentSlides.forEach((slide) => {
+      slide.addEventListener('click', function(e) {
+        const index = parseInt(this.dataset.index);
+        if (!isNaN(index)) {
+          scrollToMobileImage(index);
+        }
+      });
+    });
+  }
 
     class ProductImageManager {
       constructor(product) {
@@ -1409,6 +1389,94 @@
       }
     });
 
+    document.addEventListener('DOMContentLoaded', function() {
+      const colorChipsContainer = document.getElementById('color-chips-container');
+      const selectedColorName = document.getElementById('selected-color-name');
+      let selectedColor = '';
+
+      if (colorChipsContainer && selectedColorName) {
+        const setInitialState = () => {
+            const activeChip = colorChipsContainer.querySelector('.color-chip-container.active .color-chip');
+            if (activeChip) {
+                selectedColor = activeChip.dataset.colorName;
+                selectedColorName.textContent = selectedColor;
+            } else {
+                const firstChip = colorChipsContainer.querySelector('.color-chip');
+                if (firstChip) {
+                    selectedColor = firstChip.dataset.colorName;
+                    selectedColorName.textContent = selectedColor;
+                }
+            }
+        };
+
+        // Set initial state on load
+        setInitialState();
+
+        // Handle hover events
+        colorChipsContainer.addEventListener('mouseover', (event) => {
+          const chip = event.target.closest('.color-chip');
+          if (chip) {
+            selectedColorName.textContent = chip.dataset.colorName;
+          }
+        });
+
+        // Handle mouse leaving the container
+        colorChipsContainer.addEventListener('mouseleave', () => {
+          // Revert to the last clicked color's name
+          selectedColorName.textContent = selectedColor;
+        });
+
+        // Handle click events
+        colorChipsContainer.addEventListener('click', (event) => {
+          const chip = event.target.closest('.color-chip');
+          if (chip) {
+            // Update the officially selected color
+            selectedColor = chip.dataset.colorName;
+            selectedColorName.textContent = selectedColor;
+
+            // Update the 'active' class on the container
+            const allChipContainers = colorChipsContainer.querySelectorAll('.color-chip-container');
+            allChipContainers.forEach(container => container.classList.remove('active'));
+            chip.closest('.color-chip-container').classList.add('active');
+
+            // The existing onclick="selectVariant(...)" will handle the form update
+          }
+        });
+      }
+
+      const mobileColorChipsContainer = document.getElementById('mobile-color-chips-container');
+      const mobileSelectedColorName = document.getElementById('mobile-selected-color-name');
+
+      if (mobileColorChipsContainer && mobileSelectedColorName) {
+        const setMobileInitialState = () => {
+          const activeChip = mobileColorChipsContainer.querySelector('.color-chip-container.active .color-chip');
+          if (activeChip) {
+            mobileSelectedColorName.textContent = activeChip.dataset.colorName;
+          } else {
+            const firstChip = mobileColorChipsContainer.querySelector('.color-chip');
+            if (firstChip) {
+              mobileSelectedColorName.textContent = firstChip.dataset.colorName;
+            }
+          }
+        };
+
+        setMobileInitialState();
+
+        mobileColorChipsContainer.addEventListener('click', (event) => {
+          const chip = event.target.closest('.color-chip');
+          if (chip) {
+            // Update selected color name
+            mobileSelectedColorName.textContent = chip.dataset.colorName;
+
+            // Update active class
+            const allChipContainers = mobileColorChipsContainer.querySelectorAll('.color-chip-container');
+            allChipContainers.forEach(container => container.classList.remove('active'));
+            chip.closest('.color-chip-container').classList.add('active');
+          }
+        });
+      }
+    });
+
     // Function to update add to cart buttons based on variant selection and inventory
     function updateAddToCartButtons(allSelected, selectedVariant, isUnavailableCombination) {
       const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
@@ -1751,7 +1819,7 @@
         mobileButtons['shipping-mobile'].setAttribute('onclick', 'openPopup("shipping-popup")');
       }
 
-      //TODO: compare this to the simpler version below
+      //TODO: compare this to the simpler version above
       // Completely revised mobile gallery initialization and synchronization
       // function initMobileSwipeGallery() {
       //   const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
@@ -2012,93 +2080,6 @@
   </script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const colorChipsContainer = document.getElementById('color-chips-container');
-      const selectedColorName = document.getElementById('selected-color-name');
-      let selectedColor = '';
-
-      if (colorChipsContainer && selectedColorName) {
-        const setInitialState = () => {
-            const activeChip = colorChipsContainer.querySelector('.color-chip-container.active .color-chip');
-            if (activeChip) {
-                selectedColor = activeChip.dataset.colorName;
-                selectedColorName.textContent = selectedColor;
-            } else {
-                const firstChip = colorChipsContainer.querySelector('.color-chip');
-                if (firstChip) {
-                    selectedColor = firstChip.dataset.colorName;
-                    selectedColorName.textContent = selectedColor;
-                }
-            }
-        };
-
-        // Set initial state on load
-        setInitialState();
-
-        // Handle hover events
-        colorChipsContainer.addEventListener('mouseover', (event) => {
-          const chip = event.target.closest('.color-chip');
-          if (chip) {
-            selectedColorName.textContent = chip.dataset.colorName;
-          }
-        });
-
-        // Handle mouse leaving the container
-        colorChipsContainer.addEventListener('mouseleave', () => {
-          // Revert to the last clicked color's name
-          selectedColorName.textContent = selectedColor;
-        });
-
-        // Handle click events
-        colorChipsContainer.addEventListener('click', (event) => {
-          const chip = event.target.closest('.color-chip');
-          if (chip) {
-            // Update the officially selected color
-            selectedColor = chip.dataset.colorName;
-            selectedColorName.textContent = selectedColor;
-
-            // Update the 'active' class on the container
-            const allChipContainers = colorChipsContainer.querySelectorAll('.color-chip-container');
-            allChipContainers.forEach(container => container.classList.remove('active'));
-            chip.closest('.color-chip-container').classList.add('active');
-
-            // The existing onclick="selectVariant(...)" will handle the form update
-          }
-        });
-      }
-
-      const mobileColorChipsContainer = document.getElementById('mobile-color-chips-container');
-      const mobileSelectedColorName = document.getElementById('mobile-selected-color-name');
-
-      if (mobileColorChipsContainer && mobileSelectedColorName) {
-        const setMobileInitialState = () => {
-          const activeChip = mobileColorChipsContainer.querySelector('.color-chip-container.active .color-chip');
-          if (activeChip) {
-            mobileSelectedColorName.textContent = activeChip.dataset.colorName;
-          } else {
-            const firstChip = mobileColorChipsContainer.querySelector('.color-chip');
-            if (firstChip) {
-              mobileSelectedColorName.textContent = firstChip.dataset.colorName;
-            }
-          }
-        };
-
-        setMobileInitialState();
-
-        mobileColorChipsContainer.addEventListener('click', (event) => {
-          const chip = event.target.closest('.color-chip');
-          if (chip) {
-            // Update selected color name
-            mobileSelectedColorName.textContent = chip.dataset.colorName;
-
-            // Update active class
-            const allChipContainers = mobileColorChipsContainer.querySelectorAll('.color-chip-container');
-            allChipContainers.forEach(container => container.classList.remove('active'));
-            chip.closest('.color-chip-container').classList.add('active');
-          }
-        });
-      }
-    });
   </script>
 {% endif %}
 <style>
@@ -2718,7 +2699,6 @@
     {% comment %} color: white !important; {% endcomment %}
   }
   
-  /* Popup button styling - updated height */
   .popup-content button,
   button[onclick*="openPopup"],
   button[onclick*="closePopup"] {
@@ -2728,7 +2708,6 @@
     border-radius: 1px;
   }
   
-  /* Out of stock state for Add to Cart button */
   .add-to-cart-btn.out-of-stock {
     background-color: #9C9C9C !important;
     color: white !important;
@@ -2736,7 +2715,6 @@
     opacity: 0.8 !important;
   }
   
-  /* Inventory status styling */
   .inventory-status {
     color: #D24B4B;
     font-size: 0.75rem;
@@ -2744,12 +2722,9 @@
     margin-top: 0.25rem;
     font-weight: 500;
   }
-  
-  /* Success state for Add to Cart button - match product-card styling */
 </style>
 
 <style>
-  /* Mobile gallery styling */
   .mobile-gallery-slide {
     position: relative;
     -webkit-tap-highlight-color: transparent;
@@ -2766,7 +2741,6 @@
 </style>
 
 <style>
-  /* Mobile gallery styling */
   @media (max-width: 767px) {
     #mobile-gallery-container {
       aspect-ratio: 1/1;
@@ -2791,7 +2765,6 @@
     scroll-behavior: smooth;
   }
 
-  /* Mobile gallery container */
   .mobile-gallery-container {
     pointer-events: auto !important;
     touch-action: pan-x pinch-zoom;
@@ -2799,96 +2772,6 @@
 </style>
 
 <script>
-  // 1. First, move initMobileGallery function outside of DOMContentLoaded so it can be called multiple times
-  // Move this function to global scope (outside the DOMContentLoaded listener):
-
-  function initMobileGallery(preserveActiveIndex = false) {
-    const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
-    const mobileSlides = document.querySelectorAll('.mobile-gallery-slide');
-    const mobileThumbnails = document.querySelectorAll('.mobile-thumbnail');
-
-    if (!mobileGalleryContainer || !mobileSlides.length) return;
-
-    // Determine which thumbnail should be active
-    let activeIndex = 0;
-    
-    if (preserveActiveIndex) {
-      // Calculate current active index based on scroll position
-      const containerWidth = mobileGalleryContainer.offsetWidth;
-      const scrollPosition = mobileGalleryContainer.scrollLeft;
-      activeIndex = Math.round(scrollPosition / containerWidth);
-      
-      // Make sure the index is within bounds of new image set
-      activeIndex = Math.min(activeIndex, mobileSlides.length - 1);
-    }
-
-    // Function to scroll to specific image
-    window.scrollToMobileImage = function(index) {
-      const currentSlides = document.querySelectorAll('.mobile-gallery-slide');
-      if (index < 0 || index >= currentSlides.length) return;
-      
-      const containerWidth = mobileGalleryContainer.offsetWidth;
-      const scrollPosition = index * containerWidth;
-
-      mobileGalleryContainer.scrollTo({
-        left: scrollPosition,
-        behavior: 'smooth'
-      });
-
-      // Update thumbnails
-      updateActiveMobileThumbnail(index);
-    };
-
-    // Update active thumbnail
-    function updateActiveMobileThumbnail(activeIndex) {
-      const currentThumbnails = document.querySelectorAll('.mobile-thumbnail');
-      currentThumbnails.forEach((thumb, index) => {
-        if (index === activeIndex) {
-          thumb.classList.remove('opacity-30');
-          thumb.classList.add('opacity-100');
-        } else {
-          thumb.classList.remove('opacity-100');
-          thumb.classList.add('opacity-30');
-        }
-      });
-    }
-
-    // Make updateActiveMobileThumbnail globally accessible
-    window.updateActiveMobileThumbnail = updateActiveMobileThumbnail;
-
-    // Initialize with first image active
-    updateActiveMobileThumbnail(activeIndex);
-
-    // Remove existing scroll listeners to avoid duplicates
-    if (window.mobileScrollHandler) {
-      mobileGalleryContainer.removeEventListener('scroll', window.mobileScrollHandler);
-    }
-
-    // Handle scroll events to update thumbnails
-    let scrollTimeout;
-    window.mobileScrollHandler = function() {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        const containerWidth = mobileGalleryContainer.offsetWidth;
-        const scrollPosition = mobileGalleryContainer.scrollLeft;
-        const activeIndex = Math.round(scrollPosition / containerWidth);
-        updateActiveMobileThumbnail(activeIndex);
-      }, 50);
-    };
-
-    mobileGalleryContainer.addEventListener('scroll', window.mobileScrollHandler, { passive: true });
-
-    // Add click handlers to slides
-    const currentSlides = document.querySelectorAll('.mobile-gallery-slide');
-    currentSlides.forEach((slide) => {
-      slide.addEventListener('click', function(e) {
-        const index = parseInt(this.dataset.index);
-        if (!isNaN(index)) {
-          scrollToMobileImage(index);
-        }
-      });
-    });
-  }
 </script>
 
 <style>
