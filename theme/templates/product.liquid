@@ -30,26 +30,28 @@
     .product-info-container:hover .nav-container,
     .product-info-container:hover #header-overlay {
       transition: background-color 300ms ease !important;
-    } 
-
-    /* Keep existing styles */
-    /* .product-info-container {
-      transition: all 300ms ease;
     }
-
-    .product-details-container {
-      transition: all 300ms ease;
-    }
-
-    .popup-content {
-      transition: all 300ms ease;
-    } */
 
     /* Ensure consistent timing when popup is active */
     body.popup-active .nav-container,
     body.popup-active #header-overlay {
       {% comment %} background-color: white !important; {% endcomment %}
       transition: background-color 300ms ease !important;
+    }
+
+    /* small, critical CSS to reserve image frames at first paint */
+    .product-image-frame {
+      width: 100%;
+      /* browsers that support aspect-ratio will use inline aspect-ratio values we set below */
+      position: relative;
+      overflow: hidden;
+      background-color: transparent; /* keeps layout stable */
+    }
+    .product-image-frame img {
+      display: block;        /* removes baseline gap */
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
   </style>
 
@@ -112,108 +114,12 @@
         </a>
       </div>
       <!-- Product Navigation Bar - Only visible on desktop -->
-      {% comment %} <div class="hidden md:flex h-[49px] max-w-[650px] absolute top-[57px]  left-1/2 -translate-x-1/2 w-[calc(100%-8px)] justify-between items-center  z-[50] rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] nav-container transition-colors duration-300">
-        <nav class="flex py-[10px] px-0 flex-row relative w-full items-center uppercase">
-          {% if collection == blank and product.collections != blank %}
-            {% assign collection = collections.all %}
-          {% endif %}
-          
-          {% if collection != blank %}
-            <!-- Find adjacent products -->
-            {% assign found_prev = false %}
-            {% assign found_current = false %}
-            {% assign prev_product = false %}
-            {% assign next_product = false %}
-            
-            {% for p in collections.all.products %}
-              {% if found_current %}
-                {% assign next_product = p %}
-                {% break %}
-              {% endif %}
-              
-              {% if p.id == product.id %}
-                {% assign found_current = true %}
-                {% assign found_prev = true %}
-              {% elsif found_prev == false %}
-                {% assign prev_product = p %}
-              {% endif %}
-            {% endfor %}
-            
-            <!-- Loop to beginning/end if needed -->
-            {% if prev_product == false and collections.all.products.size > 1 %}
-              {% assign prev_product = collections.all.products.last %}
-            {% endif %}
-            
-            {% if next_product == false and collections.all.products.size > 1 %}
-              {% assign next_product = collections.all.products.first %}
-            {% endif %}
-            
-            <div class="w-1/2 pl-[19px] flex items-center">
-              {% if prev_product %}
-                <a href="{{ prev_product.url }}" class="uppercase text-sm text-[#444444] p-[5px] hover:bg-[#D9D9D9] transition-colors">PREVIOUS</a>
-              {% else %}
-                <span class="uppercase text-sm opacity-40">PREVIOUS</span>
-              {% endif %}
-            </div>
-            
-            <div class="w-1/2 pr-[19px] flex items-center justify-end">
-              {% if next_product %}
-                <a href="{{ next_product.url }}" class="uppercase text-sm text-[#444444] p-[5px] hover:bg-[#D9D9D9] transition-colors">NEXT</a>
-              {% else %}
-                <span class="uppercase text-sm opacity-40">NEXT</span>
-              {% endif %}
-            </div>
-          {% else %}
-            <div class="w-1/2 pl-[60px] flex items-center">
-              <a href="/collections/all" class="uppercase text-sm text-[#444444] p-[5px] hover:bg-[#D9D9D9] transition-colors">PREVIOUS</a>
-            </div>
-            <div class="w-1/2 pr-[60px] flex items-center justify-end">
-              <a href="/collections/all" class="uppercase text-sm text-[#444444] p-[5px] hover:bg-[#D9D9D9] transition-colors">NEXT</a>
-            </div>
-          {% endif %}
-        </nav>
-      </div> {% endcomment %}
+      {% comment %} TODO: consider forward and back buttons {% endcomment %}
       
       <!-- Left Side - Main Product Image (Full width on mobile) -->
       <div class="w-full md:w-1/2 md:h-full relative pb-12 md:pb-0">
         <!-- Main Image for Desktop -->
         <div class="hidden md:block w-full h-full">
-          {% comment %} {% assign first_variant = product.variants | where: 'available', true | first %}
-          {% if first_variant.featured_image %}
-            <img 
-              id="main-image"
-              src="{{ first_variant.featured_image | img_url: '100x' }}" 
-              data-src="{{ first_variant.featured_image | image_url }}"
-              alt="{{ product.title }}"
-              class="w-full h-full object-contain blur-up"
-              width="{{ first_variant.featured_image.width }}"
-              height="{{ first_variant.featured_image.height }}"
-              loading="eager"
-              srcset="{{ first_variant.featured_image | img_url: '400x' }} 400w,
-                      {{ first_variant.featured_image | img_url: '600x' }} 600w,
-                      {{ first_variant.featured_image | img_url: '800x' }} 800w,
-                      {{ first_variant.featured_image | img_url: '1200x' }} 1200w,
-                      {{ first_variant.featured_image | img_url: 'master' }} {{ first_variant.featured_image.width }}w"
-              sizes="(max-width: 767px) 100vw, 50vw"
-            >
-          {% endif %} {% endcomment %}
-          {% comment %} <img
-            id="main-image"
-            src="{{ first_image | img_url: '100x' }}"
-            data-src="{{ first_image | image_url }}"
-            alt="{{ product.title }}"
-            class="w-full h-full object-contain blur-up"
-            width="{{ first_image.width }}"
-            height="{{ first_image.height }}"
-            loading="eager"
-            srcset="{{ first_image | img_url: '400x' }} 400w,
-                    {{ first_image | img_url: '600x' }} 600w,
-                    {{ first_image | img_url: '800x' }} 800w,
-                    {{ first_image | img_url: '1200x' }} 1200w,
-                    {{ first_image | img_url: 'master' }} {{ first_image.width }}w"
-            sizes="(max-width: 767px) 100vw, 50vw"
-            onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
-          > {% endcomment %}
           <img 
             id="main-image"
             src="" 
@@ -225,59 +131,35 @@
             loading="eager"
             style="opacity: 0;"
           >
+          {% comment %} {% if first_image %}
+            <div class="product-image-frame"
+                style="aspect-ratio: {{ first_image.width | default: 4 }} / {{ first_image.height | default: 5 }}; min-height: 420px;">
+              <img
+                id="main-image"
+                src="{{ first_image | img_url: '400x' }}"
+                data-src="{{ first_image | image_url }}"
+                alt="{{ product.title }}"
+                class="object-contain"
+                width="{{ first_image.width }}"
+                height="{{ first_image.height }}"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+          {% else %}
+            <div class="product-image-frame" style="aspect-ratio: 4 / 5; min-height:420px;">
+              <img id="main-image" src="" alt="{{ product.title }}" class="object-contain" loading="eager"/>
+            </div>
+          {% endif %} {% endcomment %}
         </div>
         
         <!-- Mobile Main Image (Slideshow on mobile) -->
         <div id="mobile-gallery-container" class="block md:hidden w-full aspect-[45.5/70] overflow-x-auto snap-x snap-mandatory whitespace-nowrap" style="display: flex; flex-direction: row;">
-          {% comment %} {% for image in product.images %}
-            <div 
-              class="w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative" 
-              data-index="{{ forloop.index0 }}"
-              onclick="scrollToMobileImage({{ forloop.index0 }})"
-            >
-              <img 
-                src="{{ image | img_url: '100x' }}" 
-                data-src="{{ image | image_url }}"
-                alt="{{ product.title }}" 
-                class="w-full h-full object-cover blur-up"
-                width="{{ image.width }}"
-                height="{{ image.height }}"
-                loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
-                srcset="{{ image | img_url: '200x' }} 200w,
-                        {{ image | img_url: '400x' }} 400w,
-                        {{ image | img_url: '600x' }} 600w,
-                        {{ image | img_url: '800x' }} 800w,
-                        {{ image | img_url: '1200x' }} 1200w,
-                        {{ image | img_url: 'master' }} {{ image.width }}w"
-                sizes="100vw"
-                onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
-              >
-            </div>
-          {% endfor %} {% endcomment %}
         </div>
         
         <!-- Mobile Thumbnail Gallery -->
         <div class="block md:hidden w-full h-[80px] overflow-x-auto absolute bottom-0 left-0 z-10 mobile-gallery-container mobile-thumbnail-wrapper">
           <div class="flex flex-row items-center h-full px-4 mobile-gallery">
-            {% comment %} {% for image in product.images %}
-              <button 
-                type="button"
-                class="flex-shrink-0 h-[70px] w-[45.5px] mr-3 mobile-thumbnail bg-transparent border-0 p-0" 
-                data-index="{{ forloop.index0 }}"
-                onclick="scrollToMobileImage({{ forloop.index0 }})"
-              >
-                <img 
-                  src="{{ image | img_url: '200x' }}" 
-                  alt="{{ product.title }}" 
-                  class="w-full h-full object-cover"
-                  width="45.5"
-                  height="70"
-                  loading="lazy"
-                  srcset="{{ image | img_url: '46x70_crop_center' }} 46w"
-                  sizes="45.5px"
-                >
-              </button>
-            {% endfor %} {% endcomment %}
           </div>
         </div>
       </div>
@@ -286,80 +168,41 @@
       <div class="hidden md:block md:w-1/2 h-full relative">
         <!-- Right Main Image replaced with scrollable gallery -->
         <div id="image-scroll-container" class="w-full h-full overflow-y-auto custom-scrollbar scroll-snap-container">
-          {% comment %} {% assign images_for_right_side = product.images | slice: 1, product.images.size %}
-          {% for image in images_for_right_side %}
-            <div 
-              class="w-full h-full snap-center image-scroll-item" 
-              data-image-id="{{ image.id }}"
-              id="scroll-image-{{ image.id }}"
-            >
-              <img
-                src="{{ image | img_url: '100x' }}" 
-                data-src="{{ image | image_url }}"
-                alt="{{ product.title }}"
-                class="w-full h-full object-contain blur-up"
-                width="{{ image.width }}"
-                height="{{ image.height }}"
-                loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
-                srcset="{{ image | img_url: '400x' }} 400w,
-                        {{ image | img_url: '600x' }} 600w,
-                        {{ image | img_url: '800x' }} 800w,
-                        {{ image | img_url: '1200x' }} 1200w,
-                        {{ image | img_url: 'master' }} {{ image.width }}w"
-                sizes="(max-width: 767px) 100vw, 50vw"
-                onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
-              >
+          {% comment %} <div class="hidden md:block md:w-1/2 h-full relative">
+            <div id="image-scroll-container" class="w-full h-full overflow-y-auto custom-scrollbar scroll-snap-container">
+              <!-- inner area that will be populated by JS; keep this wrapper so layout is stable -->
+              <div id="image-scroll-inner" class="w-full h-full">
+                {% assign placeholder_image = second_image | default: first_image %}
+                <div class="product-image-frame"
+                    style="aspect-ratio: {{ placeholder_image.width | default: 4 }} / {{ placeholder_image.height | default: 5 }}; min-height: 420px;">
+                  <img
+                    src="{{ placeholder_image | img_url: '400x' }}"
+                    alt=""
+                    width="{{ placeholder_image.width }}"
+                    height="{{ placeholder_image.height }}"
+                    class="object-contain block opacity-0"
+                    aria-hidden="true"
+                    loading="eager"
+                    decoding="async"
+                  />
+                </div>
+              </div>
             </div>
-          {% endfor %} {% endcomment %}
-          
-          {% comment %} <img
-            src="{{ second_image | img_url: '100x' }}"
-            data-src="{{ second_image | image_url }}"
-            alt="{{ product.title }}"
-            class="w-full h-full object-contain blur-up"
-            width="{{ second_image.width }}"
-            height="{{ second_image.height }}"
-            loading="eager"
-            srcset="{{ second_image | img_url: '400x' }} 400w,
-                    {{ second_image | img_url: '600x' }} 600w,
-                    {{ second_image | img_url: '800x' }} 800w,
-                    {{ second_image | img_url: '1200x' }} 1200w,
-                    {{ second_image | img_url: 'master' }} {{ second_image.width }}w"
-            sizes="(max-width: 767px) 100vw, 50vw"
-            onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
-          > {% endcomment %}
+
+            {% if first_variant.featured_image %}
+              <link rel="preload" as="image" href="{{ first_variant.featured_image | img_url: '800x' }}">
+            {% endif %}
+            {% if second_image %}
+              <link rel="preload" as="image" href="{{ second_image | img_url: '800x' }}">
+            {% endif %}
+          </div> {% endcomment %}
         </div>
 
         <!-- Preload link for first variant images (optional performance boost) -->
         {% if first_variant.featured_image %}
           <link rel="preload" as="image" href="{{ first_variant.featured_image | img_url: '800x' }}">
         {% endif %}
-        
-        <!-- Thumbnail Column - Scrollable (Desktop only) -->
-        {% comment %} <div class="absolute right-4 top-0 h-full flex flex-col items-end z-10 overflow-y-auto max-h-full py-4 custom-scrollbar">
-          <div class="flex flex-col items-end">
-            {% for image in images_for_right_side %}
-              <div 
-                class="w-[130px] h-[200px] cursor-pointer mb-2 thumbnail-image {% if forloop.first %}opacity-100{% else %}opacity-60{% endif %}" 
-                data-image-id="{{ image.id }}"
-                data-target-scroll-id="scroll-image-{{ image.id }}"
-              >
-                <img 
-                  src="{{ image | img_url: '200x' }}" 
-                  alt="{{ product.title }}" 
-                  class="w-full h-full object-cover"
-                  width="100"
-                  height="100"
-                  loading="lazy"
-                  srcset="{{ image | img_url: '60x' }} 60w,
-                          {{ image | img_url: '120x' }} 120w,
-                          {{ image | img_url: '200x' }} 200w"
-                  sizes="100px"
-                >
-              </div>
-            {% endfor %}
-          </div>
-        </div> {% endcomment %}
+
       </div>
       
       <!-- Mobile Product Info - Below the images on mobile, hidden on desktop -->
@@ -368,7 +211,22 @@
         <div class="p-[4px]">
           <div class="px-4 bg-white py-3 flex justify-between items-center">
             <h1 class="uppercase text-[13px] font-medium text-[#444444]">{{ product.title }}</h1>
-            <span class="text-[13px] text-[#444444]">${{ product.price | money_without_currency }}</span>
+            {% comment %} <span class="text-[13px] text-[#444444]"></span> {% endcomment %}
+            {% comment %} ${{ product.price | money_without_currency }} {% endcomment %}
+            {% if product.compare_at_price > product.price %}
+              <div class="flex items-baseline">
+                <span class="text-[13px] text-[#444444]">
+                  {{ product.price | money }}
+                </span>
+                <span class="text-[13px] text-black/50 line-through ml-2">
+                  {{ product.compare_at_price | money }}
+                </span>
+              </div>
+            {% else %}
+              <span class="text-[13px] text-[#444444]">
+                {{ product.price | money }}
+              </span>
+            {% endif %}
           </div>
         </div>
         
@@ -408,16 +266,19 @@
                             {%- assign is_selected = true -%}
                           {%- endif -%}
 
-                          <div class="color-chip-container{% if is_selected %} active{% endif %}">
+                          {%- assign has_image = variant_for_color.featured_image -%}
+
+                          <div class="color-chip-container{% if is_selected %} active{% endif %}{% unless has_image %} disabled{% endunless %}">
                             <button
                               type="button"
-                              class="color-chip"
+                              class="color-chip {% unless has_image %}opacity-50{% endunless %}"
                               style="background-color: {{ value.swatch.color }};"
                               data-color-name="{{ value | escape }}"
                               data-option-position="{{ color_option.position }}"
                               data-value="{{ value | escape }}"
-                              onclick="selectVariant(this, '{{ color_option.position }}', '{{ value | escape }}')"
+                              onclick="{% if has_image %}selectVariant(this, '{{ color_option.position }}', '{{ value | escape }}'){% endif %}"
                               aria-label="Select color {{ value | escape }}"
+                              {% unless has_image %}disabled{% endunless %}
                             ></button>
                           </div>
                         {%- endif -%}
@@ -625,7 +486,20 @@
         <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] py-[10px] px-4 product-info-item transition-colors duration-300">
           <div class="flex justify-between items-end">
             <h1 class="uppercase text-[13px] font-medium text-[#444444]">{{ product.title }}</h1>
-            <span class="text-[13px] text-[#444444]">${{ product.price | money_without_currency }}</span>
+            {% if product.compare_at_price > product.price %}
+              <div class="flex items-baseline">
+                <span class="text-[13px] text-[#444444]">
+                  {{ product.price | money }}
+                </span>
+                <span class="text-[13px] text-black/50 line-through ml-2">
+                  {{ product.compare_at_price | money }}
+                </span>
+              </div>
+            {% else %}
+              <span class="text-[13px] text-[#444444]">
+                {{ product.price | money }}
+              </span>
+            {% endif %}
           </div>
         </div>
         
@@ -634,7 +508,7 @@
         
         <!-- Rest of the content in a single container - hidden by default -->
         {% comment %} max-h-0 product-details-container - transition-all duration-300 {% endcomment %}
-        <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] product-info-item  overflow-hidden ">
+        <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] product-info-item overflow-hidden max-h-0 product-details-container">
           <!-- Variant Options and Add to Cart -->
           <div class="flex flex-col">
             {% if product.has_only_default_variant == false %}
@@ -670,16 +544,23 @@
                                   {%- assign is_selected = true -%}
                                 {%- endif -%}
 
-                                <div class="color-chip-container{% if is_selected %} active{% endif %}">
+                                {%- assign has_image = variant_for_color.featured_image -%}
+
+                                <div class="color-chip-container{% if is_selected %} active{% endif %}{% unless has_image %} disabled{% endunless %}">
                                   <button
                                     type="button"
                                     class="color-chip"
-                                    style="background-color: {{ value.swatch.color }};"
+                                    style="background-color: {{ value.swatch.color }};{% unless has_image %}opacity: 0.5;{% endunless %}"
                                     data-color-name="{{ value | escape }}"
-                                    {% comment %} data-option-position="{{ option.position }}" {% endcomment %}
                                     data-option-position="1"
                                     data-value="{{ value | escape }}"
-                                    onclick="selectVariant(this, '{{ option.position }}', '{{ value | escape }}')"
+                                    data-has-image="{% if has_image %}true{% else %}false{% endif %}"
+                                    {% if has_image  %}
+                                      onclick="selectVariant(this, '{{ option.position }}', '{{ value | escape }}')"
+                                      aria-disabled="false"
+                                    {% else %}
+                                      disabled aria-disabled="true"
+                                    {% endif %}
                                     aria-label="Select color {{ value | escape }}"
                                   ></button>
                                 </div>
@@ -690,6 +571,8 @@
                       </div>
                     </div>
                   {% endif %}
+
+
                   
                   <!-- Second Column (usually Size) -->
                   {% if options.size > 1 %}
@@ -699,7 +582,7 @@
                         {% for value in options[1].values %}
                           <button
                             type="button"
-                            class="variant-button text-center uppercase text-[13px] text-[#444444] bg-transparent hover:bg-[#D9D9D9] w-full {% if forloop.first %}font-medium{% endif %}"
+                            class="variant-button text-center uppercase text-[13px] text-[#444444] bg-transparent w-full {% if forloop.first %}font-medium{% endif %}"
                             data-option-position="{{ options[1].position }}"
                             data-value="{{ value | escape }}"
                             onclick="selectVariant(this, '{{ options[1].position }}', '{{ value | escape }}')"
@@ -778,17 +661,6 @@
   </div>
   
   <script>
-    // Function to toggle accordion sections
-    function toggleSection(sectionId) {
-      const content = document.getElementById(`${sectionId}-content`);
-      
-      if (content.classList.contains('hidden')) {
-        content.classList.remove('hidden');
-      } else {
-        content.classList.add('hidden');
-      }
-    }
-    
     // Modified function to open popups - closes any other open popups first
     function openPopup(popupId) {
       // First close all popups
@@ -911,6 +783,378 @@
       });
     });
 
+
+    /* ===========================
+      Prioritized color-first image manager + new selectVariant
+      Paste / replace your old ProductImageManager and selectVariant here
+      =========================== */
+
+    class ProductImageManager {
+      constructor({ variants = window.productVariants || [], allImages = window.allProductImages || [] } = {}) {
+        this.variants = variants;
+        this.allImages = allImages;
+        this.imageCache = new Map();        // url -> HTMLImageElement
+        this.loadedVariants = new Set();    // variant.id that we've preloaded
+        this.currentVariant = null;
+        this.colorMap = this._groupVariantsByColor(); // { colorValue: [variants...] }
+        this.maxColorPreloads = 3; // preload up to N other colors
+        // this.init();
+      }
+
+      _groupVariantsByColor() {
+        const map = {};
+        (this.variants || []).forEach(v => {
+          const color = v.option1 || '__no_color__';
+          if (!map[color]) map[color] = [];
+          map[color].push(v);
+        });
+        return map;
+      }
+
+      // Return an array of image URLs for a variant, preserving order (main first)
+      getImagesForVariant(variant) {
+        if (!variant) return [];
+        // variant.featured_image may be an object with .src or a string depending on serialization
+        const featuredSrc = (variant.featured_image && (variant.featured_image.src || variant.featured_image)) || null;
+        if (!featuredSrc) return [];
+
+        // Normalize helper
+        const normalize = s => (s || '').replace(/^https?:/, '');
+
+        const normFeatured = normalize(featuredSrc);
+        // If allImages entries are objects or strings, try to extract URL
+        const extractUrl = (img) => {
+          if (!img) return '';
+          if (typeof img === 'string') return img;
+          if (img.src) return img.src;
+          if (img.url) return img.url;
+          return '';
+        };
+
+        const urls = this.allImages.map(extractUrl).map(normalize);
+        const startIndex = urls.findIndex(u => u && u.includes(normFeatured.replace(/^\/\//, '')));
+        if (startIndex === -1) {
+          // fallback: return featuredSrc alone
+          return [featuredSrc];
+        }
+
+        // collect images until we hit another variant's featured image (to keep variant group)
+        const result = [];
+        for (let i = startIndex; i < urls.length; i++) {
+          const u = urls[i];
+          if (!u) continue;
+          // stop if this url matches another variant's featured image (and it's not the same as this variant)
+          const isAnotherFeatured = this.variants.some(other => {
+            if (!other.featured_image) return false;
+            const otherSrc = (other.featured_image.src || other.featured_image);
+            if (!otherSrc) return false;
+            return normalize(otherSrc) === u && (otherSrc !== featuredSrc);
+          });
+          if (i > startIndex && isAnotherFeatured) break;
+          result.push(extractUrl(this.allImages[i]));
+        }
+
+        return result.length ? result : [featuredSrc];
+      }
+
+      preloadImage(src) {
+        if (!src) return Promise.resolve();
+        if (this.imageCache.has(src)) return Promise.resolve(this.imageCache.get(src));
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            this.imageCache.set(src, img);
+            resolve(img);
+          };
+          img.onerror = (e) => {
+            // still resolve so Promise.all doesn't fail completely
+            console.warn('Failed to preload image', src, e);
+            resolve(null);
+          };
+          img.src = src;
+        });
+      }
+
+      preloadVariantImages(variant) {
+        if (!variant || this.loadedVariants.has(variant.id)) return Promise.resolve();
+        const images = this.getImagesForVariant(variant);
+        const promises = images.map(src => this.preloadImage(src));
+        return Promise.all(promises).then(() => {
+          this.loadedVariants.add(variant.id);
+          console.log(`Preloaded images for variant ${variant.id}`);
+        }).catch(err => {
+          console.warn('preloadVariantImages error', err);
+        });
+      }
+
+      // After initial color is visible, preload the other color variants up to maxColorPreloads
+      preloadOtherColors(currentVariant) {
+        if (!this.colorMap) return;
+        const currentColor = currentVariant?.option1 || '__no_color__';
+        const colors = Object.keys(this.colorMap).filter(c => c !== currentColor);
+        const toPreload = colors.slice(0, this.maxColorPreloads);
+
+        toPreload.forEach(color => {
+          // choose the first variant in that color group that has an image, or the first variant otherwise
+          const variantCandidates = this.colorMap[color] || [];
+          const v = variantCandidates.find(x => x.featured_image) || variantCandidates[0];
+          if (v && !this.loadedVariants.has(v.id)) {
+            // don't block the UI — start in background
+            setTimeout(() => {
+              this.preloadVariantImages(v);
+            }, 100);
+          }
+        });
+      }
+
+      // Public: load a variant's images into the DOM
+      // If force===true, re-load even if currently loaded.
+      async loadVariant(variant, { force = false } = {}) {
+        if (!variant) return;
+        if (!force && this.currentVariant && this.currentVariant.id === variant.id) return;
+
+        const images = this.getImagesForVariant(variant);
+        if (!images || images.length === 0) return;
+
+        // update DOM quickly (main image first)
+        this.updateMainImage(images[0], variant);
+        this.updateRightGallery(images.slice(1));
+        this.updateMobileGallery(images);
+        this.updateMobileThumbnails(images);
+
+        this.currentVariant = variant;
+
+        // start preloading other colors after a small delay (so we don't block paint)
+        setTimeout(() => {
+          this.preloadOtherColors(variant);
+        }, 150);
+      }
+
+      // DOM update helpers — keep minimal and fast
+      updateMainImage(url, variant = {}) {
+        const mainImage = document.getElementById('main-image');
+        if (!mainImage || !url) return;
+        // Only update src, not width/height (these should be set server-side)
+        mainImage.src = url;
+        mainImage.dataset.src = url;
+        mainImage.style.opacity = '1';
+        mainImage.dataset.highResLoaded = 'true';
+      }
+
+      updateRightGallery(urls = []) {
+        const rightInner = document.getElementById('image-scroll-inner') || document.getElementById('image-scroll-container');
+        if (!rightInner) return;
+        rightInner.innerHTML = '';
+        if (urls.length === 0) {
+          rightInner.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400">No additional images</div>';
+          return;
+        }
+        urls.forEach(src => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'w-full h-full snap-center image-scroll-item';
+          wrapper.innerHTML = `<img src="${src}" alt="" class="w-full h-full object-contain" loading="lazy" decoding="async" />`;
+          rightInner.appendChild(wrapper);
+        });
+      }
+
+      updateMobileGallery(urls = []) {
+        const mobileGallery = document.getElementById('mobile-gallery-container');
+        if (!mobileGallery) return;
+        mobileGallery.innerHTML = '';
+        urls.forEach((src, idx) => {
+          const slide = document.createElement('div');
+          slide.className = "w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative";
+          slide.dataset.index = idx;
+          slide.onclick = () => {
+            if (window.scrollToMobileImage) window.scrollToMobileImage(idx);
+          };
+          slide.innerHTML = `<img src="${src}" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async" />`;
+          mobileGallery.appendChild(slide);
+        });
+        // re-init mobile gallery scroller if you have a handler
+        if (window.initMobileGallery) setTimeout(() => initMobileGallery(true), 80);
+      }
+
+      updateMobileThumbnails(urls = []) {
+        const mobileThumbnailWrapper = document.querySelector('.mobile-thumbnail-wrapper .mobile-gallery');
+        if (!mobileThumbnailWrapper) return;
+        mobileThumbnailWrapper.innerHTML = '';
+        urls.forEach((src, idx) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'flex-shrink-0 h-[70px] w-[45.5px] mr-3 mobile-thumbnail bg-transparent border-0 p-0';
+          btn.dataset.index = idx;
+          btn.onclick = () => {
+            if (window.scrollToMobileImage) window.scrollToMobileImage(idx);
+          };
+          btn.innerHTML = `<img src="${src}" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async" />`;
+          mobileThumbnailWrapper.appendChild(btn);
+        });
+      }
+    }
+
+    /* ===========================
+      Revised selectVariant
+      - quick guards
+      - immediate image load for color-only selection (uses first variant with that color)
+      - sizes do not change images
+      =========================== */
+
+    function selectVariant(element, optionPosition, optionValue) {
+      if (!element) return;
+
+      // Ignore disabled or aria-disabled
+      if (element.disabled || element.getAttribute('aria-disabled') === 'true' || element.dataset.hasImage === 'false') return;
+
+      // Don't re-select active
+      if (element.closest('.color-chip-container')?.classList.contains('active')) return;
+
+      // Clear previous selection for this option group
+      const selectableItems = document.querySelectorAll(
+        `.variant-button[data-option-position="${optionPosition}"], .color-chip[data-option-position="${optionPosition}"]`
+      );
+      selectableItems.forEach(item => {
+        item.removeAttribute('data-selected');
+        item.classList.remove('bg-[#D9D9D9]');
+      });
+
+      // Mark clicked
+      element.setAttribute('data-selected', 'true');
+      if (element.classList.contains('variant-button') && !element.classList.contains('color-chip')) {
+        element.classList.add('bg-[#D9D9D9]');
+      }
+
+      // Build selections map
+      const selections = {};
+      document.querySelectorAll('.variant-button[data-selected="true"], .color-chip[data-selected="true"]').forEach(selectedItem => {
+        const pos = selectedItem.getAttribute('data-option-position');
+        const val = selectedItem.getAttribute('data-value');
+        selections[`option${pos}`] = val;
+      });
+
+      const totalOptionTypes = {{ product.options | size }};
+      const allOptionsSelected = Object.keys(selections).length === totalOptionTypes;
+
+      const variants = window.productVariants || [];
+
+      // When a Color (optionPosition === "1") is clicked: show images for that color immediately
+      if (optionPosition === "1") {
+        const colorValue = optionValue;
+        // find first variant with that color that has a featured image (prefer available)
+        let colorVariant = variants.find(v => v.option1 === colorValue && v.featured_image && v.available) ||
+                          variants.find(v => v.option1 === colorValue && v.featured_image) ||
+                          variants.find(v => v.option1 === colorValue);
+
+        if (colorVariant && window.productImageManager) {
+          window.productImageManager.loadVariant(colorVariant);
+        }
+
+        // Collect available sizes for this color
+        const availableSizes = variants
+          .filter(v => v.option1 === colorValue && v.available)
+          .map(v => v.option2);
+
+        // 1. If no sizes are available, disable ATC immediately
+        if (availableSizes.length === 0) {
+          updateAddToCartButtons(false, null, true);
+        }
+
+        // 2. Update size buttons availability
+        const sizeButtons = document.querySelectorAll(
+          '.variant-button[data-option-position="2"]'
+        );
+
+        sizeButtons.forEach(btn => {
+          const sizeValue = btn.getAttribute("data-value");
+
+          if (!availableSizes.includes(sizeValue)) {
+            btn.disabled = true;
+            btn.classList.add("opacity-50");
+          } else {
+            btn.disabled = false;
+            btn.classList.remove("opacity-50");
+          }
+        });
+      }
+
+      // Determine full matching variant only if all options are selected
+      let matchingVariant = null;
+      if (allOptionsSelected) {
+        matchingVariant = variants.find(variant => {
+          return Object.keys(selections).every(option => {
+            const position = parseInt(option.replace('option', ''), 10);
+            return variant[`option${position}`] === selections[`option${position}`];
+          });
+        });
+      }
+
+      // Compute unavailable combination state
+      let isUnavailableCombination = false;
+      if (allOptionsSelected && !matchingVariant) isUnavailableCombination = true;
+
+      // Update add-to-cart + inventory UI
+      if (matchingVariant) {
+        updateAddToCartButtons(true, matchingVariant);
+      } else if (isUnavailableCombination) {
+        updateAddToCartButtons(false, null, true);
+      } else {
+        // Not all options selected: only enable cart when a combination exists? keep your existing logic
+        updateAddToCartButtons(false);
+      }
+
+      // Update variant-id only when we have a full matchingVariant
+      if (matchingVariant) {
+        const desktopId = document.getElementById('variant-id');
+        const mobileId = document.getElementById('variant-id-mobile');
+        if (desktopId) desktopId.value = matchingVariant.id;
+        if (mobileId) mobileId.value = matchingVariant.id;
+
+        // Important: **do not** change images here if the user clicked size.
+        // We already changed images when color was chosen above.
+        // (If you want images to update when both color+size chosen, uncomment next lines:)
+        // if (optionPosition === "1") {
+        //   window.productImageManager.loadVariant(matchingVariant);
+        // }
+      }
+    }
+
+    /* ===========================
+      Init: create manager and simulate initial UI state
+      =========================== */
+
+    let productImageManager = null;
+    document.addEventListener('DOMContentLoaded', function () {
+      const data = {
+        variants: window.productVariants || [],
+        allImages: window.allProductImages || []
+      };
+
+      productImageManager = new ProductImageManager(data);
+      // expose globally for other scripts
+      window.productImageManager = productImageManager;
+
+      // Initial UI selection: mark color chip for first available variant
+      const firstVariant = (window.productVariants || []).find(v => v.available) || (window.productVariants || [])[0];
+      if (firstVariant) {
+        // load its images right away
+        productImageManager.loadVariant(firstVariant, { force: true });
+        // mark color UI
+        const colorBtn = document.querySelector(`.color-chip[data-value="${firstVariant.option1}"]`);
+        if (colorBtn) {
+          // visually select it without re-triggering a redundant image load (loadVariant already called in manager.init)
+          colorBtn.setAttribute('data-selected', 'true');
+          colorBtn.closest('.color-chip-container')?.classList.add('active');
+        }
+
+        // mark size not selected — user must pick it manually (so we don't auto-select)
+        // set variant-id only if you want a default add-to-cart target; otherwise, leave empty until size chosen
+        // Optionally set variant-id to firstVariant so that add-to-cart works if you want an initial default:
+        // document.getElementById('variant-id').value = firstVariant.id;
+      }
+    });
+
+
+
   // Moved this function to global scope (outside the DOMContentLoaded listener):
   function initMobileGallery(preserveActiveIndex = false) {
     const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
@@ -994,379 +1238,380 @@
     });
   }
 
-    class ProductImageManager {
-      constructor(product) {
-        this.product = product;
-        this.variants = product.variants;
-        this.allImages = product.images;
-        this.imageCache = new Map();
-        this.loadedVariants = new Set();
-        this.currentVariant = null;
+    // class ProductImageManager {
+    //   constructor(product) {
+    //     this.product = product;
+    //     this.variants = product.variants;
+    //     this.allImages = product.images;
+    //     this.imageCache = new Map();
+    //     this.loadedVariants = new Set();
+    //     this.currentVariant = null;
         
-        this.init();
-      }
+    //     this.init();
+    //   }
 
-      init() {
-        const firstVariant = this.variants.find(v => v.available);
-        // if (firstVariant) {
-        //   this.loadVariant(firstVariant, true); // true = immediate load
-        // }
-        if (firstVariant) {
-          // Get images for first variant
-          const images = this.getImagesForVariant(firstVariant);
-          console.log("🚀 ~ init ~ Loading first variant images:", images.length);
+    //   init() {
+    //     const firstVariant = this.variants.find(v => v.available);
+    //     // if (firstVariant) {
+    //     //   this.loadVariant(firstVariant, true); // true = immediate load
+    //     // }
+    //     if (firstVariant) {
+    //       // Get images for first variant
+    //       const images = this.getImagesForVariant(firstVariant);
+    //       console.log("🚀 ~ init ~ Loading first variant images:", images.length);
           
-          // Load main and second image immediately on page load
-          if (images.length > 0) {
-            this.updateMainImageImmediate(firstVariant, images[0]);
-          }
-          if (images.length > 1) {
-            // Load second image immediately too
-            this.updateRightGallery(firstVariant, images.slice(1));
-          }
+    //       // Load main and second image immediately on page load
+    //       if (images.length > 0) {
+    //         this.updateMainImageImmediate(firstVariant, images[0]);
+    //       }
+    //       if (images.length > 1) {
+    //         // Load second image immediately too
+    //         this.updateRightGallery(firstVariant, images.slice(1));
+    //       }
           
-          // Load mobile gallery
-          this.updateMobileGallery(firstVariant, images);
-          this.updateMobileThumbnails(firstVariant, images);
+    //       // Load mobile gallery
+    //       this.updateMobileGallery(firstVariant, images);
+    //       this.updateMobileThumbnails(firstVariant, images);
           
-          // Mark this variant as loaded
-          this.loadedVariants.add(firstVariant.id);
-          this.currentVariant = firstVariant;
+    //       // Mark this variant as loaded
+    //       this.loadedVariants.add(firstVariant.id);
+    //       this.currentVariant = firstVariant;
           
-          // Initialize mobile gallery after a short delay
-          setTimeout(() => initMobileGallery(false), 100);
-        }
-      }
+    //       // Initialize mobile gallery after a short delay
+    //       setTimeout(() => initMobileGallery(false), 100);
+    //     }
+    //   }
 
-      getImagesForVariant(variant) {
-        if (!variant.featured_image) return [];
+    //   getImagesForVariant(variant) {
+    //     if (!variant.featured_image) return [];
         
-        const normalize = url => url ? url.replace(/^https?:/, '') : '';
-        const featuredSrc = normalize(variant.featured_image.src);
-        const startIndex = this.allImages.findIndex(imgUrl => 
-          normalize(imgUrl).includes(featuredSrc)
-        );
+    //     const normalize = url => url ? url.replace(/^https?:/, '') : '';
+    //     const featuredSrc = normalize(variant.featured_image.src);
+    //     const startIndex = this.allImages.findIndex(imgUrl => 
+    //       normalize(imgUrl).includes(featuredSrc)
+    //     );
         
-        if (startIndex === -1) return [];
+    //     if (startIndex === -1) return [];
         
-        const result = [];
-        for (let i = startIndex; i < this.allImages.length; i++) {
-          const current = normalize(this.allImages[i]);
-          const isAnotherFeatured = i > startIndex && this.variants.some(other =>
-            other.featured_image && normalize(other.featured_image.src) === current
-          );
-          if (isAnotherFeatured) break;
-          result.push(this.allImages[i]);
-        }
+    //     const result = [];
+    //     for (let i = startIndex; i < this.allImages.length; i++) {
+    //       const current = normalize(this.allImages[i]);
+    //       const isAnotherFeatured = i > startIndex && this.variants.some(other =>
+    //         other.featured_image && normalize(other.featured_image.src) === current
+    //       );
+    //       if (isAnotherFeatured) break;
+    //       result.push(this.allImages[i]);
+    //     }
         
-        return result;
-      }
+    //     return result;
+    //   }
 
-      preloadVariantImages(variant) {
-        if (this.loadedVariants.has(variant.id)) return Promise.resolve();
+    //   preloadVariantImages(variant) {
+    //     if (this.loadedVariants.has(variant.id)) return Promise.resolve();
         
-        const images = this.getImagesForVariant(variant);
-        const loadPromises = images.map(imgUrl => this.preloadImage(imgUrl));
+    //     const images = this.getImagesForVariant(variant);
+    //     const loadPromises = images.map(imgUrl => this.preloadImage(imgUrl));
         
-        return Promise.all(loadPromises).then(() => {
-          this.loadedVariants.add(variant.id);
-          console.log(`✅ Preloaded ${images.length} images for variant ${variant.id}`);
-        });
-      }
+    //     return Promise.all(loadPromises).then(() => {
+    //       this.loadedVariants.add(variant.id);
+    //       console.log(`✅ Preloaded ${images.length} images for variant ${variant.id}`);
+    //     });
+    //   }
 
-      preloadImage(src) {
-        if (this.imageCache.has(src)) return Promise.resolve();
+    //   preloadImage(src) {
+    //     if (this.imageCache.has(src)) return Promise.resolve();
         
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => {
-            this.imageCache.set(src, img);
-            resolve(img);
-          };
-          img.onerror = reject;
-          img.src = src;
-        });
-      }
+    //     return new Promise((resolve, reject) => {
+    //       const img = new Image();
+    //       img.onload = () => {
+    //         this.imageCache.set(src, img);
+    //         resolve(img);
+    //       };
+    //       img.onerror = reject;
+    //       img.src = src;
+    //     });
+    //   }
 
-      // Load variant immediately (for active variant)
-      async loadVariant(variant, immediate = false) {
-        console.log("🚀 ~ loadVariant called with variant:", variant.id, variant);
-        this.currentVariant = variant;
-        const images = this.getImagesForVariant(variant);
-        console.log("🚀 ~ loadVariant ~ images found:", images.length, images);
+    //   // Load variant immediately (for active variant)
+    //   async loadVariant(variant, immediate = false) {
+    //     console.log("🚀 ~ loadVariant called with variant:", variant.id, variant);
+    //     this.currentVariant = variant;
+    //     const images = this.getImagesForVariant(variant);
+    //     console.log("🚀 ~ loadVariant ~ images found:", images.length, images);
         
-        if (immediate || this.loadedVariants.has(variant.id)) {
-          this.updateGalleryDOM(variant, images);
-          if (!this.loadedVariants.has(variant.id)) {
-            await this.preloadVariantImages(variant);
-          }
-        } else {
-          // this.showLoadingState();
-          await this.preloadVariantImages(variant);
-          this.updateGalleryDOM(variant, images);
-        }
+    //     if (immediate || this.loadedVariants.has(variant.id)) {
+    //       this.updateGalleryDOM(variant, images);
+    //       if (!this.loadedVariants.has(variant.id)) {
+    //         await this.preloadVariantImages(variant);
+    //       }
+    //     } else {
+    //       // this.showLoadingState();
+    //       await this.preloadVariantImages(variant);
+    //       this.updateGalleryDOM(variant, images);
+    //     }
         
-        this.preloadAdjacentVariants(variant);
-      }
+    //     this.preloadAdjacentVariants(variant);
+    //   }
 
-      // Preload nearby variants for faster switching
-      preloadAdjacentVariants(currentVariant) {
-        const currentIndex = this.variants.findIndex(v => v.id === currentVariant.id);
-        const toPreload = [];
+    //   // Preload nearby variants for faster switching
+    //   preloadAdjacentVariants(currentVariant) {
+    //     const currentIndex = this.variants.findIndex(v => v.id === currentVariant.id);
+    //     const toPreload = [];
         
-        if (currentIndex > 0) toPreload.push(this.variants[currentIndex - 1]);
-        if (currentIndex < this.variants.length - 1) toPreload.push(this.variants[currentIndex + 1]);
+    //     if (currentIndex > 0) toPreload.push(this.variants[currentIndex - 1]);
+    //     if (currentIndex < this.variants.length - 1) toPreload.push(this.variants[currentIndex + 1]);
         
-        toPreload.forEach(variant => {
-          if (variant.available && !this.loadedVariants.has(variant.id)) {
-            setTimeout(() => this.preloadVariantImages(variant), 500);
-          }
-        });
-      }
+    //     toPreload.forEach(variant => {
+    //       if (variant.available && !this.loadedVariants.has(variant.id)) {
+    //         setTimeout(() => this.preloadVariantImages(variant), 500);
+    //       }
+    //     });
+    //   }
 
-      // showLoadingState() {
-      //   // Add loading spinner to main image
-      //   const mainImage = document.getElementById('main-image');
-      //   if (mainImage) {
-      //     mainImage.style.opacity = '0.5';
-      //     // You could add a spinner overlay here
-      //   }
-      // }
+    //   // showLoadingState() {
+    //   //   // Add loading spinner to main image
+    //   //   const mainImage = document.getElementById('main-image');
+    //   //   if (mainImage) {
+    //   //     mainImage.style.opacity = '0.5';
+    //   //     // You could add a spinner overlay here
+    //   //   }
+    //   // }
 
-      updateGalleryDOM(variant, images) {
-        this.updateMainImage(variant, images[0]);
-        this.updateRightGallery(variant, images.slice(1));
-        this.updateMobileGallery(variant, images);
-        this.updateMobileThumbnails(variant, images);
-        setTimeout(() => initMobileGallery(true), 100);
-      }
+    //   updateGalleryDOM(variant, images) {
+    //     this.updateMainImage(variant, images[0]);
+    //     this.updateRightGallery(variant, images.slice(1));
+    //     this.updateMobileGallery(variant, images);
+    //     this.updateMobileThumbnails(variant, images);
+    //     setTimeout(() => initMobileGallery(true), 100);
+    //   }
 
-      // Immediate update for page load (no loading states or transitions)
-      updateMainImageImmediate(variant, imageUrl) {
-        const mainImage = document.getElementById('main-image');
-        if (!mainImage || !imageUrl) return;
+    //   // Immediate update for page load (no loading states or transitions)
+    //   updateMainImageImmediate(variant, imageUrl) {
+    //     const mainImage = document.getElementById('main-image');
+    //     if (!mainImage || !imageUrl) return;
         
-        console.log("🚀 ~ updateMainImageImmediate ~ imageUrl:", imageUrl);
-        
-        // Don't add loading states on initial load
-        mainImage.setAttribute('src', imageUrl);
-        mainImage.setAttribute('data-src', imageUrl);
-        mainImage.removeAttribute('srcset');
-        mainImage.removeAttribute('onload');
-        
-        // Set proper dimensions to prevent size jumping
-        if (variant.featured_image?.width && variant.featured_image?.height) {
-          mainImage.setAttribute('width', variant.featured_image.width);
-          mainImage.setAttribute('height', variant.featured_image.height);
-        }
-        
-        // Update alt text
-        mainImage.setAttribute('alt', variant.featured_image?.alt || variant.title || 'Product image');
-        
-        // Remove any blur classes that might be applied
-        mainImage.classList.remove('blur-up', 'blur-sm');
-        mainImage.style.opacity = '1';
-        mainImage.dataset.loaded = 'true';
-        mainImage.dataset.highResLoaded = 'true';
-      }
+    //     // Don't add loading states on initial load
+    //     mainImage.setAttribute('src', imageUrl);
+    //     mainImage.setAttribute('data-src', imageUrl);
+    //     // mainImage.removeAttribute('srcset');
+    //     // mainImage.removeAttribute('onload');
 
-      updateMainImage(variant, imageUrl) {
-        const mainImage = document.getElementById('main-image');
-        if (!mainImage || !imageUrl) return;
-        console.log("🚀 ~ updateMainImage ~ imageUrl:", imageUrl)
+    //     // mainImage.loading = 'eager';
+    //     // mainImage.decoding = 'async';
         
-        mainImage.style.opacity = '0.5';
-        // mainImage.src = imageUrl;
+    //     // Set proper dimensions to prevent size jumping
+    //     // if (variant.featured_image?.width && variant.featured_image?.height) {
+    //     //   mainImage.setAttribute('width', variant.featured_image.width);
+    //     //   mainImage.setAttribute('height', variant.featured_image.height);
+    //     // }
         
-        mainImage.setAttribute('src', imageUrl);
-        mainImage.setAttribute('data-src', imageUrl);
-        mainImage.removeAttribute('srcset');
-        mainImage.removeAttribute('onload');
+    //     // Update alt text
+    //     mainImage.setAttribute('alt', variant.featured_image?.alt || variant.title || 'Product image');
+        
+    //     // Remove any blur classes that might be applied
+    //     // mainImage.classList.remove('blur-up', 'blur-sm');
+    //     mainImage.style.opacity = '1';
+    //     mainImage.dataset.loaded = 'true';
+    //     mainImage.dataset.highResLoaded = 'true';
+    //   }
 
-        mainImage.setAttribute('alt', variant.featured_image?.alt || variant.title || 'Product image');
-        if (variant.featured_image?.width) mainImage.setAttribute('width', variant.featured_image.width);
-        if (variant.featured_image?.height) mainImage.setAttribute('height', variant.featured_image.height);
+    //   updateMainImage(variant, imageUrl) {
+    //     const mainImage = document.getElementById('main-image');
+    //     if (!mainImage || !imageUrl) return;
+    //     console.log("🚀 ~ updateMainImage ~ imageUrl:", imageUrl)
         
+    //     mainImage.style.opacity = '0.5';
+    //     // mainImage.src = imageUrl;
         
-        mainImage.onload = () => {
-          console.log('[updateMainImage] loaded successfully');
-          mainImage.style.opacity = '1';
-          mainImage.dataset.highResLoaded = true;
-          mainImage.classList.remove('blur-sm');
-        };
-      }
+    //     mainImage.setAttribute('src', imageUrl);
+    //     mainImage.setAttribute('data-src', imageUrl);
+    //     // mainImage.removeAttribute('srcset');
+    //     // mainImage.removeAttribute('onload');
 
-      updateRightGallery(variant, images) {
-        const rightSideGallery = document.getElementById('image-scroll-container');
-        if (!rightSideGallery) return;
+    //     mainImage.setAttribute('alt', variant.featured_image?.alt || variant.title || 'Product image');
+    //     // if (variant.featured_image?.width) mainImage.setAttribute('width', variant.featured_image.width);
+    //     // if (variant.featured_image?.height) mainImage.setAttribute('height', variant.featured_image.height);
         
-        rightSideGallery.innerHTML = '';
         
-        if (images.length === 0) {
-          rightSideGallery.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400">No additional images</div>';
-          return;
-        }
-        
-        images.forEach((imgUrl, idx) => {
-          const scrollItem = document.createElement('div');
-          scrollItem.className = 'w-full h-full snap-center image-scroll-item';
-          scrollItem.innerHTML = `
-            <img
-              src="${imgUrl}" 
-              alt="${variant.title || 'Product image'}"
-              class="w-full h-full object-contain"
-              loading="lazy"
-            >
-          `;
-          rightSideGallery.appendChild(scrollItem);
-        });
-      }
+    //     mainImage.onload = () => {
+    //       console.log('[updateMainImage] loaded successfully');
+    //       mainImage.style.opacity = '1';
+    //       // mainImage.dataset.highResLoaded = true;
+    //       // mainImage.classList.remove('blur-sm');
+    //     };
+    //   }
 
-      updateMobileGallery(variant, images) {
-        const mobileGallery = document.getElementById('mobile-gallery-container');
-        if (!mobileGallery) return;
+    //   updateRightGallery(variant, images) {
+    //     const rightSideGallery = document.getElementById('image-scroll-container');
+    //     if (!rightSideGallery) return;
         
-        mobileGallery.innerHTML = '';
-        images.forEach((imgUrl, idx) => {
-          const slide = document.createElement('div');
-          slide.className = "w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative";
-          slide.dataset.index = idx;
-          slide.onclick = () => scrollToMobileImage(idx);
-          slide.innerHTML = `
-            <img 
-              src="${imgUrl}" 
-              alt="${variant.title || ''}" 
-              class="w-full h-full object-cover"
-              loading="lazy"
-            />
-          `;
-          mobileGallery.appendChild(slide);
-        });
-      }
-
-      updateMobileThumbnails(variant, images) {
-        const mobileThumbnailWrapper = document.querySelector('.mobile-thumbnail-wrapper .mobile-gallery');
-        if (!mobileThumbnailWrapper) return;
+    //     rightSideGallery.innerHTML = '';
         
-        mobileThumbnailWrapper.innerHTML = '';
-        images.forEach((imgUrl, idx) => {
-          const thumbnailButton = document.createElement('button');
-          thumbnailButton.type = 'button';
-          thumbnailButton.className = 'flex-shrink-0 h-[70px] w-[45.5px] mr-3 mobile-thumbnail bg-transparent border-0 p-0';
-          thumbnailButton.dataset.index = idx;
-          thumbnailButton.onclick = () => scrollToMobileImage(idx);
-          thumbnailButton.innerHTML = `
-            <img 
-              src="${imgUrl}" 
-              alt="${variant.title || ''}" 
-              class="w-full h-full object-cover"
-              loading="lazy"
-            />
-          `;
-          mobileThumbnailWrapper.appendChild(thumbnailButton);
-        });
-      }
-    }
+    //     if (images.length === 0) {
+    //       rightSideGallery.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400">No additional images</div>';
+    //       return;
+    //     }
+        
+    //     images.forEach((imgUrl, idx) => {
+    //       const scrollItem = document.createElement('div');
+    //       scrollItem.className = 'w-full h-full snap-center image-scroll-item';
+    //       scrollItem.innerHTML = `
+    //         <img
+    //           src="${imgUrl}" 
+    //           alt="${variant.title || 'Product image'}"
+    //           class="w-full h-full object-contain"
+    //           loading="lazy"
+    //         >
+    //       `;
+    //       rightSideGallery.appendChild(scrollItem);
+    //     });
+    //   }
 
-    let productImageManager;
+    //   updateMobileGallery(variant, images) {
+    //     const mobileGallery = document.getElementById('mobile-gallery-container');
+    //     if (!mobileGallery) return;
+        
+    //     mobileGallery.innerHTML = '';
+    //     images.forEach((imgUrl, idx) => {
+    //       const slide = document.createElement('div');
+    //       slide.className = "w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative";
+    //       slide.dataset.index = idx;
+    //       slide.onclick = () => scrollToMobileImage(idx);
+    //       slide.innerHTML = `
+    //         <img 
+    //           src="${imgUrl}" 
+    //           alt="${variant.title || ''}" 
+    //           class="w-full h-full object-cover"
+    //           loading="lazy"
+    //         />
+    //       `;
+    //       mobileGallery.appendChild(slide);
+    //     });
+    //   }
 
-    document.addEventListener('DOMContentLoaded', function() {
-      const productData = {
-        variants: {{ product.variants | json }},
-        images: {{ product.images | json }}
-      };
+    //   updateMobileThumbnails(variant, images) {
+    //     const mobileThumbnailWrapper = document.querySelector('.mobile-thumbnail-wrapper .mobile-gallery');
+    //     if (!mobileThumbnailWrapper) return;
+        
+    //     mobileThumbnailWrapper.innerHTML = '';
+    //     images.forEach((imgUrl, idx) => {
+    //       const thumbnailButton = document.createElement('button');
+    //       thumbnailButton.type = 'button';
+    //       thumbnailButton.className = 'flex-shrink-0 h-[70px] w-[45.5px] mr-3 mobile-thumbnail bg-transparent border-0 p-0';
+    //       thumbnailButton.dataset.index = idx;
+    //       thumbnailButton.onclick = () => scrollToMobileImage(idx);
+    //       thumbnailButton.innerHTML = `
+    //         <img 
+    //           src="${imgUrl}" 
+    //           alt="${variant.title || ''}" 
+    //           class="w-full h-full object-cover"
+    //           loading="lazy"
+    //         />
+    //       `;
+    //       mobileThumbnailWrapper.appendChild(thumbnailButton);
+    //     });
+    //   }
+    // }
+
+    // let productImageManager;
+
+    // document.addEventListener('DOMContentLoaded', function() {
+    //   const productData = {
+    //     variants: {{ product.variants | json }},
+    //     images: {{ product.images | json }}
+    //   };
       
-      productImageManager = new ProductImageManager(productData);
-    });
+    //   productImageManager = new ProductImageManager(productData);
+    // });
 
-    // Function to handle variant selection
-    function selectVariant(element, optionPosition, optionValue) {
-      // Define selectable items for the current option group
-      const selectableItems = document.querySelectorAll(
-        `.variant-button[data-option-position="${optionPosition}"], .color-chip[data-option-position="${optionPosition}"]`
-      );
+    // function selectVariant(element, optionPosition, optionValue) {
+    //   // Define selectable items for the current option group
+    //   const selectableItems = document.querySelectorAll(
+    //     `.variant-button[data-option-position="${optionPosition}"], .color-chip[data-option-position="${optionPosition}"]`
+    //   );
 
-      // Clear previous selection for this option group
-      selectableItems.forEach(item => {
-        item.removeAttribute('data-selected');
-        if (item.classList.contains('variant-button') && !item.classList.contains('color-chip')) {
-          item.classList.remove('bg-[#D9D9D9]');
-        }
-      });
+    //   // Clear previous selection for this option group
+    //   selectableItems.forEach(item => {
+    //     item.removeAttribute('data-selected');
+    //     if (item.classList.contains('variant-button') && !item.classList.contains('color-chip')) {
+    //       item.classList.remove('bg-[#D9D9D9]');
+    //     }
+    //   });
 
-      // Mark the clicked item as selected
-      element.setAttribute('data-selected', 'true');
-      if (element.classList.contains('variant-button') && !element.classList.contains('color-chip')) {
-        element.classList.add('bg-[#D9D9D9]');
-      }
+    //   // Mark the clicked item as selected
+    //   element.setAttribute('data-selected', 'true');
+    //   if (element.classList.contains('variant-button') && !element.classList.contains('color-chip')) {
+    //     element.classList.add('bg-[#D9D9D9]');
+    //   }
 
-      // Get current selections for all options from both .variant-button and .color-chip
-      const selections = {};
-      document.querySelectorAll('.variant-button[data-selected="true"], .color-chip[data-selected="true"]').forEach(selectedItem => {
-        const position = selectedItem.getAttribute('data-option-position');
-        const value = selectedItem.getAttribute('data-value');
-        selections[`option${position}`] = value;
-      });
+    //   // Get current selections for all options from both .variant-button and .color-chip
+    //   const selections = {};
+    //   document.querySelectorAll('.variant-button[data-selected="true"], .color-chip[data-selected="true"]').forEach(selectedItem => {
+    //     const position = selectedItem.getAttribute('data-option-position');
+    //     const value = selectedItem.getAttribute('data-value');
+    //     selections[`option${position}`] = value;
+    //   });
 
-      // Get total number of option types available for this product
-      const totalOptionTypes = {{ product.options | size }};
+    //   // Get total number of option types available for this product
+    //   const totalOptionTypes = {{ product.options | size }};
 
-      // Check if all option types have been selected
-      const allOptionsSelected = Object.keys(selections).length === totalOptionTypes;
+    //   // Check if all option types have been selected
+    //   const allOptionsSelected = Object.keys(selections).length === totalOptionTypes;
 
-      // Find matching variant
-      const variants = {{ product.variants | json }};
-      let matchingVariant = null;
+    //   // Find matching variant
+    //   const variants = {{ product.variants | json }};
+    //   let matchingVariant = null;
 
-      if (allOptionsSelected) {
-        matchingVariant = variants.find(variant => {
-          return Object.keys(selections).every(option => {
-            const position = parseInt(option.replace('option', ''));
-            // console.log("🚀 ~ position:", position)
-            return variant[`option${position}`] === selections[`option${position}`];
-          });
-        });
-      }
+    //   if (allOptionsSelected) {
+    //     matchingVariant = variants.find(variant => {
+    //       return Object.keys(selections).every(option => {
+    //         const position = parseInt(option.replace('option', ''));
+    //         // console.log("🚀 ~ position:", position)
+    //         return variant[`option${position}`] === selections[`option${position}`];
+    //       });
+    //     });
+    //   }
 
-      console.log('[selectVariant] matchingVariant:', matchingVariant ? matchingVariant.id : null, matchingVariant);
+    //   // console.log('[selectVariant] matchingVariant:', matchingVariant ? matchingVariant.id : null, matchingVariant);
 
 
-      // Check if this is an unavailable combination of options
-      let isUnavailableCombination = false;
-      if (allOptionsSelected && !matchingVariant) {
-        isUnavailableCombination = true;
-      }
+    //   // Check if this is an unavailable combination of options
+    //   let isUnavailableCombination = false;
+    //   if (allOptionsSelected && !matchingVariant) {
+    //     isUnavailableCombination = true;
+    //   }
 
-      // Update add to cart buttons based on inventory
-      if (matchingVariant) {
-        // We have a complete matching variant
-        updateAddToCartButtons(true, matchingVariant);
-      } else if (isUnavailableCombination) {
-        // All options selected but no matching variant found (unavailable combination)
-        updateAddToCartButtons(false, null, true);
-      } else {
-        // Not all options selected yet
-        updateAddToCartButtons(false);
-      }
+    //   // Update add to cart buttons based on inventory
+    //   if (matchingVariant) {
+    //     // We have a complete matching variant
+    //     updateAddToCartButtons(true, matchingVariant);
+    //   } else if (isUnavailableCombination) {
+    //     // All options selected but no matching variant found (unavailable combination)
+    //     updateAddToCartButtons(false, null, true);
+    //   } else {
+    //     // Not all options selected yet
+    //     updateAddToCartButtons(false);
+    //   }
 
-      // If there's a matching variant, update the variant ID
-      if (matchingVariant && productImageManager) {
-        const variantIdDesktop = document.getElementById('variant-id');
-        if (variantIdDesktop) variantIdDesktop.value = matchingVariant.id;
+    //   // If there's a matching variant, update the variant ID
+    //   if (matchingVariant && productImageManager) {
+    //     const variantIdDesktop = document.getElementById('variant-id');
+    //     if (variantIdDesktop) variantIdDesktop.value = matchingVariant.id;
 
-        const variantIdMobile = document.getElementById('variant-id-mobile');
-        if (variantIdMobile) variantIdMobile.value = matchingVariant.id;
+    //     const variantIdMobile = document.getElementById('variant-id-mobile');
+    //     if (variantIdMobile) variantIdMobile.value = matchingVariant.id;
 
-        // Update gallery (desktop + mobile) for this variant
-        // updateGalleryForVariant(matchingVariant);
-        productImageManager.loadVariant(matchingVariant);
+    //     // Update gallery (desktop + mobile) for this color variant
+    //     if (optionPosition === "1") {
+    //       productImageManager.loadVariant(matchingVariant);
+    //     }
 
-        document.getElementById('variant-id').value = matchingVariant.id;
-        if (document.getElementById('variant-id-mobile')) {
-          document.getElementById('variant-id-mobile').value = matchingVariant.id;
-        }
-      }
-    }
+    //     document.getElementById('variant-id').value = matchingVariant.id;
+    //     if (document.getElementById('variant-id-mobile')) {
+    //       document.getElementById('variant-id-mobile').value = matchingVariant.id;
+    //     }
+    //   }
+    // }
 
     document.addEventListener('DOMContentLoaded', () => {
       const firstVariant = window.productVariants.find(v => v.available);
@@ -1379,13 +1624,13 @@
           firstVariant.option1
         );
         // also select size if needed
-        if (firstVariant.option2) {
-          selectVariant(
-            document.querySelector(`.variant-button[data-value="${firstVariant.option2}"]`),
-            2,
-            firstVariant.option2
-          );
-        }
+        // if (firstVariant.option2) {
+        //   selectVariant(
+        //     document.querySelector(`.variant-button[data-value="${firstVariant.option2}"]`),
+        //     2,
+        //     firstVariant.option2
+        //   );
+        // }
       }
     });
 
@@ -1818,170 +2063,6 @@
       if (mobileButtons['shipping-mobile']) {
         mobileButtons['shipping-mobile'].setAttribute('onclick', 'openPopup("shipping-popup")');
       }
-
-      //TODO: compare this to the simpler version above
-      // Completely revised mobile gallery initialization and synchronization
-      // function initMobileSwipeGallery() {
-      //   const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
-      //   const mobileThumbnails = document.querySelectorAll('.mobile-thumbnail');
-        
-      //   if (!mobileGalleryContainer || mobileThumbnails.length === 0) return;
-        
-      //   // Direct fix: Force the first image to be shown and first thumbnail to be highlighted
-      //   setTimeout(function() {
-      //     // Reset scroll position to first image
-      //     mobileGalleryContainer.scrollTo({
-      //       left: 0,
-      //       behavior: 'auto'
-      //     });
-          
-      //     // Force highlight the first thumbnail
-      //     mobileThumbnails.forEach((thumb, index) => {
-      //       if (index === 0) {
-      //         thumb.classList.remove('opacity-30');
-      //         thumb.classList.add('opacity-100');
-      //       } else {
-      //         thumb.classList.remove('opacity-100');
-      //         thumb.classList.add('opacity-30');
-      //       }
-      //     });
-          
-      //     // Update pagination
-      //     const paginationIndicator = document.getElementById('mobile-pagination-indicator');
-      //     if (paginationIndicator) {
-      //       paginationIndicator.textContent = `1 / ${mobileThumbnails.length}`;
-      //     }
-      //   }, 100);
-        
-      //   // Function to scroll to a specific image in the mobile gallery
-      //   window.scrollToMobileImage = function(index) {
-      //     console.log('[SwipeGallery] scrollToMobileImage called with', index);
-      //     const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
-      //     if (mobileGalleryContainer) {
-      //       const imageElements = mobileGalleryContainer.children;
-      //       if (index >= 0 && index < imageElements.length) {
-      //         const targetImage = imageElements[index];
-              
-      //         // Scroll to the target image with smooth behavior
-      //         targetImage.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-              
-      //         // Update thumbnails to reflect the new active image
-      //         updateActiveMobileThumbnail(index);
-      //       }
-      //     }
-      //   };
-        
-      //   // Update which mobile thumbnail is active
-      //   function updateActiveMobileThumbnail(activeIndex) {
-      //     const mobileThumbnails = document.querySelectorAll('.mobile-thumbnail');
-      //     mobileThumbnails.forEach((thumb, index) => {
-      //       if (index === activeIndex) {
-      //         thumb.classList.remove('opacity-30');
-      //         thumb.classList.add('opacity-100');
-      //       } else {
-      //         thumb.classList.remove('opacity-100');
-      //         thumb.classList.add('opacity-30');
-      //       }
-      //     });
-      //   }
-        
-      //   // Enhanced touch handling for mobile swipe
-      //   let startX, moveX;
-      //   let startTime, isSwiping = false;
-        
-      //   mobileGalleryContainer.addEventListener('touchstart', function(e) {
-      //     startX = e.touches[0].clientX;
-      //     startTime = new Date().getTime();
-      //     isSwiping = false;
-      //   }, { passive: true });
-        
-      //   mobileGalleryContainer.addEventListener('touchmove', function(e) {
-      //     if (!startX) return;
-      //     moveX = e.touches[0].clientX;
-      //     isSwiping = true;
-      //   }, { passive: true });
-        
-      //   mobileGalleryContainer.addEventListener('touchend', function(e) {
-      //     if (!isSwiping) return;
-          
-      //     const endX = e.changedTouches[0].clientX;
-      //     const endTime = new Date().getTime();
-      //     const timeDiff = endTime - startTime;
-      //     const distX = endX - startX;
-          
-      //     // For very quick swipes, or significant distance swipes
-      //     if ((Math.abs(distX) > 50 && timeDiff < 300) || Math.abs(distX) > mobileGalleryContainer.offsetWidth / 3) {
-      //       const containerWidth = mobileGalleryContainer.offsetWidth;
-      //       const currentPosition = mobileGalleryContainer.scrollLeft;
-      //       const currentIndex = Math.round(currentPosition / containerWidth);
-            
-      //       // Determine direction and target slide
-      //       let targetIndex;
-      //       if (distX < 0) { // Swipe left, go next
-      //         targetIndex = Math.min(currentIndex + 1, mobileGalleryContainer.children.length - 1);
-      //       } else { // Swipe right, go prev
-      //         targetIndex = Math.max(currentIndex - 1, 0);
-      //       }
-            
-      //       // Programmatically scroll to the target slide
-      //       scrollToMobileImage(targetIndex);
-      //     }
-          
-      //     // Reset variables
-      //     startX = null;
-      //     moveX = null;
-      //     isSwiping = false;
-      //   }, { passive: true });
-        
-      //   // Improved scroll event handling with IntersectionObserver for better performance
-      //   const imageObserver = new IntersectionObserver((entries) => {
-      //     entries.forEach(entry => {
-      //       if (entry.isIntersecting && entry.intersectionRatio > 0.8) {
-      //         const index = Array.from(mobileGalleryContainer.children).indexOf(entry.target);
-      //         if (index !== -1) {
-      //           updateActiveMobileThumbnail(index);
-      //         }
-      //       }
-      //     });
-      //   }, {
-      //     root: mobileGalleryContainer,
-      //     threshold: [0.8],
-      //     rootMargin: '0px'
-      //   });
-        
-      //   // Observe all gallery images
-      //   Array.from(mobileGalleryContainer.children).forEach(image => {
-      //     imageObserver.observe(image);
-      //   });
-        
-      //   // Backup solution: listen for scroll events with debounce
-      //   let scrollTimeout;
-      //   mobileGalleryContainer.addEventListener('scroll', function() {
-      //     clearTimeout(scrollTimeout);
-          
-      //     scrollTimeout = setTimeout(() => {
-      //       const containerWidth = mobileGalleryContainer.offsetWidth;
-      //       const scrollPosition = mobileGalleryContainer.scrollLeft;
-      //       const imageIndex = Math.round(scrollPosition / containerWidth);
-            
-      //       if (imageIndex >= 0 && imageIndex < mobileThumbnails.length) {
-      //         updateActiveMobileThumbnail(imageIndex);
-      //       }
-      //     }, 50);
-      //   }, { passive: true });
-        
-      //   // Add click handlers to mobile thumbnails
-      //   mobileThumbnails.forEach((thumb, index) => {
-      //     thumb.addEventListener('click', function() {
-      //       scrollToMobileImage(index);
-      //     });
-      //   });
-      // }
-
-      
-      // // Initialize the mobile gallery
-      // console.log("mobile swipe gallery init")
-      // initMobileSwipeGallery();
       
       // Setup click outside to close popups
       document.addEventListener('click', function(event) {
@@ -2134,14 +2215,32 @@
 
   .color-chip-container {
     display: inline-block;
-    padding-bottom: 4px; /* Space for the underline */
-    border-bottom: 1px solid transparent; /* Hidden border by default */
-    transition: border-color 0.2s ease; /* Smooth transition */
+    padding-bottom: 4px;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease;
   }
 
   .color-chip-container:hover,
   .color-chip-container.active {
-    border-bottom-color: #000; /* Show black underline on hover */
+    border-bottom-color: #000;
+  }
+
+  .color-chip-container.disabled:hover {
+    border-bottom-color: transparent;
+  }
+
+  .color-chip-container.active .color-chip {
+    pointer-events: none;
+    cursor: default;
+  }
+
+  /* fallback for disabled color chips */
+  .color-chip[disabled],
+  .color-chip[aria-disabled="true"],
+  .color-chip[data-has-image="false"] {
+    pointer-events: none !important;
+    /* cursor: not-allowed !important; */
+    opacity: 0.5 !important;
   }
   
   /* Enhanced spacing for popup content */
@@ -2492,29 +2591,29 @@
   
   /* Color options (first column) should expand to fit content */
   .variant-button[data-option-position="1"] {
-    width: auto; /* Allow to grow based on content */
-    height: 24px; /* Set fixed height to 24px */
-    aspect-ratio: auto; /* No fixed aspect ratio */
+    width: auto;
+    height: 24px;
+    aspect-ratio: auto;
     justify-content: flex-start;
     padding: 2px 4px;
   }
   
   /* Size options (second column) maintain square ratio */
   .variant-button[data-option-position="2"] {
-    width: 24px; /* Match height for square */
-    height: 24px; /* Set fixed height to 24px */
+    width: 24px;
+    height: 24px;
     min-width: 24px;
     min-height: 24px;
     aspect-ratio: 1; /* Maintain square ratio only for sizes */
     text-align: center;
     justify-content: center;
     padding: 0;
-    font-size: 13px !important; /* Keep standard font size */
+    font-size: 13px !important;
     line-height: 1; /* Tighter line height to fit text */
-    overflow: visible; /* Allow text to overflow container */
+    overflow: visible;
   }
   
-  .variant-button:hover {
+  .variant-button:enabled:hover {
     background-color: #D9D9D9;
   }
   
@@ -2875,7 +2974,7 @@
   }
 </style>
 
-<script>
+{% comment %} <script>
   document.addEventListener('DOMContentLoaded', function() {
     // ... existing code ...
 
@@ -2894,12 +2993,6 @@
           // detailsContainer.style.paddingTop = '4px';
         });
       }
-      
-      // Add header background change
-      {% comment %} requestAnimationFrame(() => {
-        headerOverlay.style.backgroundColor = 'white';
-        document.querySelector('.nav-container').style.backgroundColor = 'white';
-      }); {% endcomment %}
     });
 
     productInfoContainer.addEventListener('mouseleave', function() {
@@ -2922,4 +3015,4 @@
     
     // ... rest of existing code ...
   });
-</script>
+</script> {% endcomment %}
