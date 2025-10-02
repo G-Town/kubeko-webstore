@@ -422,58 +422,6 @@
       <!-- Product Info Overlay - Desktop only -->
       <div id="popup-overlay" class="hidden fixed inset-0 bg-transparent z-[54]"></div>
 
-      <!-- MOBILE POPUPS -->
-      <!-- SHIPPING (mobile) -->
-      {% comment %} <div id="shipping-popup-mobile" class="hidden md:hidden  inset-0 z-[60] overflow-y-auto">
-        <div class="max-w-[864px] mx-auto mt-6 bg-white rounded-[4px] p-4 shadow-sm">
-          <div class="flex justify-between items-center mb-3">
-            <h2 class="uppercase text-sm font-medium text-[#444444]">SHIPPING</h2>
-            <button onclick="closePopup('shipping-popup-mobile')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-2 py-1">
-              CLOSE
-            </button>
-          </div>
-
-          <div class="text-[13px] leading-relaxed text-[#444444] space-y-3">
-            {% if settings.default_shipping_info != blank %}
-              {{ settings.default_shipping_info | newline_to_br }}
-            {% elsif product.metafields.custom.shipping %}
-              {{ product.metafields.custom.shipping | newline_to_br }}
-            {% else %}
-              <!-- fallback copy -->
-              <p>For ready-to-ship items, please allow 2–3 days for dispatch.</p>
-              <p>For made-to-order items, allow 3–4 weeks for dispatch.</p>
-              <p>Contact <span class="underline">info@kubeko.co</span> for more info.</p>
-            {% endif %}
-          </div>
-        </div>
-      </div> {% endcomment %}
-
-      {% comment %} <div id="shipping-popup" class="hidden popup-container">
-        <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-4 popup-content transition-colors ">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="uppercase text-sm font-medium">SHIPPING</h2>
-            <button onclick="closePopup('shipping-popup')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
-              CLOSE
-            </button>
-          </div>
-          <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content">
-            {% if settings.default_shipping_info != blank %}
-              {{ settings.default_shipping_info | newline_to_br }}
-            {% elsif product.metafields.custom.shipping %}
-              {{ product.metafields.custom.shipping | newline_to_br }}
-            {% else %}
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For ready-to-ship items, please allow 2-3 days for the item to dispatch.</p>
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For made-to-order items, please allow 3-4 weeks for the item to dispatch.</p>
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">You will receive an email notification to confirm your order has been dispatched.</p>
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">If you require any additional information please contact <span class="underline">info@kubeko.co</span></p>
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">We offer complimentary shipping for orders above $350 within the USA and South Korea.</p>
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">Please note that customers outside the USA and South Korea will be responsible for all import duties and tax charges that may be applied by their local customs office on delivery to country of destination.</p>
-              <p class="text-[13px] leading-relaxed text-[#444444]">For return requests, please contact <span class="underline">info@kubeko.co</span> within 14 days of the order's delivery date. After confirming the condition of the returning item(s), we will email you with return instructions. Items must be returned new, unused, unworn, unwashed, unaltered, and undamaged condition, with its original tags attached.</p>
-            {% endif %}
-          </div>
-        </div>
-      </div> {% endcomment %}
-
       <div class="hidden md:block absolute bottom-0 left-1/2 -translate-x-1/2 min-w-[475px] w-[60%] product-info-container">
         
         <div id="shipping-popup" class="hidden popup-container">
@@ -756,56 +704,41 @@
     // Modified function to open popups - closes any other open popups first
     function openPopup(popupId) {
       // First close all popups
-      const popups = document.querySelectorAll('#shipping-popup, #size-guide-popup, #materials-popup');
+      const popups = document.querySelectorAll('#shipping-popup, #size-guide-popup, #materials-popup, #shipping-popup-mobile, #size-guide-popup-mobile, #materials-popup-mobile');
       popups.forEach(popup => {
         popup.classList.add('hidden');
       });
       
-      // Show the overlay
       const overlay = document.getElementById('popup-overlay');
       overlay.classList.remove('hidden');
       
-      // Then open the requested popup
       const popup = document.getElementById(popupId);
-      if (popup) {
-        popup.classList.remove('hidden');
+      if (!popup) return;
+
+      popup.classList.remove('hidden');
+      document.body.classList.add('popup-active');
+      
+      // On mobile devices, scroll to popup position for visibility
+      if (window.innerWidth < 768) {
+        // Store the current scroll position before opening popup
+        window.lastScrollPosition = window.pageYOffset;
         
-        // When popup opens, make the nav and popup backgrounds white
-        const navContainer = document.querySelector('.nav-container');
-        const popupContent = popup.querySelector('.popup-content');
-        
-        {% comment %} if (navContainer) {
-          navContainer.style.backgroundColor = 'white';
-        }
-        
-        if (popupContent) {
-          popupContent.style.backgroundColor = 'white';
-        } {% endcomment %}
-        
-        // Add the active popup class to the body for styling
-        document.body.classList.add('popup-active');
-        
-        // On mobile devices, scroll to popup position for visibility
-        if (window.innerWidth < 768) {
-          // Store the current scroll position before opening popup
-          window.lastScrollPosition = window.pageYOffset;
+        // Small delay to ensure the popup is rendered before calculating position
+        setTimeout(() => {
+          // Get the popup's position
+          const popupRect = popup.getBoundingClientRect();
           
-          // Small delay to ensure the popup is rendered before calculating position
-          setTimeout(() => {
-            // Get the popup's position
-            const popupRect = popup.getBoundingClientRect();
-            
-            // Calculate the optimal scroll position - account for top navigation and 48px offset
-            const headerHeight = 12; // Adjusted to account for the 48px offset
-            const scrollToY = Math.max(0, window.pageYOffset + popupRect.top - headerHeight);
-            
-            // Use smooth scrolling
-            window.scrollTo({
-              top: scrollToY,
-              behavior: 'smooth'
-            });
-          }, 50);
-        }
+          // Calculate the optimal scroll position - account for top navigation and 48px offset
+          // const headerHeight = 12; // Adjusted to account for the 48px offset
+          const headerHeight = 45;
+          const scrollToY = Math.max(0, window.pageYOffset + popupRect.top - headerHeight);
+          
+          // Use smooth scrolling
+          window.scrollTo({
+            top: scrollToY,
+            behavior: 'smooth'
+          });
+        }, 50);
       }
     }
     
@@ -818,18 +751,6 @@
         // Hide the overlay
         const overlay = document.getElementById('popup-overlay');
         overlay.classList.add('hidden');
-        
-        // When popup closes, reset nav and popup backgrounds
-        const navContainer = document.querySelector('.nav-container');
-        const popupContent = popup.querySelector('.popup-content');
-        
-        if (navContainer) {
-          navContainer.style.backgroundColor = 'rgba(254,254,254,0.60)';
-        }
-        
-        if (popupContent) {
-          popupContent.style.backgroundColor = 'rgba(254,254,254,0.60)';
-        }
         
         // Remove the active popup class from the body
         document.body.classList.remove('popup-active');
@@ -846,9 +767,8 @@
       }
     }
     
-    // Function to close all popups
     function closeAllPopups() {
-      const popups = document.querySelectorAll('#shipping-popup, #size-guide-popup, #materials-popup');
+      const popups = document.querySelectorAll('#shipping-popup, #size-guide-popup, #materials-popup, #shipping-popup-mobile, #size-guide-popup-mobile, #materials-popup-mobile');
       popups.forEach(popup => {
         const popupId = popup.id;
         if (!popup.classList.contains('hidden')) {
@@ -878,7 +798,6 @@
 
     /* ===========================
       Prioritized color-first image manager + new selectVariant
-      Paste / replace your old ProductImageManager and selectVariant here
       =========================== */
 
     class ProductImageManager {
@@ -2573,6 +2492,7 @@
       transform: translateX(-50%);
       /* width: calc(100% - 8px); */
       max-width: 864px;
+      width: 75vw;
       max-height: 80vh;
       overflow-y: auto;
       z-index: 1000;
