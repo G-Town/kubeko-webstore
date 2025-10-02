@@ -131,26 +131,6 @@
             loading="eager"
             style="opacity: 0;"
           >
-          {% comment %} {% if first_image %}
-            <div class="product-image-frame"
-                style="aspect-ratio: {{ first_image.width | default: 4 }} / {{ first_image.height | default: 5 }}; min-height: 420px;">
-              <img
-                id="main-image"
-                src="{{ first_image | img_url: '400x' }}"
-                data-src="{{ first_image | image_url }}"
-                alt="{{ product.title }}"
-                class="object-contain"
-                width="{{ first_image.width }}"
-                height="{{ first_image.height }}"
-                loading="eager"
-                decoding="async"
-              />
-            </div>
-          {% else %}
-            <div class="product-image-frame" style="aspect-ratio: 4 / 5; min-height:420px;">
-              <img id="main-image" src="" alt="{{ product.title }}" class="object-contain" loading="eager"/>
-            </div>
-          {% endif %} {% endcomment %}
         </div>
         
         <!-- Mobile Main Image (Slideshow on mobile) -->
@@ -168,34 +148,6 @@
       <div class="hidden md:block md:w-1/2 h-full relative">
         <!-- Right Main Image replaced with scrollable gallery -->
         <div id="image-scroll-container" class="w-full h-full overflow-y-auto custom-scrollbar scroll-snap-container">
-          {% comment %} <div class="hidden md:block md:w-1/2 h-full relative">
-            <div id="image-scroll-container" class="w-full h-full overflow-y-auto custom-scrollbar scroll-snap-container">
-              <!-- inner area that will be populated by JS; keep this wrapper so layout is stable -->
-              <div id="image-scroll-inner" class="w-full h-full">
-                {% assign placeholder_image = second_image | default: first_image %}
-                <div class="product-image-frame"
-                    style="aspect-ratio: {{ placeholder_image.width | default: 4 }} / {{ placeholder_image.height | default: 5 }}; min-height: 420px;">
-                  <img
-                    src="{{ placeholder_image | img_url: '400x' }}"
-                    alt=""
-                    width="{{ placeholder_image.width }}"
-                    height="{{ placeholder_image.height }}"
-                    class="object-contain block opacity-0"
-                    aria-hidden="true"
-                    loading="eager"
-                    decoding="async"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {% if first_variant.featured_image %}
-              <link rel="preload" as="image" href="{{ first_variant.featured_image | img_url: '800x' }}">
-            {% endif %}
-            {% if second_image %}
-              <link rel="preload" as="image" href="{{ second_image | img_url: '800x' }}">
-            {% endif %}
-          </div> {% endcomment %}
         </div>
 
         <!-- Preload link for first variant images (optional performance boost) -->
@@ -341,7 +293,7 @@
             
             <!-- Info Links -->
             <div class="flex flex-col space-y-2">
-              <button onclick="openPopup('materials-popup')" class="flex justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+              <button onclick="openPopup('materials-popup-mobile')" class="flex justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
                 <span class="uppercase text-[13px] text-[#444444]">MATERIALS</span>
                 <span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
@@ -350,7 +302,7 @@
                 </span>
               </button>
               
-              <button onclick="openPopup('size-guide-popup')" class="flex text-black justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+              <button onclick="openPopup('size-guide-popup-mobile')" class="flex text-black justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
                 <span class="uppercase text-[13px] text-[#444444]">SIZE GUIDE</span>
                 <span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
@@ -359,7 +311,7 @@
                 </span>
               </button>
               
-              <button onclick="openPopup('shipping-popup')" class="flex justify-between text-black items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+              <button onclick="openPopup('shipping-popup-mobile')" class="flex justify-between text-black items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
                 <span class="uppercase text-[13px] text-[#444444]">SHIPPING</span>
                 <span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
@@ -371,12 +323,159 @@
           </div>
         </div>
       </div>
+
+      <div id="shipping-popup-mobile" class="hidden popup-container">
+        <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-4 popup-content transition-colors ">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="uppercase text-sm font-medium">SHIPPING</h2>
+            <button onclick="closePopup('shipping-popup-mobile')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
+              CLOSE
+            </button>
+          </div>
+          <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content">
+            {% if settings.default_shipping_info != blank %}
+              {{ settings.default_shipping_info | newline_to_br }}
+            {% elsif product.metafields.custom.shipping %}
+              {{ product.metafields.custom.shipping | newline_to_br }}
+            {% else %}
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For ready-to-ship items, please allow 2-3 days for the item to dispatch.</p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For made-to-order items, please allow 3-4 weeks for the item to dispatch.</p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">You will receive an email notification to confirm your order has been dispatched.</p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">If you require any additional information please contact <span class="underline">info@kubeko.co</span></p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">We offer complimentary shipping for orders above $350 within the USA and South Korea.</p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">Please note that customers outside the USA and South Korea will be responsible for all import duties and tax charges that may be applied by their local customs office on delivery to country of destination.</p>
+              <p class="text-[13px] leading-relaxed text-[#444444]">For return requests, please contact <span class="underline">info@kubeko.co</span> within 14 days of the order's delivery date. After confirming the condition of the returning item(s), we will email you with return instructions. Items must be returned new, unused, unworn, unwashed, unaltered, and undamaged condition, with its original tags attached.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div id="size-guide-popup-mobile" class="hidden popup-container">
+        <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-5 popup-content transition-colors duration-300">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="uppercase text-sm font-medium">SIZE GUIDE</h2>
+            <button onclick="closePopup('size-guide-popup-mobile')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
+              CLOSE
+            </button>
+          </div>
+          <div class="popup-formatted-content text-center">
+            {% if product.metafields.custom.size_guide %}
+              <!-- Using the recommended metafield_tag filter from Shopify docs -->
+              <div class="w-full md:w-3/4 ">
+                {{ product.metafields.custom.size_guide | metafield_tag }}
+              </div>
+            {% else %}
+              <!-- No size guide available message -->
+              <div class="w-full md:w-1/2 mx-auto">
+                <p class="text-[13px] text-black leading-relaxed">No size guide available for this product.</p>
+              </div>
+            {% endif %}
+            <p class="text-[13px] text-gray-600 mt-4">For any specific sizing questions, please contact us at <span class="underline">info@kubeko.co</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div id="materials-popup-mobile" class="hidden popup-container">
+        <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] px-5 py-6 popup-content transition-colors duration-300">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="uppercase text-sm font-medium">MATERIALS</h2>
+            <button onclick="closePopup('materials-popup-mobile')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
+              CLOSE
+            </button>
+          </div>
+          <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content" id="materials-content-container">
+            {% if product.metafields.custom.materials %}
+              <div id="materials-content-wrapper">
+                {% if product.metafields.custom.materials.type == 'json' %}
+                  {{ product.metafields.custom.materials | metafield_tag }}
+                {% else %}
+                  {{ product.metafields.custom.materials }}
+                {% endif %}
+              </div>
+
+              <style>
+                /* Add styling to properly format the metafield content */
+                #materials-content-wrapper p {
+                  font-size: 13px;
+                  line-height: 1.7;
+                  margin-bottom: 1.5rem;
+                }
+                
+                #materials-content-wrapper > div > p {
+                  font-size: 13px;
+                  line-height: 1.7;
+                  margin-bottom: 1.5rem;
+                }
+                
+                #materials-content-wrapper > p:last-child,
+                #materials-content-wrapper > div > p:last-child {
+                  margin-bottom: 0;
+                }
+              </style>
+            {% else %}
+              <p class="text-[13px] leading-relaxed">Materials information not available for this product.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
       
       <!-- Product Info Overlay - Desktop only -->
       <div id="popup-overlay" class="hidden fixed inset-0 bg-transparent z-[54]"></div>
+
+      <!-- MOBILE POPUPS -->
+      <!-- SHIPPING (mobile) -->
+      {% comment %} <div id="shipping-popup-mobile" class="hidden md:hidden  inset-0 z-[60] overflow-y-auto">
+        <div class="max-w-[864px] mx-auto mt-6 bg-white rounded-[4px] p-4 shadow-sm">
+          <div class="flex justify-between items-center mb-3">
+            <h2 class="uppercase text-sm font-medium text-[#444444]">SHIPPING</h2>
+            <button onclick="closePopup('shipping-popup-mobile')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-2 py-1">
+              CLOSE
+            </button>
+          </div>
+
+          <div class="text-[13px] leading-relaxed text-[#444444] space-y-3">
+            {% if settings.default_shipping_info != blank %}
+              {{ settings.default_shipping_info | newline_to_br }}
+            {% elsif product.metafields.custom.shipping %}
+              {{ product.metafields.custom.shipping | newline_to_br }}
+            {% else %}
+              <!-- fallback copy -->
+              <p>For ready-to-ship items, please allow 2–3 days for dispatch.</p>
+              <p>For made-to-order items, allow 3–4 weeks for dispatch.</p>
+              <p>Contact <span class="underline">info@kubeko.co</span> for more info.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div> {% endcomment %}
+
+      {% comment %} <div id="shipping-popup" class="hidden popup-container">
+        <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-4 popup-content transition-colors ">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="uppercase text-sm font-medium">SHIPPING</h2>
+            <button onclick="closePopup('shipping-popup')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
+              CLOSE
+            </button>
+          </div>
+          <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content">
+            {% if settings.default_shipping_info != blank %}
+              {{ settings.default_shipping_info | newline_to_br }}
+            {% elsif product.metafields.custom.shipping %}
+              {{ product.metafields.custom.shipping | newline_to_br }}
+            {% else %}
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For ready-to-ship items, please allow 2-3 days for the item to dispatch.</p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For made-to-order items, please allow 3-4 weeks for the item to dispatch.</p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">You will receive an email notification to confirm your order has been dispatched.</p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">If you require any additional information please contact <span class="underline">info@kubeko.co</span></p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">We offer complimentary shipping for orders above $350 within the USA and South Korea.</p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">Please note that customers outside the USA and South Korea will be responsible for all import duties and tax charges that may be applied by their local customs office on delivery to country of destination.</p>
+              <p class="text-[13px] leading-relaxed text-[#444444]">For return requests, please contact <span class="underline">info@kubeko.co</span> within 14 days of the order's delivery date. After confirming the condition of the returning item(s), we will email you with return instructions. Items must be returned new, unused, unworn, unwashed, unaltered, and undamaged condition, with its original tags attached.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div> {% endcomment %}
+
       <div class="hidden md:block absolute bottom-0 left-1/2 -translate-x-1/2 min-w-[475px] w-[60%] product-info-container">
         
-
         <div id="shipping-popup" class="hidden popup-container">
           <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-4 popup-content transition-colors ">
             <div class="flex justify-between items-center mb-4">
@@ -392,17 +491,11 @@
                 {{ product.metafields.custom.shipping | newline_to_br }}
               {% else %}
                 <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For ready-to-ship items, please allow 2-3 days for the item to dispatch.</p>
-                
                 <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For made-to-order items, please allow 3-4 weeks for the item to dispatch.</p>
-                
                 <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">You will receive an email notification to confirm your order has been dispatched.</p>
-                
                 <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">If you require any additional information please contact <span class="underline">info@kubeko.co</span></p>
-                
                 <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">We offer complimentary shipping for orders above $350 within the USA and South Korea.</p>
-                
                 <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">Please note that customers outside the USA and South Korea will be responsible for all import duties and tax charges that may be applied by their local customs office on delivery to country of destination.</p>
-                
                 <p class="text-[13px] leading-relaxed text-[#444444]">For return requests, please contact <span class="underline">info@kubeko.co</span> within 14 days of the order's delivery date. After confirming the condition of the returning item(s), we will email you with return instructions. Items must be returned new, unused, unworn, unwashed, unaltered, and undamaged condition, with its original tags attached.</p>
               {% endif %}
             </div>
@@ -554,7 +647,6 @@
                                     data-color-name="{{ value | escape }}"
                                     data-option-position="1"
                                     data-value="{{ value | escape }}"
-                                    data-has-image="{% if has_image %}true{% else %}false{% endif %}"
                                     {% if has_image  %}
                                       onclick="selectVariant(this, '{{ option.position }}', '{{ value | escape }}')"
                                       aria-disabled="false"
@@ -1145,11 +1237,6 @@
           colorBtn.setAttribute('data-selected', 'true');
           colorBtn.closest('.color-chip-container')?.classList.add('active');
         }
-
-        // mark size not selected — user must pick it manually (so we don't auto-select)
-        // set variant-id only if you want a default add-to-cart target; otherwise, leave empty until size chosen
-        // Optionally set variant-id to firstVariant so that add-to-cart works if you want an initial default:
-        // document.getElementById('variant-id').value = firstVariant.id;
       }
     });
 
@@ -2028,46 +2115,46 @@
         });
       }
       
+      // TODO: need this?
+      // // Update desktop section toggles to open popups instead
+      // const desktopButtons = {
+      //   'materials': document.querySelector('button[onclick*="materials"]'),
+      //   'size-guide': document.querySelector('button[onclick*="size-guide"]'),
+      //   'shipping': document.querySelector('button[onclick*="shipping"]')
+      // };
       
-      // Update desktop section toggles to open popups instead
-      const desktopButtons = {
-        'materials': document.querySelector('button[onclick*="materials"]'),
-        'size-guide': document.querySelector('button[onclick*="size-guide"]'),
-        'shipping': document.querySelector('button[onclick*="shipping"]')
-      };
-      
-      if (mobileButtons['materials']) {
-        mobileButtons['materials'].setAttribute('onclick', 'openPopup("materials-popup")');
-      }
-      if (mobileButtons['size-guide']) {
-        mobileButtons['size-guide'].setAttribute('onclick', 'openPopup("size-guide-popup")');
-      }
-      if (mobileButtons['shipping']) {
-        mobileButtons['shipping'].setAttribute('onclick', 'openPopup("shipping-popup")');
-      }
+      // if (desktopButtons['materials']) {
+      //   desktopButtons['materials'].setAttribute('onclick', 'openPopup("materials-popupContent")');
+      // }
+      // if (desktopButtons['size-guide']) {
+      //   desktopButtons['size-guide'].setAttribute('onclick', 'openPopup("size-guide-popup")');
+      // }
+      // if (desktopButtons['shipping']) {
+      //   desktopButtons['shipping'].setAttribute('onclick', 'openPopup("shipping-popup")');
+      // }
       
       
-      // Update mobile section toggles to open popups instead - if they exist
-      const mobileButtons = {
-        'materials-mobile': document.querySelector('button[onclick*="materials-mobile"]'),
-        'size-guide-mobile': document.querySelector('button[onclick*="size-guide-mobile"]'),
-        'shipping-mobile': document.querySelector('button[onclick*="shipping-mobile"]')
-      };
+      // // Update mobile section toggles to open popups instead - if they exist
+      // const mobileButtons = {
+      //   'materials-mobile': document.querySelector('button[onclick*="materials-mobile"]'),
+      //   'size-guide-mobile': document.querySelector('button[onclick*="size-guide-mobile"]'),
+      //   'shipping-mobile': document.querySelector('button[onclick*="shipping-mobile"]')
+      // };
       
-      if (mobileButtons['materials-mobile']) {
-        mobileButtons['materials-mobile'].setAttribute('onclick', 'openPopup("materials-popup")');
-      }
-      if (mobileButtons['size-guide-mobile']) {
-        mobileButtons['size-guide-mobile'].setAttribute('onclick', 'openPopup("size-guide-popup")');
-      }
-      if (mobileButtons['shipping-mobile']) {
-        mobileButtons['shipping-mobile'].setAttribute('onclick', 'openPopup("shipping-popup")');
-      }
+      // if (mobileButtons['materials-mobile']) {
+      //   mobileButtons['materials-mobile'].setAttribute('onclick', 'openPopup("materials-popup-mobile")');
+      // }
+      // if (mobileButtons['size-guide-mobile']) {
+      //   mobileButtons['size-guide-mobile'].setAttribute('onclick', 'openPopup("size-guide-popup-mobile")');
+      // }
+      // if (mobileButtons['shipping-mobile']) {
+      //   mobileButtons['shipping-mobile'].setAttribute('onclick', 'openPopup("shipping-popup-mobile")');
+      // }
       
       // Setup click outside to close popups
       document.addEventListener('click', function(event) {
         // Check if any popup is open
-        const openPopups = document.querySelectorAll('#shipping-popup:not(.hidden), #size-guide-popup:not(.hidden), #materials-popup:not(.hidden)');
+        const openPopups = document.querySelectorAll('#shipping-popup:not(.hidden), #size-guide-popup:not(.hidden), #materials-popup:not(.hidden),');
         
         if (openPopups.length === 0) return; // No popups open, nothing to do
         
@@ -2236,11 +2323,9 @@
 
   /* fallback for disabled color chips */
   .color-chip[disabled],
-  .color-chip[aria-disabled="true"],
-  .color-chip[data-has-image="false"] {
+  .color-chip[aria-disabled="true"] {
     pointer-events: none !important;
-    /* cursor: not-allowed !important; */
-    opacity: 0.5 !important;
+    /* opacity: 0.5 !important; */
   }
   
   /* Enhanced spacing for popup content */
@@ -2480,7 +2565,8 @@
   
   /* Mobile popup positioning */
   @media (max-width: 767px) {
-    #shipping-popup, #size-guide-popup, #materials-popup {
+    /* #shipping-popup, #size-guide-popup, #materials-popup, */
+    #shipping-popup-mobile, #size-guide-popup-mobile, #materials-popup-mobile {
       position: absolute;
       top: 0 !important; /* Removed gap completely */
       left: 50%;
@@ -2490,7 +2576,7 @@
       max-height: 80vh;
       overflow-y: auto;
       z-index: 1000;
-      margin-top: 0; /* Removed margin */
+      margin-top: 5vh; /* Removed margin */
     }
     
     .popup-content {
@@ -2766,16 +2852,21 @@
   }
   
   /* Popup styling */
-  #shipping-popup, #size-guide-popup, #materials-popup {
+  #shipping-popup, #size-guide-popup, #materials-popup,
+  #shipping-popup-mobile, #size-guide-popup-mobile, #materials-popup-mobile {
     transition: opacity 0.3s ease;
   }
   
-  #shipping-popup:not(.hidden), #size-guide-popup:not(.hidden), #materials-popup:not(.hidden) {
+  #shipping-popup:not(.hidden), #size-guide-popup:not(.hidden), #materials-popup:not(.hidden),
+  #shipping-popup-mobile:not(.hidden), #size-guide-popup-mobile:not(.hidden),
+  #materials-popup-mobile:not(.hidden) {
     opacity: 1;
     display: block;
   }
   
-  #shipping-popup.hidden, #size-guide-popup.hidden, #materials-popup.hidden {
+  #shipping-popup.hidden, #size-guide-popup.hidden, #materials-popup.hidden,
+  #shipping-popup-mobile.hidden, #size-guide-popup-mobile.hidden,
+  #materials-popup-mobile.hidden {
     opacity: 0;
     display: none;
   }

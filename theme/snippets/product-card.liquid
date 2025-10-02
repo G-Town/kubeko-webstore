@@ -8,40 +8,6 @@
     // Cache for product data to avoid re-parsing JSON
     productDataCache: {},
 
-    // TODO: configure this
-    // Function to switch image based on color chip click
-    // switchImageByColor: function(button, productId, imageUrl) {
-    //   const productCardElement = button.closest(`[data-product-card="${productId}"]`);
-    //   if (!productCardElement || !imageUrl) return;
-
-    //   // De-select other color chips in the same card
-    //   productCardElement.querySelectorAll('.color-chip').forEach(chip => {
-    //     chip.classList.remove('ring-2', 'ring-offset-2', 'ring-black');
-    //   });
-
-    //   // Select the current chip by adding a ring
-    //   button.classList.add('ring-2', 'ring-offset-2', 'ring-black');
-
-    //   const mainImage = productCardElement.querySelector(`#primary-image-${productId}`);
-      
-    //   if (mainImage) {
-    //     // To provide feedback, we can fade the image slightly during load
-    //     mainImage.style.transition = 'opacity 0.2s ease-in-out';
-    //     mainImage.style.opacity = '0.7';
-
-    //     const newImg = new Image();
-    //     newImg.src = imageUrl;
-    //     newImg.onload = () => {
-    //       mainImage.src = imageUrl;
-    //       mainImage.dataset.src = imageUrl;
-    //       mainImage.dataset.highResLoaded = 'false';
-    //       mainImage.classList.add('blur-sm');
-    //       window.loadHighResImage(mainImage);
-    //       mainImage.style.opacity = '1';
-    //     };
-    //   }
-    // },
-
     getImagesForVariant: function(variant, allImages) {
       if (!variant.featured_image || !allImages.length) return [];
       
@@ -52,15 +18,12 @@
       );
       
       if (startIndex === -1) return [];
-      
-      // console.log(`Variant ${variant.id} (${variant.option1}) - found featured image at index ${startIndex}`);
 
       const result = [allImages[startIndex]];
       if (startIndex + 1 < allImages.length) {
         result.push(allImages[startIndex + 1]);
       }
 
-      // console.log(`Variant ${variant.id} (${variant.option1}) - images:`, result.length);
       return result;
     },
 
@@ -320,12 +283,12 @@
       // Clear previous selection for this option group - scoped to this product card
       productCardElement.querySelectorAll(`.variant-button[data-option-position="${optionPosition}"]`).forEach(btn => {
         btn.classList.remove('selected');
-        btn.classList.remove('bg-[#D9D9D9]');
+        // btn.classList.remove('bg-[#D9D9D9]');
       });
       
       // Mark this button as selected
       button.classList.add('selected');
-      button.classList.add('bg-[#D9D9D9]');
+      // button.classList.add('bg-[#D9D9D9]');
       
       // Get all current selections for this product - scoped to this product card
       const selections = {};
@@ -897,21 +860,12 @@
               {%- if variant_for_color  -%}
                 {%- assign is_selected = false -%}
 
-                {% comment %} {%- if product.selected_or_first_available_variant.id == variant_for_color.id -%}
-                  {%- assign is_selected = true -%}
-                {%- endif -%} {% endcomment %}
-
                 {%- comment -%} Check if the currently selected variant has the same color as this chip {%- endcomment -%}
                 {%- if product.selected_or_first_available_variant.options contains value -%}
                   {%- assign is_selected = true -%}
                 {%- endif -%}
 
-                <div class="color-chip-container{% if is_selected %} active{% endif %}">
-                  {% comment %} <button
-                    class="color-chip"
-                    style="background-color: {{ value.swatch.color }};"
-                    aria-label="Select color {{ value.name }}"
-                  ></button> {% endcomment %}
+                {% comment %} <div class="color-chip-container{% if is_selected %} active{% endif %}">
                   <button
                     class="color-chip"
                     data-option-position="1" 
@@ -919,6 +873,24 @@
                     onclick="ProductCardObject.selectVariant(this, '{{ product.id }}', 1, '{{ value }}')"
                     style="background-color: {{ value.swatch.color }};"
                     aria-label="Select color {{ value }}"
+                  ></button>
+                </div> {% endcomment %}
+                {%- assign has_image = variant_for_color.featured_image -%}
+                <div class="color-chip-container{% if is_selected %} active{% endif %}{% unless has_image %} disabled{% endunless %}">
+                  <button
+                    type="button"
+                    class="color-chip"
+                    style="background-color: {{ value.swatch.color }};{% unless has_image %}opacity: 0.5;{% endunless %}"
+                    data-color-name="{{ value | escape }}"
+                    data-option-position="1" 
+                    data-value="{{ value }}"
+                    {% if has_image  %}
+                      onclick="ProductCardObject.selectVariant(this, '{{ product.id }}', 1, '{{ value }}')"
+                      aria-disabled="false"
+                    {% else %}
+                      disabled aria-disabled="true"
+                    {% endif %}
+                    aria-label="Select color {{ value | escape }}"
                   ></button>
                 </div>
               {%- endif -%}
@@ -1512,11 +1484,16 @@
     opacity: 1;
   }
 
+  /* .color-chip[disabled],
+  .color-chip[aria-disabled="true"] {
+    pointer-events: none !important;
+  } */
+
   .color-chip-container {
     display: inline-block;
-    padding-bottom: 4px; /* Space for the underline */
-    border-bottom: 1px solid transparent; /* Hidden border by default */
-    transition: border-color 0.2s ease; /* Smooth transition */
+    padding-bottom: 4px;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease;
   }
 
   .color-chip-container:hover,
@@ -1524,8 +1501,19 @@
     border-bottom-color: #000; /* Show black underline on hover */
   }
 
-  .color-chip:hover {
-    /* outline: 2px solid #000;
-    outline-offset: 2px; */
+  .color-chip-container.disabled:hover {
+    border-bottom-color: transparent;
+  }
+
+  .color-chip-container.active .color-chip {
+    pointer-events: none;
+    cursor: default;
+  }
+
+  /* fallback for disabled color chips */
+  .color-chip[disabled],
+  .color-chip[aria-disabled="true"] {
+    pointer-events: none !important;
+    /* opacity: 0.5 !important; */
   }
 {% endstyle %}
