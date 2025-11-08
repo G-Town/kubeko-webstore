@@ -11,7 +11,8 @@
     getImagesForVariant: function(variant, allImages) {
       if (!variant.featured_image || !allImages.length) return [];
       
-      const normalize = url => url ? url.replace(/^https?:/, '') : '';
+      // const normalize = url => url ? url.replace(/^https?:/, '') : '';
+      const normalize = url => url || '';
       const featuredSrc = normalize(variant.featured_image.src);
       const startIndex = allImages.findIndex(imgUrl => 
         normalize(imgUrl).includes(featuredSrc)
@@ -138,6 +139,25 @@
         }
       }
     },
+
+    // updateCardImages: function(productId, images) {
+    //   const productCardElement = document.querySelector(`[data-product-card="${productId}"]`);
+    //   if (!productCardElement) return;
+
+    //   const mainImage = productCardElement.querySelector(`#primary-image-${productId}`);
+    //   const secondaryImage = productCardElement.querySelector(`#secondary-image-${productId}`);
+
+    //   function updateImage(img, url) {
+    //     if (!img || !url) return;
+    //     img.dataset.src = url;
+    //     img.dataset.highResLoaded = 'false';
+    //     img.classList.add('blur-sm');
+    //     window.loadHighResImage(img);
+    //   }
+
+    //   updateImage(mainImage, images[0]);
+    //   updateImage(secondaryImage, images[1]);
+    // },
     
     // Function to toggle product images on mobile
     toggleProductImages: function(thumbnailButton, event, productId) {
@@ -214,10 +234,19 @@
       highResImage.src = img.dataset.src;
       
       highResImage.onload = function() {
-        img.src = img.dataset.src;
+        // Artificial delay to watch blur-up effect
+        // setTimeout(() => {
+        //   img.src = img.dataset.src;
+        //   img.classList.remove('blur-sm');
+        //   img.classList.add('blur-none');
+        //   img.classList.remove('blur-up');
+        //   img.classList.add('blur-up', 'loaded');
+        //   img.dataset.highResLoaded = true;
+        // }, 3000); // 3-second delay
+        img.src = highResImage.src;
         img.classList.remove('blur-sm');
         img.classList.add('blur-none');
-        img.dataset.highResLoaded = true;
+        img.dataset.highResLoaded = 'true';
       };
     },
     
@@ -742,44 +771,44 @@
     <!-- First image with LQIP -->
      {% comment %} blur-up {% endcomment %}
     <img
-      class="relative h-full object-contain md:group-hover:opacity-0"
+      id="primary-image-{{ product.id }}"
+      class="relative h-full object-contain md:group-hover:opacity-0 blur-sm"
       alt="{{ product.title }}"
-      src="{{ first_image | img_url: '100x' }}"
-      {% comment %} data-src="{{ first_image | image_url }}" {% endcomment %}
-      srcset="
-        {{ first_image | img_url: '100x' }}  100w,
-        {{ first_image | img_url: '600x' }} 600w,
-        {{ first_image | img_url: '900x' }} 900w,
-        {{ first_image | img_url: '1200x' }} 1200w
-      "
-      sizes="(max-width: 767px) 100vw, 50vw"
+      src="{{ first_image | image_url: width: 100 }}"
+      data-src="{{ first_image | image_url: width: 900 }}"
+      {% comment %} srcset="
+        {{ first_image | image_url: '100x' }}  100w,
+        {{ first_image | image_url: '600x' }} 600w,
+        {{ first_image | image_url: '900x' }} 900w,
+      " {% endcomment %}
+      sizes="(max-width: 767px) 50vw, 20vw"
       width="{{ first_image.width }}"
       height="{{ first_image.height }}"
       loading="eager"
-      style="position: relative; z-index: 2; opacity: 1; will-change: opacity; transition: none;"
-      id="primary-image-{{ product.id }}"
       {% comment %} onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }" {% endcomment %}
-    >
+      onload="if (!this.dataset.highResLoaded) window.loadHighResImage(this);"
+      style="position: relative; z-index: 2; opacity: 1; will-change: opacity; transition: none;"
+      >
     <!-- Second image (hover image) with LQIP -->
      {% comment %} blur-up {% endcomment %}
     <img
-      class="absolute inset-0 h-full w-auto mx-auto object-contain opacity-0 md:group-hover:opacity-100"
+      id="secondary-image-{{ product.id }}"
+      class="absolute inset-0 h-full w-auto mx-auto object-contain opacity-0 md:group-hover:opacity-100 blur-sm"
       alt="{{ product.title }} (hover)"
-      src="{{ second_image | img_url: '100x' }}"
-      {% comment %} data-src="{{ second_image | image_url }}" {% endcomment %}
-      srcset="
-        {{ second_image | img_url: '100x' }} 100w,
-        {{ second_image | img_url: '600x' }} 600w,
-        {{ second_image | img_url: '900x' }} 900w,
-        {{ second_image | img_url: '1200x' }} 1200w
-      "
-      sizes="(max-width: 767px) 100vw, 50vw"
+      src="{{ second_image | image_url: 100 }}"
+      data-src="{{ second_image | image_url: width: 900  }}"
+      {% comment %} srcset="
+        {{ second_image | image_url: '100x' }} 100w,
+        {{ second_image | image_url: '600x' }} 600w,
+        {{ second_image | image_url: '900x' }} 900w
+      " {% endcomment %}
+      sizes="(max-width: 767px) 50vw, 20vw"
       width="{{ second_image.width }}"
       height="{{ second_image.height }}"
       loading="lazy" 
-      style="position: absolute; inset: 0; z-index: 1; opacity: 0; will-change: opacity; transition: none;"
-      id="secondary-image-{{ product.id }}"
       {% comment %} onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }" {% endcomment %}
+      onload="if (!this.dataset.highResLoaded) window.loadHighResImage(this);"
+      style="position: absolute; inset: 0; z-index: 1; opacity: 0; will-change: opacity; transition: none;"
     >
   </a>
   
@@ -802,24 +831,6 @@
         height="{{ second_image.height | default: 240 }}"
         id="thumb-active-{{ product.id }}"
         style="display: block; margin: 0;"
-      >
-    </div>
-    
-    <!-- Hidden preloaded images - no longer needed since we're using the data-attributes -->
-    <div class="hidden">
-      <img 
-        src="{{ first_image | image_url: width: 240 }}"
-        id="thumb-primary-{{ product.id }}"
-        loading="eager"
-        width="{{ first_image.width | default: 240 }}"
-        height="{{ first_image.height | default: 240 }}"
-      >
-      <img 
-        src="{{ second_image | image_url: width: 240 }}"
-        id="thumb-secondary-{{ product.id }}"
-        loading="eager"
-        width="{{ second_image.width | default: 240 }}"
-        height="{{ second_image.height | default: 240 }}"
       >
     </div>
   </button>

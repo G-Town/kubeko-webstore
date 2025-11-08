@@ -5,15 +5,10 @@
   {% for photo in look.look_photos.value limit:1 %}
     {%- assign look_id = photo.id | split: '/' | last -%}
 
-    {% comment %} DEBUG - Remove after testing {% endcomment %}
-    {% comment %} <div style="background: pink; padding: 5px; font-size: 10px;">
-      <p>Look Index: {{ look_index }}</p>
-      <p>Photo ID: {{ photo.id }}</p>
-      <p>Extracted Look ID: {{ look_id }}</p>
-    </div> {% endcomment %}
-
-    <a href="?look={{ look_id }}" class="block">
-      <div class="h-auto">
+    <div class="h-auto">
+      {% comment %} <a href="?look={{ look_id }}" class="block cursor-pointer touch-manipulation"> {% endcomment %}
+      {% comment %} <a href="{{ collection.url }}?look={{ look_id }}" class="block"> {% endcomment %}
+      <a href="/pages/look-detail?look={{ look_id }}" class="block">
         <img
           class="w-full h-full object-cover"
           alt="{{ photo.alt | escape }}"
@@ -28,7 +23,7 @@
           width="{{ photo.width }}"
           height="{{ photo.height }}"
         />
+        </a>
       </div>
-    </a>
   {% endfor %}
 </div>

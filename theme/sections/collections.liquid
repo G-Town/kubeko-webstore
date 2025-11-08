@@ -1,27 +1,44 @@
 {% comment %} Get URL parameters properly {% endcomment %}
 {%- capture contentForQuerystring -%}{{ content_for_header }}{%- endcapture -%}
-{%- assign pageUrl = contentForQuerystring | split: '"pageurl":"' | last | split: '"' | first | split: '.myshopify.com' | last | replace: '\/', '/' | replace: '%20', ' ' | replace: '\u0026', '&'
+{%- assign pageUrl = contentForQuerystring 
+                      | split: '"pageurl":"'
+                      | last
+                      | split: '"'
+                      | first
+                      | split: '.myshopify.com'
+                      | last
+                      | replace: '\/', '/'
+                      | replace: '%20', ' '
+                      | replace: '\u0026', '&'
 -%}
+{% comment %} {%- assign pageUrl = contentForQuerystring
+  | replace: '\u002F', '/'
+  | replace: '\\/', '/'
+  | replace: '%20', ' '
+  | replace: '\u0026', '&'
+  | split: '"pageurl":"'
+  | last
+  | split: '"'
+  | first
+-%} {% endcomment %}
 
 {%- assign requested_look_id = '' -%}
 {%- if pageUrl contains 'look=' -%}
   {%- assign requested_look_id = pageUrl | split: 'look=' | last | split: '&' | first -%}
 {%- endif -%}
 
+{% comment %} {% assign params = request.params %} {% endcomment %}
+
 {% comment %} DEBUG - Remove after testing {% endcomment %}
 {% comment %} <div style="background: yellow; padding: 10px; margin: 10px;">
     <p><strong>Collections DEBUG:</strong></p>
     <p>Page URL: {{ pageUrl }}</p>
-    <p>Contains 'look=': {{ pageUrl contains 'look=' }}</p>
     <p>Requested Look ID: "{{ requested_look_id }}"</p>
-    <p>Look ID blank: {{ requested_look_id == blank }}</p>
-    <p>Should show main: {{ requested_look_id == blank }}</p>
-    <p>Should show detail: {{ requested_look_id != blank }}</p>
 </div> {% endcomment %}
 
 {% if requested_look_id != blank and collection.metafields.custom.isdrop == true %}
   {% comment %} LOOK DETAIL VIEW {% endcomment %}
-  {% assign found_look = false %}
+  {% comment %} {% assign found_look = false %}
   {% for look in collection.metafields.custom.lookbook.value %}
     {% for photo in look.look_photos.value limit: 1 %}
       {%- assign current_look_id = photo.id | split: '/' | last -%}
@@ -44,23 +61,27 @@
         &larr; Back to {{ collection.title }}
       </a>
     </div>
-  {% endunless %}
+  {% endunless %} {% endcomment %}
 
 {% else %}
   {% comment %} MAIN COLLECTION VIEW {% endcomment %}
   {% paginate collection.products by 24 %}
     {% if collection.metafields.custom.isdrop == true %}
+      {% comment %} NAMED COLLECTION {% endcomment %}
       <div class="max-w-[1260px] mx-auto md:px-[120px]">
         {% comment %} <h1 class="text-center text-2xl font-helvetica font-semibold tracking-wide uppercase my-12">Lookbook</h1> {% endcomment %}
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-8 md:gap-x-2 md:gap-y-16 mt-12">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-4 md:gap-x-2 md:gap-y-16 mt-12">
           {% for look in collection.metafields.custom.lookbook.value %}
-            {% render 'collection-card'
+            <div class="h-[45%] md:h-[60%] max-h-[450px] relative">
+              {% render 'collection-card'
               , look: look
               , look_index: forloop.index %}
+            </div>
           {% endfor %}
         </div>
       </div>
     {% else %}
+      {% comment %} GENERAL SHOPPING {% endcomment %}
       <div class="max-w-[1260px] mx-auto md:px-[120px] md:pt-15">
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-[6px] md:gap-x-2 ">
           {% for product in collection.products %}
@@ -102,6 +123,27 @@
     ]
   }
 {% endschema %}
+
+{% comment %} <script>
+  // Force reload when the page is restored from bfcache (mobile back/forward cache)
+  window.onpageshow = function(e) {
+    if (e.persisted) location.reload();
+  };
+
+  // Optional: guarantee hard reload on link click (bypass stale cache)
+  // document.addEventListener('click', function(e) {
+  //   const a = e.target.closest('a[href*="?look="]');
+  //   if (a) {
+  //     e.preventDefault();
+  //     const href = a.href + '&_t=' + Date.now(); // cache-busting token
+  //     window.location.replace(href);
+  //   }
+  // });
+
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+</script> {% endcomment %}
 
 {% style %}
   .group:hover .group-hover\:opacity-100 {

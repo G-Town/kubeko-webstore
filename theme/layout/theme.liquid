@@ -60,7 +60,7 @@
     </div>
     {% section 'footer' %}
 
-    <script>
+    {% comment %} <script>
       document.addEventListener('DOMContentLoaded', function() {
         const scrollPositionKey = 'scrollPosition';
         const scrollPathKey = 'scrollPath';
@@ -84,6 +84,6 @@
           sessionStorage.removeItem(scrollPathKey);
         }
       });
-    </script>
+    </script> {% endcomment %}
   </body>
 </html>

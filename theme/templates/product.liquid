@@ -20,6 +20,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
+    /* **PRIMARY FIX FOR MOBILE OVERFLOW** */
+    /* This prevents any child element from forcing horizontal scroll on the entire page */
+    body {
+      overflow-x: hidden !important; 
+    }
+
+    /* Ensure the Header Overlay cannot cause horizontal scroll */
+    #header-overlay {
+        max-width: 100vw !important; /* Limits width to the visible viewport */
+        overflow-x: hidden !important; /* Prevents its children from overflowing */
+    }
+
     /* Standardize transitions */
     .nav-container,
     #header-overlay {
@@ -115,26 +127,30 @@
       </div>
       <!-- Product Navigation Bar - Only visible on desktop -->
       {% comment %} TODO: consider forward and back buttons {% endcomment %}
-      
+
       <!-- Left Side - Main Product Image (Full width on mobile) -->
       <div class="w-full md:w-1/2 md:h-full relative pb-12 md:pb-0">
         <!-- Main Image for Desktop -->
         <div class="hidden md:block w-full h-full">
           <img 
             id="main-image"
-            src="" 
-            data-src=""
-            alt="{{ product.title }}"
             class="w-full h-full object-contain"
-            width="800"
-            height="1200"
+            alt="{{ product.title }}"
+            src="{{ first_image | image_url: width: 100 }}"
+            data-src="{{ first_image | image_url: width: 600 }}"
             loading="eager"
-            style="opacity: 0;"
+            {% comment %} srcset="
+              {{ first_image | image_url: width: 600 }} 600w,
+              {{ first_image | image_url: width: 900 }} 900w,
+              {{ first_image | image_url: width: 1200 }} 1200w
+            "
+            sizes="(max-width: 767px) 100vw, 35vw" {% endcomment %}
           >
         </div>
-        
+
         <!-- Mobile Main Image (Slideshow on mobile) -->
-        <div id="mobile-gallery-container" class="block md:hidden w-full aspect-[45.5/70] overflow-x-auto snap-x snap-mandatory whitespace-nowrap" style="display: flex; flex-direction: row;">
+        {% comment %} overflow-x-auto {% endcomment %}
+        <div id="mobile-gallery-container" class="block md:hidden w-full aspect-[45.5/70]  snap-x snap-mandatory whitespace-nowrap" style="display: flex; flex-direction: row;">
         </div>
         
         <!-- Mobile Thumbnail Gallery -->
@@ -148,13 +164,26 @@
       <div class="hidden md:block md:w-1/2 h-full relative">
         <!-- Right Main Image replaced with scrollable gallery -->
         <div id="image-scroll-container" class="w-full h-full overflow-y-auto custom-scrollbar scroll-snap-container">
+          <img
+            id="right-gallery-placeholder"
+            class="w-full h-full object-contain"
+            alt="{{ product.title }}"
+            src="{{ second_image | image_url: width: 100 }}"
+            data-src="{{ second_image | image_url: width: 600 }}"
+            loading="lazy"
+            {% comment %} srcset="
+              {{ second_image | image_url: width: 600 }} 600w,
+              {{ second_image | image_url: width: 900 }} 900w,
+              {{ second_image | image_url: width: 1200 }} 1200w
+            "
+            sizes="(max-width: 767px) 100vw, 35vw" {% endcomment %}
+          />
         </div>
 
         <!-- Preload link for first variant images (optional performance boost) -->
         {% if first_variant.featured_image %}
           <link rel="preload" as="image" href="{{ first_variant.featured_image | img_url: '800x' }}">
         {% endif %}
-
       </div>
       
       <!-- Mobile Product Info - Below the images on mobile, hidden on desktop -->
@@ -383,9 +412,9 @@
               CLOSE
             </button>
           </div>
-          <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content" id="materials-content-container">
+          <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content">
             {% if product.metafields.custom.materials %}
-              <div id="materials-content-wrapper">
+              <div id="materials-content-wrapper-mobile" class="materials-content-wrapper">
                 {% if product.metafields.custom.materials.type == 'json' %}
                   {{ product.metafields.custom.materials | metafield_tag }}
                 {% else %}
@@ -395,20 +424,20 @@
 
               <style>
                 /* Add styling to properly format the metafield content */
-                #materials-content-wrapper p {
+                #materials-content-wrapper-mobile p {
                   font-size: 13px;
                   line-height: 1.7;
                   margin-bottom: 1.5rem;
                 }
                 
-                #materials-content-wrapper > div > p {
+                #materials-content-wrapper-mobile > div > p {
                   font-size: 13px;
                   line-height: 1.7;
                   margin-bottom: 1.5rem;
                 }
                 
-                #materials-content-wrapper > p:last-child,
-                #materials-content-wrapper > div > p:last-child {
+                #materials-content-wrapper-mobile > p:last-child,
+                #materials-content-wrapper-mobile > div > p:last-child {
                   margin-bottom: 0;
                 }
               </style>
@@ -422,7 +451,8 @@
       <!-- Product Info Overlay - Desktop only -->
       <div id="popup-overlay" class="hidden fixed inset-0 bg-transparent z-[54]"></div>
 
-      <div class="hidden md:block absolute bottom-0 left-1/2 -translate-x-1/2 min-w-[475px] w-[60%] product-info-container">
+      {% comment %} min-w-[475px] {% endcomment %}
+      <div class="hidden md:block absolute bottom-0 left-1/2 -translate-x-1/2  w-[60%] product-info-container">
         
         <div id="shipping-popup" class="hidden popup-container">
           <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-4 popup-content transition-colors ">
@@ -485,7 +515,7 @@
             </div>
             <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content" id="materials-content-container">
               {% if product.metafields.custom.materials %}
-                <div id="materials-content-wrapper">
+                <div id="materials-content-wrapper" class="materials-content-wrapper">
                   {% if product.metafields.custom.materials.type == 'json' %}
                     {{ product.metafields.custom.materials | metafield_tag }}
                   {% else %}
@@ -797,9 +827,8 @@
 
 
     /* ===========================
-      Prioritized color-first image manager + new selectVariant
+      Prioritized color-first image manager
       =========================== */
-
     class ProductImageManager {
       constructor({ variants = window.productVariants || [], allImages = window.allProductImages || [] } = {}) {
         this.variants = variants;
@@ -871,6 +900,11 @@
       preloadImage(src) {
         if (!src) return Promise.resolve();
         if (this.imageCache.has(src)) return Promise.resolve(this.imageCache.get(src));
+
+        // build a Shopify 400x version
+        const match = src.match(/(.+)(\.[a-zA-Z]+)(\?.*)?$/);
+        const lowResSrc = match ? `${match[1]}_400x${match[2]}` : src;
+
         return new Promise((resolve, reject) => {
           const img = new Image();
           img.onload = () => {
@@ -882,7 +916,7 @@
             console.warn('Failed to preload image', src, e);
             resolve(null);
           };
-          img.src = src;
+          img.src = lowResSrc;
         });
       }
 
@@ -927,10 +961,36 @@
         const images = this.getImagesForVariant(variant);
         if (!images || images.length === 0) return;
 
-        // update DOM quickly (main image first)
+        let activeRightIndex = 0;
+        const rightContainer = document.getElementById('image-scroll-container');
+        if (rightContainer) {
+          const containerHeight = rightContainer.offsetHeight;
+          const scrollPosition = rightContainer.scrollTop;
+          activeRightIndex = Math.round(scrollPosition / containerHeight);
+        }
+
+        // Find which image index is currently active in the mobile gallery
+        let activeMobileIndex  = 0;
+        const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
+        if (mobileGalleryContainer) {
+          const containerWidth = mobileGalleryContainer.offsetWidth;
+          const scrollPosition = mobileGalleryContainer.scrollLeft;
+          activeMobileIndex  = Math.round(scrollPosition / containerWidth);
+        }
+
+        // update DOM quickly (main images first)
         this.updateMainImage(images[0], variant);
-        this.updateRightGallery(images.slice(1));
-        this.updateMobileGallery(images);
+        this.updateRightGallery(images.slice(1), activeRightIndex);
+        // setTimeout(() => {
+        //   this.updateRightGallery(images.slice(1), activeRightIndex);
+        // }, 25);
+        this.updateMobileGallery(images, activeMobileIndex );
+        // const scrollPos = mobileGalleryContainer?.scrollLeft || 0;
+        // // rebuild gallery
+        // this.updateMobileGallery(images, activeIndex);
+        // if (mobileGalleryContainer) {
+        //   mobileGalleryContainer.scrollLeft = scrollPos;
+        // }
         this.updateMobileThumbnails(images);
 
         this.currentVariant = variant;
@@ -941,37 +1001,152 @@
         }, 150);
       }
 
-      // DOM update helpers — keep minimal and fast
+      // Helper to build sized URLs reliably
+      _buildSizedUrl(url, size) {
+        if (!url) return url;
+        const m = url.match(/(.+?)(?:_(\d+)x)?(\.(?:png|jpe?g|webp|gif))(?:\?.*)?$/i);
+        if (!m) return url;
+        const base = m[1];
+        const ext = m[3];
+        const qsMatch = url.match(/(\?.*)$/);
+        const qs = qsMatch ? qsMatch[1] : '';
+        return `${base}_${size}x${ext}${qs}`;
+      }
+
+      loadHighResImage(img) {
+        if (!img || img.dataset.highResLoaded === 'true') return;
+
+        const highResUrl = img.dataset.src;
+        const high = new Image();
+        high.src = highResUrl;
+
+        high.onload = () => {
+          // console.log("1 classlist: ", img.classList)
+          img.src = high.src;
+          img.classList.remove('blur-sm');
+          img.classList.add('blur-none');
+          // console.log("2 classList: ", img.classList)
+          img.dataset.highResLoaded = 'true';
+        };
+      }
+
       updateMainImage(url, variant = {}) {
         const mainImage = document.getElementById('main-image');
         if (!mainImage || !url) return;
-        // Only update src, not width/height (these should be set server-side)
-        mainImage.src = url;
-        mainImage.dataset.src = url;
-        mainImage.style.opacity = '1';
-        mainImage.dataset.highResLoaded = 'true';
+
+        // Remove query strings or duplicate protocols just in case
+        // const cleanUrl = url.replace(/^https?:/, '').split('?')[0];
+
+        const lowRes  = this._buildSizedUrl(url, 100);
+        // const midRes  = this._buildSizedUrl(url, 600);
+        const hiRes   = this._buildSizedUrl(url, 1200);
+
+        // Apply immediate low-res for fastest paint
+        // mainImage.classList.remove('blur-none');
+        // mainImage.classList.add('blur-sm');
+        mainImage.src = lowRes;
+        mainImage.dataset.src = hiRes;
+        mainImage.dataset.highResLoaded = 'false';
+
+        // Configure srcset so the browser can choose if it makes sense
+        // mainImage.srcset = [
+        //   `${this._buildSizedUrl(cleanUrl, 400)} 400w`,
+        //   `${this._buildSizedUrl(cleanUrl, 800)} 800w`,
+        //   `${this._buildSizedUrl(cleanUrl, 1200)} 1200w`,
+        //   `${cleanUrl} 1600w`
+        // ].join(', ');
+
+        // mainImage.srcset = `
+        //   ${midRes} 600w,
+        //   ${hiRes} 1200w
+        // `;
+
+        // Sizes: on mobile full width, otherwise half width
+        // mainImage.sizes = '(max-width: 767px) 100vw, 50vw';
+        // mainImage.dataset.src = high;
+        // mainImage.dataset.highResLoaded = 'false';
+
+        // small timeout to prioritize paint
+        setTimeout(() => this.loadHighResImage(mainImage), 50);
       }
 
-      updateRightGallery(urls = []) {
-        const rightInner = document.getElementById('image-scroll-inner') || document.getElementById('image-scroll-container');
+
+
+      updateRightGallery(urls = [], activeIndex = 0) {
+        const rightInner = document.getElementById('image-scroll-container');
         if (!rightInner) return;
-        rightInner.innerHTML = '';
+
+        // Save current scroll position
+        const prevScroll = rightInner.scrollTop || 0;
+
+        // rightInner.innerHTML = '';
+        
         if (urls.length === 0) {
-          rightInner.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400">No additional images</div>';
+        rightInner.innerHTML = `
+              <div class="w-full h-full flex items-center justify-center text-gray-400">
+                No additional images
+              </div>`;
           return;
         }
-        urls.forEach(src => {
-          const wrapper = document.createElement('div');
-          wrapper.className = 'w-full h-full snap-center image-scroll-item';
-          wrapper.innerHTML = `<img src="${src}" alt="" class="w-full h-full object-contain" loading="lazy" decoding="async" />`;
-          rightInner.appendChild(wrapper);
-        });
+
+        urls.forEach((src, idx) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'w-full h-full snap-center image-scroll-item';
+
+        if (idx === activeIndex) {
+          // The image currently in view — load low→high with blur
+          const low = this._buildSizedUrl(src, 100);
+          const mid = this._buildSizedUrl(src, 600);
+
+          wrapper.innerHTML = `
+            <img
+              src="${low}"
+              data-src="${mid}"
+              class="w-full h-full object-contain blur-sm"
+              alt=""
+              loading="eager"
+              decoding="async"
+            />
+          `;
+
+          const img = wrapper.querySelector('img');
+          this.loadHighResImage(img);
+        } else {
+          // Other images: lazy mid-res only
+          const mid = this._buildSizedUrl(src, 600);
+          wrapper.innerHTML = `
+            <img
+              src="${mid}"
+              class="w-full h-full object-contain"
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
+          `;
+        }
+
+        rightInner.appendChild(wrapper);
+      });
+
+      // Restore scroll position (keeps user at same spot)
+      setTimeout(() => {
+        rightInner.scrollTop = prevScroll;
+      }, 0);
+
+        // urls.forEach(src => {
+        //   const wrapper = document.createElement('div');
+        //   wrapper.className = 'w-full h-full snap-center image-scroll-item';
+        //   wrapper.innerHTML = `<img src="${src}" alt="" class="w-full h-full object-contain" loading="lazy" decoding="async" />`;
+        //   rightInner.appendChild(wrapper);
+        // });
       }
 
-      updateMobileGallery(urls = []) {
+      updateMobileGallery(urls = [], activeIndex = 0) {
         const mobileGallery = document.getElementById('mobile-gallery-container');
         if (!mobileGallery) return;
+
         mobileGallery.innerHTML = '';
+
         urls.forEach((src, idx) => {
           const slide = document.createElement('div');
           slide.className = "w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative";
@@ -979,9 +1154,41 @@
           slide.onclick = () => {
             if (window.scrollToMobileImage) window.scrollToMobileImage(idx);
           };
-          slide.innerHTML = `<img src="${src}" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async" />`;
+
+          if (idx === activeIndex) {
+            // LQIP active index img
+            const low = this._buildSizedUrl(src, 100);
+            const mid = this._buildSizedUrl(src, 400);
+            slide.innerHTML = `
+              <img
+                src="${low}"
+                data-src="${mid}"
+                class="w-full h-full object-cover blur-sm"
+                alt=""
+                loading="eager"
+                decoding="async"
+              />
+            `;
+            const img = slide.querySelector('img');
+            this.loadHighResImage(img);
+          } else {
+            // other images: lazy mid-res only
+            const mid = this._buildSizedUrl(src, 400);
+            slide.innerHTML = `
+              <img
+                src="${mid}"
+                class="w-full h-full object-cover"
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+            `;
+          }
+
+          // slide.innerHTML = `<img src="${src}" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async" />`;
           mobileGallery.appendChild(slide);
         });
+
         // re-init mobile gallery scroller if you have a handler
         if (window.initMobileGallery) setTimeout(() => initMobileGallery(true), 80);
       }
@@ -1008,9 +1215,7 @@
       Revised selectVariant
       - quick guards
       - immediate image load for color-only selection (uses first variant with that color)
-      - sizes do not change images
       =========================== */
-
     function selectVariant(element, optionPosition, optionValue) {
       if (!element) return;
 
@@ -1132,7 +1337,6 @@
     /* ===========================
       Init: create manager and simulate initial UI state
       =========================== */
-
     let productImageManager = null;
     document.addEventListener('DOMContentLoaded', function () {
       const data = {
@@ -1244,929 +1448,602 @@
     });
   }
 
-    // class ProductImageManager {
-    //   constructor(product) {
-    //     this.product = product;
-    //     this.variants = product.variants;
-    //     this.allImages = product.images;
-    //     this.imageCache = new Map();
-    //     this.loadedVariants = new Set();
-    //     this.currentVariant = null;
-        
-    //     this.init();
-    //   }
+  document.addEventListener('DOMContentLoaded', () => {
+    const firstVariant = window.productVariants.find(v => v.available);
+    // console.log("🚀 ~ firstVariant option 1:", firstVariant.option1)
+    if (firstVariant) {
+      // simulate a selection
+      selectVariant(
+        document.querySelector(`.color-chip[data-value="${firstVariant.option1}"]`),
+        1,
+        firstVariant.option1
+      );
+    }
+  });
 
-    //   init() {
-    //     const firstVariant = this.variants.find(v => v.available);
-    //     // if (firstVariant) {
-    //     //   this.loadVariant(firstVariant, true); // true = immediate load
-    //     // }
-    //     if (firstVariant) {
-    //       // Get images for first variant
-    //       const images = this.getImagesForVariant(firstVariant);
-    //       console.log("🚀 ~ init ~ Loading first variant images:", images.length);
-          
-    //       // Load main and second image immediately on page load
-    //       if (images.length > 0) {
-    //         this.updateMainImageImmediate(firstVariant, images[0]);
-    //       }
-    //       if (images.length > 1) {
-    //         // Load second image immediately too
-    //         this.updateRightGallery(firstVariant, images.slice(1));
-    //       }
-          
-    //       // Load mobile gallery
-    //       this.updateMobileGallery(firstVariant, images);
-    //       this.updateMobileThumbnails(firstVariant, images);
-          
-    //       // Mark this variant as loaded
-    //       this.loadedVariants.add(firstVariant.id);
-    //       this.currentVariant = firstVariant;
-          
-    //       // Initialize mobile gallery after a short delay
-    //       setTimeout(() => initMobileGallery(false), 100);
-    //     }
-    //   }
+  document.addEventListener('DOMContentLoaded', function() {
+    const colorChipsContainer = document.getElementById('color-chips-container');
+    const selectedColorName = document.getElementById('selected-color-name');
+    let selectedColor = '';
 
-    //   getImagesForVariant(variant) {
-    //     if (!variant.featured_image) return [];
-        
-    //     const normalize = url => url ? url.replace(/^https?:/, '') : '';
-    //     const featuredSrc = normalize(variant.featured_image.src);
-    //     const startIndex = this.allImages.findIndex(imgUrl => 
-    //       normalize(imgUrl).includes(featuredSrc)
-    //     );
-        
-    //     if (startIndex === -1) return [];
-        
-    //     const result = [];
-    //     for (let i = startIndex; i < this.allImages.length; i++) {
-    //       const current = normalize(this.allImages[i]);
-    //       const isAnotherFeatured = i > startIndex && this.variants.some(other =>
-    //         other.featured_image && normalize(other.featured_image.src) === current
-    //       );
-    //       if (isAnotherFeatured) break;
-    //       result.push(this.allImages[i]);
-    //     }
-        
-    //     return result;
-    //   }
-
-    //   preloadVariantImages(variant) {
-    //     if (this.loadedVariants.has(variant.id)) return Promise.resolve();
-        
-    //     const images = this.getImagesForVariant(variant);
-    //     const loadPromises = images.map(imgUrl => this.preloadImage(imgUrl));
-        
-    //     return Promise.all(loadPromises).then(() => {
-    //       this.loadedVariants.add(variant.id);
-    //       console.log(`✅ Preloaded ${images.length} images for variant ${variant.id}`);
-    //     });
-    //   }
-
-    //   preloadImage(src) {
-    //     if (this.imageCache.has(src)) return Promise.resolve();
-        
-    //     return new Promise((resolve, reject) => {
-    //       const img = new Image();
-    //       img.onload = () => {
-    //         this.imageCache.set(src, img);
-    //         resolve(img);
-    //       };
-    //       img.onerror = reject;
-    //       img.src = src;
-    //     });
-    //   }
-
-    //   // Load variant immediately (for active variant)
-    //   async loadVariant(variant, immediate = false) {
-    //     console.log("🚀 ~ loadVariant called with variant:", variant.id, variant);
-    //     this.currentVariant = variant;
-    //     const images = this.getImagesForVariant(variant);
-    //     console.log("🚀 ~ loadVariant ~ images found:", images.length, images);
-        
-    //     if (immediate || this.loadedVariants.has(variant.id)) {
-    //       this.updateGalleryDOM(variant, images);
-    //       if (!this.loadedVariants.has(variant.id)) {
-    //         await this.preloadVariantImages(variant);
-    //       }
-    //     } else {
-    //       // this.showLoadingState();
-    //       await this.preloadVariantImages(variant);
-    //       this.updateGalleryDOM(variant, images);
-    //     }
-        
-    //     this.preloadAdjacentVariants(variant);
-    //   }
-
-    //   // Preload nearby variants for faster switching
-    //   preloadAdjacentVariants(currentVariant) {
-    //     const currentIndex = this.variants.findIndex(v => v.id === currentVariant.id);
-    //     const toPreload = [];
-        
-    //     if (currentIndex > 0) toPreload.push(this.variants[currentIndex - 1]);
-    //     if (currentIndex < this.variants.length - 1) toPreload.push(this.variants[currentIndex + 1]);
-        
-    //     toPreload.forEach(variant => {
-    //       if (variant.available && !this.loadedVariants.has(variant.id)) {
-    //         setTimeout(() => this.preloadVariantImages(variant), 500);
-    //       }
-    //     });
-    //   }
-
-    //   // showLoadingState() {
-    //   //   // Add loading spinner to main image
-    //   //   const mainImage = document.getElementById('main-image');
-    //   //   if (mainImage) {
-    //   //     mainImage.style.opacity = '0.5';
-    //   //     // You could add a spinner overlay here
-    //   //   }
-    //   // }
-
-    //   updateGalleryDOM(variant, images) {
-    //     this.updateMainImage(variant, images[0]);
-    //     this.updateRightGallery(variant, images.slice(1));
-    //     this.updateMobileGallery(variant, images);
-    //     this.updateMobileThumbnails(variant, images);
-    //     setTimeout(() => initMobileGallery(true), 100);
-    //   }
-
-    //   // Immediate update for page load (no loading states or transitions)
-    //   updateMainImageImmediate(variant, imageUrl) {
-    //     const mainImage = document.getElementById('main-image');
-    //     if (!mainImage || !imageUrl) return;
-        
-    //     // Don't add loading states on initial load
-    //     mainImage.setAttribute('src', imageUrl);
-    //     mainImage.setAttribute('data-src', imageUrl);
-    //     // mainImage.removeAttribute('srcset');
-    //     // mainImage.removeAttribute('onload');
-
-    //     // mainImage.loading = 'eager';
-    //     // mainImage.decoding = 'async';
-        
-    //     // Set proper dimensions to prevent size jumping
-    //     // if (variant.featured_image?.width && variant.featured_image?.height) {
-    //     //   mainImage.setAttribute('width', variant.featured_image.width);
-    //     //   mainImage.setAttribute('height', variant.featured_image.height);
-    //     // }
-        
-    //     // Update alt text
-    //     mainImage.setAttribute('alt', variant.featured_image?.alt || variant.title || 'Product image');
-        
-    //     // Remove any blur classes that might be applied
-    //     // mainImage.classList.remove('blur-up', 'blur-sm');
-    //     mainImage.style.opacity = '1';
-    //     mainImage.dataset.loaded = 'true';
-    //     mainImage.dataset.highResLoaded = 'true';
-    //   }
-
-    //   updateMainImage(variant, imageUrl) {
-    //     const mainImage = document.getElementById('main-image');
-    //     if (!mainImage || !imageUrl) return;
-    //     console.log("🚀 ~ updateMainImage ~ imageUrl:", imageUrl)
-        
-    //     mainImage.style.opacity = '0.5';
-    //     // mainImage.src = imageUrl;
-        
-    //     mainImage.setAttribute('src', imageUrl);
-    //     mainImage.setAttribute('data-src', imageUrl);
-    //     // mainImage.removeAttribute('srcset');
-    //     // mainImage.removeAttribute('onload');
-
-    //     mainImage.setAttribute('alt', variant.featured_image?.alt || variant.title || 'Product image');
-    //     // if (variant.featured_image?.width) mainImage.setAttribute('width', variant.featured_image.width);
-    //     // if (variant.featured_image?.height) mainImage.setAttribute('height', variant.featured_image.height);
-        
-        
-    //     mainImage.onload = () => {
-    //       console.log('[updateMainImage] loaded successfully');
-    //       mainImage.style.opacity = '1';
-    //       // mainImage.dataset.highResLoaded = true;
-    //       // mainImage.classList.remove('blur-sm');
-    //     };
-    //   }
-
-    //   updateRightGallery(variant, images) {
-    //     const rightSideGallery = document.getElementById('image-scroll-container');
-    //     if (!rightSideGallery) return;
-        
-    //     rightSideGallery.innerHTML = '';
-        
-    //     if (images.length === 0) {
-    //       rightSideGallery.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400">No additional images</div>';
-    //       return;
-    //     }
-        
-    //     images.forEach((imgUrl, idx) => {
-    //       const scrollItem = document.createElement('div');
-    //       scrollItem.className = 'w-full h-full snap-center image-scroll-item';
-    //       scrollItem.innerHTML = `
-    //         <img
-    //           src="${imgUrl}" 
-    //           alt="${variant.title || 'Product image'}"
-    //           class="w-full h-full object-contain"
-    //           loading="lazy"
-    //         >
-    //       `;
-    //       rightSideGallery.appendChild(scrollItem);
-    //     });
-    //   }
-
-    //   updateMobileGallery(variant, images) {
-    //     const mobileGallery = document.getElementById('mobile-gallery-container');
-    //     if (!mobileGallery) return;
-        
-    //     mobileGallery.innerHTML = '';
-    //     images.forEach((imgUrl, idx) => {
-    //       const slide = document.createElement('div');
-    //       slide.className = "w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative";
-    //       slide.dataset.index = idx;
-    //       slide.onclick = () => scrollToMobileImage(idx);
-    //       slide.innerHTML = `
-    //         <img 
-    //           src="${imgUrl}" 
-    //           alt="${variant.title || ''}" 
-    //           class="w-full h-full object-cover"
-    //           loading="lazy"
-    //         />
-    //       `;
-    //       mobileGallery.appendChild(slide);
-    //     });
-    //   }
-
-    //   updateMobileThumbnails(variant, images) {
-    //     const mobileThumbnailWrapper = document.querySelector('.mobile-thumbnail-wrapper .mobile-gallery');
-    //     if (!mobileThumbnailWrapper) return;
-        
-    //     mobileThumbnailWrapper.innerHTML = '';
-    //     images.forEach((imgUrl, idx) => {
-    //       const thumbnailButton = document.createElement('button');
-    //       thumbnailButton.type = 'button';
-    //       thumbnailButton.className = 'flex-shrink-0 h-[70px] w-[45.5px] mr-3 mobile-thumbnail bg-transparent border-0 p-0';
-    //       thumbnailButton.dataset.index = idx;
-    //       thumbnailButton.onclick = () => scrollToMobileImage(idx);
-    //       thumbnailButton.innerHTML = `
-    //         <img 
-    //           src="${imgUrl}" 
-    //           alt="${variant.title || ''}" 
-    //           class="w-full h-full object-cover"
-    //           loading="lazy"
-    //         />
-    //       `;
-    //       mobileThumbnailWrapper.appendChild(thumbnailButton);
-    //     });
-    //   }
-    // }
-
-    // let productImageManager;
-
-    // document.addEventListener('DOMContentLoaded', function() {
-    //   const productData = {
-    //     variants: {{ product.variants | json }},
-    //     images: {{ product.images | json }}
-    //   };
-      
-    //   productImageManager = new ProductImageManager(productData);
-    // });
-
-    // function selectVariant(element, optionPosition, optionValue) {
-    //   // Define selectable items for the current option group
-    //   const selectableItems = document.querySelectorAll(
-    //     `.variant-button[data-option-position="${optionPosition}"], .color-chip[data-option-position="${optionPosition}"]`
-    //   );
-
-    //   // Clear previous selection for this option group
-    //   selectableItems.forEach(item => {
-    //     item.removeAttribute('data-selected');
-    //     if (item.classList.contains('variant-button') && !item.classList.contains('color-chip')) {
-    //       item.classList.remove('bg-[#D9D9D9]');
-    //     }
-    //   });
-
-    //   // Mark the clicked item as selected
-    //   element.setAttribute('data-selected', 'true');
-    //   if (element.classList.contains('variant-button') && !element.classList.contains('color-chip')) {
-    //     element.classList.add('bg-[#D9D9D9]');
-    //   }
-
-    //   // Get current selections for all options from both .variant-button and .color-chip
-    //   const selections = {};
-    //   document.querySelectorAll('.variant-button[data-selected="true"], .color-chip[data-selected="true"]').forEach(selectedItem => {
-    //     const position = selectedItem.getAttribute('data-option-position');
-    //     const value = selectedItem.getAttribute('data-value');
-    //     selections[`option${position}`] = value;
-    //   });
-
-    //   // Get total number of option types available for this product
-    //   const totalOptionTypes = {{ product.options | size }};
-
-    //   // Check if all option types have been selected
-    //   const allOptionsSelected = Object.keys(selections).length === totalOptionTypes;
-
-    //   // Find matching variant
-    //   const variants = {{ product.variants | json }};
-    //   let matchingVariant = null;
-
-    //   if (allOptionsSelected) {
-    //     matchingVariant = variants.find(variant => {
-    //       return Object.keys(selections).every(option => {
-    //         const position = parseInt(option.replace('option', ''));
-    //         // console.log("🚀 ~ position:", position)
-    //         return variant[`option${position}`] === selections[`option${position}`];
-    //       });
-    //     });
-    //   }
-
-    //   // console.log('[selectVariant] matchingVariant:', matchingVariant ? matchingVariant.id : null, matchingVariant);
-
-
-    //   // Check if this is an unavailable combination of options
-    //   let isUnavailableCombination = false;
-    //   if (allOptionsSelected && !matchingVariant) {
-    //     isUnavailableCombination = true;
-    //   }
-
-    //   // Update add to cart buttons based on inventory
-    //   if (matchingVariant) {
-    //     // We have a complete matching variant
-    //     updateAddToCartButtons(true, matchingVariant);
-    //   } else if (isUnavailableCombination) {
-    //     // All options selected but no matching variant found (unavailable combination)
-    //     updateAddToCartButtons(false, null, true);
-    //   } else {
-    //     // Not all options selected yet
-    //     updateAddToCartButtons(false);
-    //   }
-
-    //   // If there's a matching variant, update the variant ID
-    //   if (matchingVariant && productImageManager) {
-    //     const variantIdDesktop = document.getElementById('variant-id');
-    //     if (variantIdDesktop) variantIdDesktop.value = matchingVariant.id;
-
-    //     const variantIdMobile = document.getElementById('variant-id-mobile');
-    //     if (variantIdMobile) variantIdMobile.value = matchingVariant.id;
-
-    //     // Update gallery (desktop + mobile) for this color variant
-    //     if (optionPosition === "1") {
-    //       productImageManager.loadVariant(matchingVariant);
-    //     }
-
-    //     document.getElementById('variant-id').value = matchingVariant.id;
-    //     if (document.getElementById('variant-id-mobile')) {
-    //       document.getElementById('variant-id-mobile').value = matchingVariant.id;
-    //     }
-    //   }
-    // }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const firstVariant = window.productVariants.find(v => v.available);
-      console.log("🚀 ~ firstVariant option 1:", firstVariant.option1)
-      if (firstVariant) {
-        // simulate a selection
-        selectVariant(
-          document.querySelector(`.color-chip[data-value="${firstVariant.option1}"]`),
-          1,
-          firstVariant.option1
-        );
-        // also select size if needed
-        // if (firstVariant.option2) {
-        //   selectVariant(
-        //     document.querySelector(`.variant-button[data-value="${firstVariant.option2}"]`),
-        //     2,
-        //     firstVariant.option2
-        //   );
-        // }
-      }
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-      const colorChipsContainer = document.getElementById('color-chips-container');
-      const selectedColorName = document.getElementById('selected-color-name');
-      let selectedColor = '';
-
-      if (colorChipsContainer && selectedColorName) {
-        const setInitialState = () => {
-            const activeChip = colorChipsContainer.querySelector('.color-chip-container.active .color-chip');
-            if (activeChip) {
-                selectedColor = activeChip.dataset.colorName;
-                selectedColorName.textContent = selectedColor;
-            } else {
-                const firstChip = colorChipsContainer.querySelector('.color-chip');
-                if (firstChip) {
-                    selectedColor = firstChip.dataset.colorName;
-                    selectedColorName.textContent = selectedColor;
-                }
-            }
-        };
-
-        // Set initial state on load
-        setInitialState();
-
-        // Handle hover events
-        colorChipsContainer.addEventListener('mouseover', (event) => {
-          const chip = event.target.closest('.color-chip');
-          if (chip) {
-            selectedColorName.textContent = chip.dataset.colorName;
-          }
-        });
-
-        // Handle mouse leaving the container
-        colorChipsContainer.addEventListener('mouseleave', () => {
-          // Revert to the last clicked color's name
-          selectedColorName.textContent = selectedColor;
-        });
-
-        // Handle click events
-        colorChipsContainer.addEventListener('click', (event) => {
-          const chip = event.target.closest('.color-chip');
-          if (chip) {
-            // Update the officially selected color
-            selectedColor = chip.dataset.colorName;
-            selectedColorName.textContent = selectedColor;
-
-            // Update the 'active' class on the container
-            const allChipContainers = colorChipsContainer.querySelectorAll('.color-chip-container');
-            allChipContainers.forEach(container => container.classList.remove('active'));
-            chip.closest('.color-chip-container').classList.add('active');
-
-            // The existing onclick="selectVariant(...)" will handle the form update
-          }
-        });
-      }
-
-      const mobileColorChipsContainer = document.getElementById('mobile-color-chips-container');
-      const mobileSelectedColorName = document.getElementById('mobile-selected-color-name');
-
-      if (mobileColorChipsContainer && mobileSelectedColorName) {
-        const setMobileInitialState = () => {
-          const activeChip = mobileColorChipsContainer.querySelector('.color-chip-container.active .color-chip');
+    if (colorChipsContainer && selectedColorName) {
+      const setInitialState = () => {
+          const activeChip = colorChipsContainer.querySelector('.color-chip-container.active .color-chip');
           if (activeChip) {
-            mobileSelectedColorName.textContent = activeChip.dataset.colorName;
+              selectedColor = activeChip.dataset.colorName;
+              selectedColorName.textContent = selectedColor;
           } else {
-            const firstChip = mobileColorChipsContainer.querySelector('.color-chip');
-            if (firstChip) {
-              mobileSelectedColorName.textContent = firstChip.dataset.colorName;
-            }
+              const firstChip = colorChipsContainer.querySelector('.color-chip');
+              if (firstChip) {
+                  selectedColor = firstChip.dataset.colorName;
+                  selectedColorName.textContent = selectedColor;
+              }
           }
-        };
+      };
 
-        setMobileInitialState();
+      // Set initial state on load
+      setInitialState();
 
-        mobileColorChipsContainer.addEventListener('click', (event) => {
-          const chip = event.target.closest('.color-chip');
-          if (chip) {
-            // Update selected color name
-            mobileSelectedColorName.textContent = chip.dataset.colorName;
-
-            // Update active class
-            const allChipContainers = mobileColorChipsContainer.querySelectorAll('.color-chip-container');
-            allChipContainers.forEach(container => container.classList.remove('active'));
-            chip.closest('.color-chip-container').classList.add('active');
-          }
-        });
-      }
-    });
-
-    // Function to update add to cart buttons based on variant selection and inventory
-    function updateAddToCartButtons(allSelected, selectedVariant, isUnavailableCombination) {
-      const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
-      
-      // Get inventory containers
-      const desktopInventoryContainer = document.getElementById('desktop-inventory-status');
-      const mobileInventoryContainer = document.getElementById('mobile-inventory-status');
-      
-      // Clear any existing inventory indicators
-      if (desktopInventoryContainer) {
-        desktopInventoryContainer.innerHTML = '';
-        desktopInventoryContainer.style.display = 'none';
-      }
-      
-      if (mobileInventoryContainer) {
-        mobileInventoryContainer.innerHTML = '';
-        mobileInventoryContainer.style.display = 'none';
-      }
-      
-      if (allSelected && selectedVariant) {
-        // Check if the variant is available
-        if (selectedVariant.available) {
-          // Variant is in stock
-          addToCartButtons.forEach(button => {
-            button.disabled = false;
-            button.classList.add('variants-selected');
-            button.classList.remove('out-of-stock');
-            button.textContent = 'ADD TO CART';
-          });
-          
-          // Display inventory level if tracking is enabled and quantity is low
-          if (selectedVariant.inventory_quantity !== null && selectedVariant.inventory_quantity <= 10 && selectedVariant.inventory_quantity > 0) {
-            const inventoryMessage = `Only ${selectedVariant.inventory_quantity} left`;
-            
-            // Update desktop inventory status
-            if (desktopInventoryContainer) {
-              desktopInventoryContainer.innerHTML = inventoryMessage;
-              desktopInventoryContainer.style.display = 'block';
-            }
-            
-            // Update mobile inventory status
-            if (mobileInventoryContainer) {
-              mobileInventoryContainer.innerHTML = inventoryMessage;
-              mobileInventoryContainer.style.display = 'block';
-            }
-          }
-        } else {
-          // Variant is out of stock
-          addToCartButtons.forEach(button => {
-            button.disabled = true;
-            button.classList.remove('variants-selected');
-            button.classList.add('out-of-stock');
-            button.textContent = 'OUT OF STOCK';
-          });
+      // Handle hover events
+      colorChipsContainer.addEventListener('mouseover', (event) => {
+        const chip = event.target.closest('.color-chip');
+        if (chip) {
+          selectedColorName.textContent = chip.dataset.colorName;
         }
-      } else if (isUnavailableCombination) {
-        // All options selected but no matching variant (unavailable combination)
+      });
+
+      // Handle mouse leaving the container
+      colorChipsContainer.addEventListener('mouseleave', () => {
+        // Revert to the last clicked color's name
+        selectedColorName.textContent = selectedColor;
+      });
+
+      // Handle click events
+      colorChipsContainer.addEventListener('click', (event) => {
+        const chip = event.target.closest('.color-chip');
+        if (chip) {
+          // Update the officially selected color
+          selectedColor = chip.dataset.colorName;
+          selectedColorName.textContent = selectedColor;
+
+          // Update the 'active' class on the container
+          const allChipContainers = colorChipsContainer.querySelectorAll('.color-chip-container');
+          allChipContainers.forEach(container => container.classList.remove('active'));
+          chip.closest('.color-chip-container').classList.add('active');
+
+          // The existing onclick="selectVariant(...)" will handle the form update
+        }
+      });
+    }
+
+    const mobileColorChipsContainer = document.getElementById('mobile-color-chips-container');
+    const mobileSelectedColorName = document.getElementById('mobile-selected-color-name');
+
+    if (mobileColorChipsContainer && mobileSelectedColorName) {
+      const setMobileInitialState = () => {
+        const activeChip = mobileColorChipsContainer.querySelector('.color-chip-container.active .color-chip');
+        if (activeChip) {
+          mobileSelectedColorName.textContent = activeChip.dataset.colorName;
+        } else {
+          const firstChip = mobileColorChipsContainer.querySelector('.color-chip');
+          if (firstChip) {
+            mobileSelectedColorName.textContent = firstChip.dataset.colorName;
+          }
+        }
+      };
+
+      setMobileInitialState();
+
+      mobileColorChipsContainer.addEventListener('click', (event) => {
+        const chip = event.target.closest('.color-chip');
+        if (chip) {
+          // Update selected color name
+          mobileSelectedColorName.textContent = chip.dataset.colorName;
+
+          // Update active class
+          const allChipContainers = mobileColorChipsContainer.querySelectorAll('.color-chip-container');
+          allChipContainers.forEach(container => container.classList.remove('active'));
+          chip.closest('.color-chip-container').classList.add('active');
+        }
+      });
+    }
+  });
+
+  // Function to update add to cart buttons based on variant selection and inventory
+  function updateAddToCartButtons(allSelected, selectedVariant, isUnavailableCombination) {
+    const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+    
+    // Get inventory containers
+    const desktopInventoryContainer = document.getElementById('desktop-inventory-status');
+    const mobileInventoryContainer = document.getElementById('mobile-inventory-status');
+    
+    // Clear any existing inventory indicators
+    if (desktopInventoryContainer) {
+      desktopInventoryContainer.innerHTML = '';
+      desktopInventoryContainer.style.display = 'none';
+    }
+    
+    if (mobileInventoryContainer) {
+      mobileInventoryContainer.innerHTML = '';
+      mobileInventoryContainer.style.display = 'none';
+    }
+    
+    if (allSelected && selectedVariant) {
+      // Check if the variant is available
+      if (selectedVariant.available) {
+        // Variant is in stock
+        addToCartButtons.forEach(button => {
+          button.disabled = false;
+          button.classList.add('variants-selected');
+          button.classList.remove('out-of-stock');
+          button.textContent = 'ADD TO CART';
+        });
+        
+        // Display inventory level if tracking is enabled and quantity is low
+        if (selectedVariant.inventory_quantity !== null && selectedVariant.inventory_quantity <= 10 && selectedVariant.inventory_quantity > 0) {
+          const inventoryMessage = `Only ${selectedVariant.inventory_quantity} left`;
+          
+          // Update desktop inventory status
+          if (desktopInventoryContainer) {
+            desktopInventoryContainer.innerHTML = inventoryMessage;
+            desktopInventoryContainer.style.display = 'block';
+          }
+          
+          // Update mobile inventory status
+          if (mobileInventoryContainer) {
+            mobileInventoryContainer.innerHTML = inventoryMessage;
+            mobileInventoryContainer.style.display = 'block';
+          }
+        }
+      } else {
+        // Variant is out of stock
         addToCartButtons.forEach(button => {
           button.disabled = true;
           button.classList.remove('variants-selected');
           button.classList.add('out-of-stock');
           button.textContent = 'OUT OF STOCK';
         });
-      } else {
-        // Not all variants selected yet
-        addToCartButtons.forEach(button => {
-          button.disabled = true;
-          button.classList.remove('variants-selected');
-          button.classList.remove('out-of-stock');
-          button.textContent = 'ADD TO CART';
+      }
+    } else if (isUnavailableCombination) {
+      // All options selected but no matching variant (unavailable combination)
+      addToCartButtons.forEach(button => {
+        button.disabled = true;
+        button.classList.remove('variants-selected');
+        button.classList.add('out-of-stock');
+        button.textContent = 'OUT OF STOCK';
+      });
+    } else {
+      // Not all variants selected yet
+      addToCartButtons.forEach(button => {
+        button.disabled = true;
+        button.classList.remove('variants-selected');
+        button.classList.remove('out-of-stock');
+        button.textContent = 'ADD TO CART';
+      });
+    }
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    
+    // Initialize ADD TO CART buttons based on variant selection state
+    if (document.querySelector('.variant-button')) {
+      // Get total number of option types available for this product
+      const totalOptionTypes = {{ product.options | size }};
+      
+      // Check if we have variants selected already
+      const selections = {};
+      document.querySelectorAll('.variant-button[data-selected="true"]').forEach(selectedBtn => {
+        const position = selectedBtn.getAttribute('data-option-position');
+        const value = selectedBtn.getAttribute('data-value');
+        selections[`option${position}`] = value;
+      });
+      
+      // Check if all option types have been selected
+      const allOptionsSelected = Object.keys(selections).length === totalOptionTypes;
+      
+      // Find the matching variant if all options are selected
+      if (allOptionsSelected) {
+        const variants = {{ product.variants | json }};
+        const matchingVariant = variants.find(variant => {
+          return Object.keys(selections).every(option => {
+            const position = parseInt(option.replace('option', ''));
+            return variant[`option${position}`] === selections[`option${position}`];
+          });
         });
+        
+        // Update button states with inventory check
+        if (matchingVariant) {
+          updateAddToCartButtons(true, matchingVariant);
+        } else if (allOptionsSelected) {
+          // All options selected but no matching variant
+          updateAddToCartButtons(false, null, true);
+        } else {
+          // Not all options selected yet
+          updateAddToCartButtons(false);
+        }
+      } else {
+        // If no variants are selected yet, just initialize the buttons
+        updateAddToCartButtons(false);
+      }
+    } else if ({{ product.has_only_default_variant | json }}) {
+      // For products with only default variant, check its inventory
+      const defaultVariant = {{ product.selected_or_first_available_variant | json }};
+      if (defaultVariant) {
+        updateAddToCartButtons(true, defaultVariant);
       }
     }
     
-    document.addEventListener('DOMContentLoaded', function() {
-      
-      // Initialize ADD TO CART buttons based on variant selection state
-      if (document.querySelector('.variant-button')) {
-        // Get total number of option types available for this product
-        const totalOptionTypes = {{ product.options | size }};
+    // Handle add to cart form submissions
+    const buttons = document.querySelectorAll('form .add-to-cart-btn');
+    const addToCartForms = [];
+    buttons.forEach(btn => {
+      const form = btn.closest('form');
+      if (form && !addToCartForms.includes(form)) {
+        addToCartForms.push(form);
+      }
+    });
+    
+    addToCartForms.forEach(form => {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
         
-        // Check if we have variants selected already
-        const selections = {};
-        document.querySelectorAll('.variant-button[data-selected="true"]').forEach(selectedBtn => {
-          const position = selectedBtn.getAttribute('data-option-position');
-          const value = selectedBtn.getAttribute('data-value');
-          selections[`option${position}`] = value;
-        });
+        // No loading state - removed cursor loading
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalText = submitButton.textContent;
         
-        // Check if all option types have been selected
-        const allOptionsSelected = Object.keys(selections).length === totalOptionTypes;
-        
-        // Find the matching variant if all options are selected
-        if (allOptionsSelected) {
-          const variants = {{ product.variants | json }};
-          const matchingVariant = variants.find(variant => {
-            return Object.keys(selections).every(option => {
-              const position = parseInt(option.replace('option', ''));
-              return variant[`option${position}`] === selections[`option${position}`];
-            });
+        try {
+          // Submit the form using fetch API
+          const formData = new FormData(form);
+          const response = await fetch('/cart/add.js', {
+            method: 'POST',
+            body: formData
           });
           
-          // Update button states with inventory check
-          if (matchingVariant) {
-            updateAddToCartButtons(true, matchingVariant);
-          } else if (allOptionsSelected) {
-            // All options selected but no matching variant
-            updateAddToCartButtons(false, null, true);
-          } else {
-            // Not all options selected yet
-            updateAddToCartButtons(false);
-          }
-        } else {
-          // If no variants are selected yet, just initialize the buttons
-          updateAddToCartButtons(false);
+          if (!response.ok) throw new Error('Add to cart failed');
+          
+          const result = await response.json();
+          
+          // Update cart count in header
+          const cartResponse = await fetch('/cart.js');
+          const cart = await cartResponse.json();
+          
+          // Update the cart count display
+          updateCartCountDisplay(cart.item_count);
+          
+          // Dispatch event for cart update
+          document.dispatchEvent(new CustomEvent('cart:updated', {
+            detail: { item_count: cart.item_count }
+          }));
+          
+          // Cart dropdown display removed
+          
+          // Store button state before changing
+          const wasVariantsSelected = submitButton.classList.contains('variants-selected');
+          
+          // Briefly change button text to "Added" then back
+          submitButton.textContent = 'Added';
+          submitButton.classList.remove('variants-selected'); // Remove potentially conflicting classes
+          submitButton.classList.remove('container-hovered');
+          submitButton.classList.add('success');
+          setTimeout(() => {
+            submitButton.textContent = originalText;
+            submitButton.classList.remove('success');
+            // Re-add relevant classes if needed
+            if (wasVariantsSelected) {
+              submitButton.classList.add('variants-selected');
+            }
+            if (document.querySelector('.product-info-container.container-hover')) {
+              submitButton.classList.add('container-hovered');
+            }
+          }, 2000);
+          
+        } catch (error) {
+          console.error('Error adding to cart:', error);
+          submitButton.textContent = 'Error';
+          submitButton.classList.add('error');
+          setTimeout(() => {
+            submitButton.textContent = originalText;
+            submitButton.classList.remove('error');
+          }, 2000);
         }
-      } else if ({{ product.has_only_default_variant | json }}) {
-        // For products with only default variant, check its inventory
-        const defaultVariant = {{ product.selected_or_first_available_variant | json }};
-        if (defaultVariant) {
-          updateAddToCartButtons(true, defaultVariant);
+      });
+    });
+    
+    // Function to update cart count display (same as in header.liquid)
+    function updateCartCountDisplay(count) {
+      const cartCount = document.querySelector('.cart-count');
+      if (cartCount) {
+        cartCount.textContent = count;
+        cartCount.style.display = count > 0 ? 'block' : 'none';
+      }
+    }
+
+    // Only set up hover effects on desktop (screen width >= 768px)
+    if (window.innerWidth >= 768) {
+      // Get all product info elements
+      const productInfoContainer = document.querySelector('.product-info-container');
+      const productInfoItems = document.querySelectorAll('.product-info-item');
+      const header = document.querySelector('header');
+      const headerOverlay = document.querySelector('#header-overlay');
+      const navContainer = document.querySelector('.nav-container');
+      
+      // Function to handle mouse enter
+      function handleMouseEnter() {
+        // Apply white background to all items
+        // productInfoItems.forEach(item => {
+        //   item.style.backgroundColor = 'white';
+        // });
+        
+        // Show background for selected variants
+        document.querySelectorAll('.variant-button[data-selected="true"]').forEach(button => {
+          button.classList.add('bg-[#D9D9D9]');
+        });
+        
+        // Add container-hover class
+        productInfoContainer.classList.add('container-hover');
+        
+        // Add container-hovered class to buttons
+        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+          button.classList.add('container-hovered');
+        });
+
+        // Change nav background to white
+        // if (navContainer) {
+        //   navContainer.style.backgroundColor = 'white';
+        // }
+      }
+
+      // Function to handle mouse leave
+      function handleMouseLeave() {
+        // Reset all items to original background
+        productInfoItems.forEach(item => {
+          item.style.backgroundColor = 'rgba(254,254,254,0.60)';
+        });
+        
+        // Hide background for selected variants
+        document.querySelectorAll('.variant-button[data-selected="true"]').forEach(button => {
+          button.classList.remove('bg-[#D9D9D9]');
+        });
+        
+        // Remove container-hover class
+        productInfoContainer.classList.remove('container-hover');
+        
+        // Remove container-hovered class from buttons
+        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+          button.classList.remove('container-hovered');
+        });
+
+        // Reset nav background
+        if (navContainer) {
+          navContainer.style.backgroundColor = 'rgba(254,254,254,0.60)';
         }
       }
       
-      // Handle add to cart form submissions
-      const buttons = document.querySelectorAll('form .add-to-cart-btn');
-      const addToCartForms = [];
-      buttons.forEach(btn => {
-        const form = btn.closest('form');
-        if (form && !addToCartForms.includes(form)) {
-          addToCartForms.push(form);
-        }
-      });
+      // Add mouse enter/leave listeners to both containers
+      productInfoContainer.addEventListener('mouseenter', handleMouseEnter);
+      productInfoContainer.addEventListener('mouseleave', handleMouseLeave);
       
-      addToCartForms.forEach(form => {
-        form.addEventListener('submit', async function(e) {
-          e.preventDefault();
-          
-          // No loading state - removed cursor loading
-          const submitButton = form.querySelector('button[type="submit"]');
-          const originalText = submitButton.textContent;
-          
-          try {
-            // Submit the form using fetch API
-            const formData = new FormData(form);
-            const response = await fetch('/cart/add.js', {
-              method: 'POST',
-              body: formData
-            });
-            
-            if (!response.ok) throw new Error('Add to cart failed');
-            
-            const result = await response.json();
-            
-            // Update cart count in header
-            const cartResponse = await fetch('/cart.js');
-            const cart = await cartResponse.json();
-            
-            // Update the cart count display
-            updateCartCountDisplay(cart.item_count);
-            
-            // Dispatch event for cart update
-            document.dispatchEvent(new CustomEvent('cart:updated', {
-              detail: { item_count: cart.item_count }
-            }));
-            
-            // Cart dropdown display removed
-            
-            // Store button state before changing
-            const wasVariantsSelected = submitButton.classList.contains('variants-selected');
-            
-            // Briefly change button text to "Added" then back
-            submitButton.textContent = 'Added';
-            submitButton.classList.remove('variants-selected'); // Remove potentially conflicting classes
-            submitButton.classList.remove('container-hovered');
-            submitButton.classList.add('success');
-            setTimeout(() => {
-              submitButton.textContent = originalText;
-              submitButton.classList.remove('success');
-              // Re-add relevant classes if needed
-              if (wasVariantsSelected) {
-                submitButton.classList.add('variants-selected');
-              }
-              if (document.querySelector('.product-info-container.container-hover')) {
-                submitButton.classList.add('container-hovered');
-              }
-            }, 2000);
-            
-          } catch (error) {
-            console.error('Error adding to cart:', error);
-            submitButton.textContent = 'Error';
-            submitButton.classList.add('error');
-            setTimeout(() => {
-              submitButton.textContent = originalText;
-              submitButton.classList.remove('error');
-            }, 2000);
-          }
-        });
-      });
-      
-      // Function to update cart count display (same as in header.liquid)
-      function updateCartCountDisplay(count) {
-        const cartCount = document.querySelector('.cart-count');
-        if (cartCount) {
-          cartCount.textContent = count;
-          cartCount.style.display = count > 0 ? 'block' : 'none';
-        }
+      if (navContainer) {
+        navContainer.addEventListener('mouseenter', handleMouseEnter);
+        navContainer.addEventListener('mouseleave', handleMouseLeave);
       }
-
-      // Only set up hover effects on desktop (screen width >= 768px)
-      if (window.innerWidth >= 768) {
-        // Get all product info elements
-        const productInfoContainer = document.querySelector('.product-info-container');
-        const productInfoItems = document.querySelectorAll('.product-info-item');
-        const header = document.querySelector('header');
-        const headerOverlay = document.querySelector('#header-overlay');
-        const navContainer = document.querySelector('.nav-container');
-        
-        // Function to handle mouse enter
-        function handleMouseEnter() {
-          // Apply white background to all items
-          // productInfoItems.forEach(item => {
-          //   item.style.backgroundColor = 'white';
-          // });
-          
-          // Show background for selected variants
-          document.querySelectorAll('.variant-button[data-selected="true"]').forEach(button => {
-            button.classList.add('bg-[#D9D9D9]');
-          });
-          
-          // Add container-hover class
-          productInfoContainer.classList.add('container-hover');
-          
-          // Add container-hovered class to buttons
-          document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-            button.classList.add('container-hovered');
-          });
-
-          // Change nav background to white
-          // if (navContainer) {
-          //   navContainer.style.backgroundColor = 'white';
-          // }
-        }
-
-        // Function to handle mouse leave
-        function handleMouseLeave() {
-          // Reset all items to original background
+      
+      // Handle window resize to disable effects on mobile
+      window.addEventListener('resize', function() {
+        if (window.innerWidth < 768) {
+          // Reset to original background if resized to mobile
           productInfoItems.forEach(item => {
             item.style.backgroundColor = 'rgba(254,254,254,0.60)';
           });
           
-          // Hide background for selected variants
-          document.querySelectorAll('.variant-button[data-selected="true"]').forEach(button => {
-            button.classList.remove('bg-[#D9D9D9]');
-          });
-          
-          // Remove container-hover class
-          productInfoContainer.classList.remove('container-hover');
-          
-          // Remove container-hovered class from buttons
-          document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-            button.classList.remove('container-hovered');
-          });
-
-          // Reset nav background
+          // Reset nav container and header
           if (navContainer) {
             navContainer.style.backgroundColor = 'rgba(254,254,254,0.60)';
           }
-        }
-        
-        // Add mouse enter/leave listeners to both containers
-        productInfoContainer.addEventListener('mouseenter', handleMouseEnter);
-        productInfoContainer.addEventListener('mouseleave', handleMouseLeave);
-        
-        if (navContainer) {
-          navContainer.addEventListener('mouseenter', handleMouseEnter);
-          navContainer.addEventListener('mouseleave', handleMouseLeave);
-        }
-        
-        // Handle window resize to disable effects on mobile
-        window.addEventListener('resize', function() {
-          if (window.innerWidth < 768) {
-            // Reset to original background if resized to mobile
-            productInfoItems.forEach(item => {
-              item.style.backgroundColor = 'rgba(254,254,254,0.60)';
-            });
-            
-            // Reset nav container and header
-            if (navContainer) {
-              navContainer.style.backgroundColor = 'rgba(254,254,254,0.60)';
-            }
-            if (header) {
-              header.style.backgroundColor = 'rgba(254,254,254,0.60)';
-            }
-            
-            // Reset popups
-            popupContainers.forEach(container => {
-              const content = container.querySelector('.popup-content');
-              if (content) {
-                content.style.backgroundColor = 'rgba(254,254,254,0.60)';
-              }
-            });
+          if (header) {
+            header.style.backgroundColor = 'rgba(254,254,254,0.60)';
           }
-        });
-      }
-      
-      // TODO: need this?
-      // // Update desktop section toggles to open popups instead
-      // const desktopButtons = {
-      //   'materials': document.querySelector('button[onclick*="materials"]'),
-      //   'size-guide': document.querySelector('button[onclick*="size-guide"]'),
-      //   'shipping': document.querySelector('button[onclick*="shipping"]')
-      // };
-      
-      // if (desktopButtons['materials']) {
-      //   desktopButtons['materials'].setAttribute('onclick', 'openPopup("materials-popupContent")');
-      // }
-      // if (desktopButtons['size-guide']) {
-      //   desktopButtons['size-guide'].setAttribute('onclick', 'openPopup("size-guide-popup")');
-      // }
-      // if (desktopButtons['shipping']) {
-      //   desktopButtons['shipping'].setAttribute('onclick', 'openPopup("shipping-popup")');
-      // }
-      
-      
-      // // Update mobile section toggles to open popups instead - if they exist
-      // const mobileButtons = {
-      //   'materials-mobile': document.querySelector('button[onclick*="materials-mobile"]'),
-      //   'size-guide-mobile': document.querySelector('button[onclick*="size-guide-mobile"]'),
-      //   'shipping-mobile': document.querySelector('button[onclick*="shipping-mobile"]')
-      // };
-      
-      // if (mobileButtons['materials-mobile']) {
-      //   mobileButtons['materials-mobile'].setAttribute('onclick', 'openPopup("materials-popup-mobile")');
-      // }
-      // if (mobileButtons['size-guide-mobile']) {
-      //   mobileButtons['size-guide-mobile'].setAttribute('onclick', 'openPopup("size-guide-popup-mobile")');
-      // }
-      // if (mobileButtons['shipping-mobile']) {
-      //   mobileButtons['shipping-mobile'].setAttribute('onclick', 'openPopup("shipping-popup-mobile")');
-      // }
-      
-      // Setup click outside to close popups
-      document.addEventListener('click', function(event) {
-        // Check if any popup is open
-        const openPopups = document.querySelectorAll('#shipping-popup:not(.hidden), #size-guide-popup:not(.hidden), #materials-popup:not(.hidden),');
-        
-        if (openPopups.length === 0) return; // No popups open, nothing to do
-        
-        // Check if click was on a popup trigger button
-        const isPopupTrigger = event.target.hasAttribute('onclick') && 
-                             (event.target.getAttribute('onclick').includes('openPopup') || 
-                              event.target.getAttribute('onclick').includes('closePopup'));
-        
-        if (isPopupTrigger) return; // Don't close if clicking a trigger button
-        
-        // Check if click was inside any popup
-        let clickedInsidePopup = false;
-        openPopups.forEach(popup => {
-          if (popup.contains(event.target)) {
-            clickedInsidePopup = true;
-          }
-        });
-        
-        // If click was outside all popups, close them
-        if (!clickedInsidePopup) {
-          closeAllPopups();
+          
+          // Reset popups
+          popupContainers.forEach(container => {
+            const content = container.querySelector('.popup-content');
+            if (content) {
+              content.style.backgroundColor = 'rgba(254,254,254,0.60)';
+            }
+          });
         }
       });
+    }
+    
+    // TODO: need this?
+    // // Update desktop section toggles to open popups instead
+    // const desktopButtons = {
+    //   'materials': document.querySelector('button[onclick*="materials"]'),
+    //   'size-guide': document.querySelector('button[onclick*="size-guide"]'),
+    //   'shipping': document.querySelector('button[onclick*="shipping"]')
+    // };
+    
+    // if (desktopButtons['materials']) {
+    //   desktopButtons['materials'].setAttribute('onclick', 'openPopup("materials-popupContent")');
+    // }
+    // if (desktopButtons['size-guide']) {
+    //   desktopButtons['size-guide'].setAttribute('onclick', 'openPopup("size-guide-popup")');
+    // }
+    // if (desktopButtons['shipping']) {
+    //   desktopButtons['shipping'].setAttribute('onclick', 'openPopup("shipping-popup")');
+    // }
+    
+    
+    // // Update mobile section toggles to open popups instead - if they exist
+    // const mobileButtons = {
+    //   'materials-mobile': document.querySelector('button[onclick*="materials-mobile"]'),
+    //   'size-guide-mobile': document.querySelector('button[onclick*="size-guide-mobile"]'),
+    //   'shipping-mobile': document.querySelector('button[onclick*="shipping-mobile"]')
+    // };
+    
+    // if (mobileButtons['materials-mobile']) {
+    //   mobileButtons['materials-mobile'].setAttribute('onclick', 'openPopup("materials-popup-mobile")');
+    // }
+    // if (mobileButtons['size-guide-mobile']) {
+    //   mobileButtons['size-guide-mobile'].setAttribute('onclick', 'openPopup("size-guide-popup-mobile")');
+    // }
+    // if (mobileButtons['shipping-mobile']) {
+    //   mobileButtons['shipping-mobile'].setAttribute('onclick', 'openPopup("shipping-popup-mobile")');
+    // }
+    
+    // Setup click outside to close popups
+    // document.addEventListener('click', function(event) {
+    //   // Check if any popup is open
+    //   const openPopups = document.querySelectorAll('#shipping-popup:not(.hidden), #size-guide-popup:not(.hidden), #materials-popup:not(.hidden),');
       
-      // Remove the old click-outside handlers
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-    });
+    //   if (openPopups.length === 0) return; // No popups open, nothing to do
+      
+    //   // Check if click was on a popup trigger button
+    //   const isPopupTrigger = event.target.hasAttribute('onclick') && 
+    //                         (event.target.getAttribute('onclick').includes('openPopup') || 
+    //                         event.target.getAttribute('onclick').includes('closePopup'));
+      
+    //   if (isPopupTrigger) return; // Don't close if clicking a trigger button
+      
+    //   // Check if click was inside any popup
+    //   let clickedInsidePopup = false;
+    //   openPopups.forEach(popup => {
+    //     if (popup.contains(event.target)) {
+    //       clickedInsidePopup = true;
+    //     }
+    //   });
+      
+    //   // If click was outside all popups, close them
+    //   if (!clickedInsidePopup) {
+    //     closeAllPopups();
+    //   }
+    // });
+    
+    // // Remove the old click-outside handlers
+    // document.removeEventListener('mousedown', handleClickOutside);
+    // document.removeEventListener('touchstart', handleClickOutside);
+  });
   </script>
   
   <script>
     // ... existing code ...
     
     document.addEventListener('DOMContentLoaded', function() {
-      // ... existing code ...
-      
       // Clean up any raw JSON that might be displayed in the materials section
-      const materialsContentWrapper = document.getElementById('materials-content-wrapper');
-      if (materialsContentWrapper) {
-        // Check if the content looks like raw JSON
-        const text = materialsContentWrapper.textContent.trim();
-        if (text.startsWith('{') && text.includes('"type":"root"')) {
-          try {
-            // Parse the JSON
-            const data = JSON.parse(text);
-            
-            // Clear the current content
-            materialsContentWrapper.innerHTML = '';
-            
-            // Extract and format the values
-            if (data.type === 'root' && Array.isArray(data.children)) {
-              data.children.forEach(item => {
-                if (item.type === 'paragraph' && Array.isArray(item.children)) {
-                  const p = document.createElement('p');
-                  p.className = 'text-[13px] leading-relaxed mb-[8px]';
-                  
-                  item.children.forEach(child => {
-                    if (child.type === 'text' && typeof child.value === 'string') {
-                      p.textContent += child.value;
-                    }
-                  });
-                  
-                  if (p.textContent.trim()) {
-                    materialsContentWrapper.appendChild(p);
-                  }
-                }
-              });
-            }
-          } catch (e) {
-            console.error('Error parsing materials JSON:', e);
-            
-            // Fallback: try to extract values using regex
-            const valueMatches = text.match(/"value":"([^"]+)"/g);
-            if (valueMatches && valueMatches.length) {
+      const materialsContentWrappers = document.querySelectorAll('.materials-content-wrapper');
+      materialsContentWrappers.forEach(materialsContentWrapper => {
+
+        if (materialsContentWrapper) {
+          // Check if the content looks like raw JSON
+          const text = materialsContentWrapper.textContent.trim();
+          if (text.startsWith('{') && text.includes('"type":"root"')) {
+            try {
+              // Parse the JSON
+              const data = JSON.parse(text);
+              
+              // Clear the current content
               materialsContentWrapper.innerHTML = '';
               
-              valueMatches.forEach(match => {
-                const value = match.replace('"value":"', '').replace('"', '');
-                if (value && value.trim()) {
-                  const p = document.createElement('p');
-                  p.className = 'text-[13px] leading-relaxed mb-[8px]';
-                  p.textContent = value.trim();
-                  materialsContentWrapper.appendChild(p);
-                }
-              });
+              // Extract and format the values
+              // if (data.type === 'root' && Array.isArray(data.children)) {
+              //   data.children.forEach(item => {
+              //     if (item.type === 'paragraph' && Array.isArray(item.children)) {
+              //       const p = document.createElement('p');
+              //       p.className = 'text-[13px] leading-relaxed mb-[8px]';
+                    
+              //       item.children.forEach(child => {
+              //         if (child.type === 'text' && typeof child.value === 'string') {
+              //           p.textContent += child.value;
+              //         }
+              //       });
+                    
+              //       if (p.textContent.trim()) {
+              //         materialsContentWrapper.appendChild(p);
+              //       }
+              //     }
+              //   });
+              // }
+              if (data.type === 'root' && Array.isArray(data.children)) {
+                data.children.forEach((item, idx) => {
+
+                  if (item.type === 'paragraph' && Array.isArray(item.children)) {
+                    const p = document.createElement('p');
+                    p.className = 'text-[13px] leading-relaxed mb-[8px]';
+
+                    item.children.forEach((child, cIdx) => {
+                      if (child.type === 'text' && typeof child.value === 'string') {
+                        p.textContent += child.value;
+                      }
+                    });
+
+                    if (p.textContent.trim()) {
+                      materialsContentWrapper.appendChild(p);
+                    }
+                  }
+                });
+              }
+            } catch (e) {
+              console.error('Error parsing materials JSON:', e);
+              
+              // Fallback: try to extract values using regex
+              const valueMatches = text.match(/"value":"([^"]+)"/g);
+              if (valueMatches && valueMatches.length) {
+                materialsContentWrapper.innerHTML = '';
+                
+                valueMatches.forEach(match => {
+                  const value = match.replace('"value":"', '').replace('"', '');
+                  if (value && value.trim()) {
+                    const p = document.createElement('p');
+                    p.className = 'text-[13px] leading-relaxed mb-[8px]';
+                    p.textContent = value.trim();
+                    materialsContentWrapper.appendChild(p);
+                  }
+                });
+              }
             }
           }
         }
-      }
+      });
     });
-  </script>
 
-  <script>
+    // document.addEventListener('DOMContentLoaded', function () {
+    //   const wrapper = document.getElementById('materials-content-wrapper');
+    //   if (!wrapper) return;
+
+    //   let raw = wrapper.textContent.trim();
+
+    //   // Detect JSON-looking content
+    //   if (raw.startsWith('{') && raw.includes('"type":"root"')) {
+    //     try {
+    //       const data = JSON.parse(raw);
+    //       wrapper.innerHTML = '';
+
+    //       if (data.type === 'root' && Array.isArray(data.children)) {
+    //         data.children.forEach(item => {
+    //           if (item.type === 'paragraph' && Array.isArray(item.children)) {
+    //             const p = document.createElement('p');
+    //             p.className = 'text-[13px] leading-relaxed mb-[8px]';
+
+    //             item.children.forEach(child => {
+    //               if (child.type === 'text' && typeof child.value === 'string') {
+    //                 p.textContent += child.value;
+    //               }
+    //             });
+
+    //             if (p.textContent.trim()) {
+    //               wrapper.appendChild(p);
+    //             }
+    //           }
+    //         });
+    //       }
+    //     } catch (e) {
+    //       console.error('Error parsing materials JSON:', e);
+    //     }
+    //   } else {
+    //     // If not JSON, just leave whatever HTML Shopify rendered
+    //     // (don't wipe wrapper.innerHTML here)
+    //   }
+    // });
   </script>
 {% endif %}
 <style>
@@ -2298,11 +2175,17 @@
       height: 100%;
     }
     
-    #mobile-gallery-container img {
+    /* #mobile-gallery-container img {
       object-fit: cover;
       width: 100%;
       height: 100%;
       aspect-ratio: 4/5;
+    } */
+    #mobile-gallery-container img {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
     }
   }
   
@@ -2389,13 +2272,13 @@
   }
   
   /* Custom visibility checker for scroll observers */
-  .scroll-trigger {
+  /* .scroll-trigger {
     visibility: hidden;
     position: absolute;
     height: 1px;
     width: 1px;
     pointer-events: none;
-  }
+  } */
   
   /* Navigation containers consistent styling */
   /* .max-w-[864px] {
@@ -2507,6 +2390,13 @@
 
   /* Mobile styles */
   @media (max-width: 767px) {
+    .product-info-container {
+      min-width: auto !important;
+      width: 100% !important;
+      position: static !important;
+      transform: none !important;
+    }
+
     /* Make sure the product page content doesn't hide the footer on mobile */
     body {
       height: auto;
@@ -2890,6 +2780,8 @@
     /* transition: all 0.3s ease; */
     /* position: relative; */
     /* max-height: 80vh; */
+    /* min-width: 475px; */
+    min-width: 40vw;
     z-index: 60;
   }
 

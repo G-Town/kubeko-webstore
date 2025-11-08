@@ -16,7 +16,7 @@
       <img
         class="h-full object-cover blur-up"
         alt="{{ product_1.title | default: section.settings.image_1_alt | default: 'Left column image' }}"
-        src="{{ image_1 | img_url: '100x' }}"
+        src="{{ image_1 | image_url: 100 }}"
         data-src="{{ image_1 | image_url }}"
         width="{{ image_1.width }}"
         height="{{ image_1.height }}"
@@ -82,8 +82,8 @@
     /* height: auto; */
   }
   .side-by-side-column {
-    height: 100vh;
-    max-height: 900px; /* Optional: cap the max height on very tall devices */
+    height: 80vh;
+    max-height: 750px; /* Optional: cap the max height on very tall devices */
   }
 
   /* Tablet screens (e.g., between 768px and 1024px) */

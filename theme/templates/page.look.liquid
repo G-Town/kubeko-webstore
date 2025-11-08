@@ -1,0 +1,73 @@
+{% comment %}
+  Template: Look Detail Page
+  Path: /templates/page.look.liquid
+  Purpose: Renders a single "look" detail page based on the look ID in the page handle.
+  Example URL: /pages/look-1234
+{% endcomment %}
+
+{% comment %} Get URL parameters properly {% endcomment %}
+{%- capture contentForQuerystring -%}{{ content_for_header }}{%- endcapture -%}
+{%- assign pageUrl = contentForQuerystring 
+                      | split: '"pageurl":"'
+                      | last
+                      | split: '"'
+                      | first
+                      | split: '.myshopify.com'
+                      | last
+                      | replace: '\/', '/'
+                      | replace: '%20', ' '
+                      | replace: '\u0026', '&'
+-%}
+{% comment %} {%- assign pageUrl = contentForQuerystring
+  | replace: '\u002F', '/'
+  | replace: '\\/', '/'
+  | replace: '%20', ' '
+  | replace: '\u0026', '&'
+  | split: '"pageurl":"'
+  | last
+  | split: '"'
+  | first
+-%} {% endcomment %}
+
+{%- assign requested_look_id = '' -%}
+{%- if pageUrl contains 'look=' -%}
+  {%- assign requested_look_id = pageUrl | split: 'look=' | last | split: '&' | first -%}
+{%- endif -%}
+
+{% assign look_id = request.params.look %}
+{% comment %} {% assign look_id = page.handle | remove: 'look-' %} {% endcomment %}
+{% assign matched_look = nil %}
+{% assign matched_collection = nil %}
+{% assign look_index = 0 %}
+
+{% comment %} DEBUG - Remove after testing {% endcomment %}
+{% comment %} <div style="background: yellow; padding: 10px; margin: 10px;">
+    <p><strong>Look Detail DEBUG:</strong></p>
+    <p>Look ID: {{ requested_look_id }}</p>
+</div> {% endcomment %}
+
+{% for collection in collections %}
+  {% if collection.metafields.custom.isdrop == true %}
+    {% for look in collection.metafields.custom.lookbook.value %}
+      {% for photo in look.look_photos.value limit:1 %}
+        {% assign current_id = photo.id | split: '/' | last %}
+      {% endfor %}
+      {% if current_id == requested_look_id %}
+        {% assign matched_look = look %}
+        {% assign matched_collection = collection %}
+        {% assign look_index = forloop.index %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+
+{% if matched_look %}
+  {% render 'look-detail', look: matched_look, collection: matched_collection, look_index: look_index %}
+{% else %}
+  <div class="text-center py-20">
+    <h1 class="text-2xl font-bold">Look not found</h1>
+    <p class="mt-4">The look you are trying to view could not be found. It may have been removed or is unavailable.</p>
+    <a href="/collections" class="inline-block mt-6 text-blue-600 underline">Back to Collections</a>
+  </div>
+{% endif %}
