@@ -8,17 +8,20 @@
     <div class="h-auto">
       {% comment %} <a href="?look={{ look_id }}" class="block cursor-pointer touch-manipulation"> {% endcomment %}
       {% comment %} <a href="{{ collection.url }}?look={{ look_id }}" class="block"> {% endcomment %}
-      <a href="/pages/look-detail?look={{ look_id }}" class="block">
+      <a href="/pages/look-detail?look={{ look_id }}"
+          class="collection-card-link block"
+          data-look-id="{{ look_id }}"
+          data-look-index="{{ look_index }}">
         <img
           class="w-full h-full object-cover"
           alt="{{ photo.alt | escape }}"
-          src="{{ photo | img_url: '480x' }}"
+          src="{{ photo | image_url: width: 600 }}"
           srcset="
             {{ photo | img_url: '480x' }} 480w,
             {{ photo | img_url: '768x' }} 768w,
             {{ photo | img_url: '1024x' }} 1024w
           "
-          sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+          sizes="(min-width: 768px) 33vw, (min-width: 1024px) 25vw, 50vw"
           loading="lazy"
           width="{{ photo.width }}"
           height="{{ photo.height }}"

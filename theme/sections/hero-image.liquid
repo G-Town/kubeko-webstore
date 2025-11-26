@@ -68,9 +68,10 @@
           width="{{ mobile_image.width }}"
           height="{{ mobile_image.height }}"
           loading="eager"
-          class="w-full h-full object-cover blur-up"
-          onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }">
+          class="w-full h-full object-cover "
+          onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) {  window.loadHighResImage(this); }">
       </picture>
+      {% comment %} blur-up - this.classList.add('blur-sm'); {% endcomment %}
 
       {%- if section.settings.title != blank or section.settings.description != blank -%}
         <div class="text-container">

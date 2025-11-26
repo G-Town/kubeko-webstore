@@ -36,7 +36,7 @@
     <p>Requested Look ID: "{{ requested_look_id }}"</p>
 </div> {% endcomment %}
 
-{% if requested_look_id != blank and collection.metafields.custom.isdrop == true %}
+{% comment %} {% if requested_look_id != blank and collection.metafields.custom.isdrop == true %} {% endcomment %}
   {% comment %} LOOK DETAIL VIEW {% endcomment %}
   {% comment %} {% assign found_look = false %}
   {% for look in collection.metafields.custom.lookbook.value %}
@@ -61,55 +61,149 @@
         &larr; Back to {{ collection.title }}
       </a>
     </div>
-  {% endunless %} {% endcomment %}
-
-{% else %}
+  {% endunless %}
+{% else %} {% endcomment %}
   {% comment %} MAIN COLLECTION VIEW {% endcomment %}
-  {% paginate collection.products by 24 %}
-    {% if collection.metafields.custom.isdrop == true %}
-      {% comment %} NAMED COLLECTION {% endcomment %}
-      <div class="max-w-[1260px] mx-auto md:px-[120px]">
-        {% comment %} <h1 class="text-center text-2xl font-helvetica font-semibold tracking-wide uppercase my-12">Lookbook</h1> {% endcomment %}
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-4 md:gap-x-2 md:gap-y-16 mt-12">
+  
+{% paginate collection.products by 24 %}
+  {% if collection.metafields.custom.isdrop == true %}
+    {% comment %} NAMED COLLECTION {% endcomment %}
+    <div class="max-w-[1260px] mx-auto md:px-[120px]">
+      {% comment %} <h1 class="text-center text-2xl font-helvetica font-semibold tracking-wide uppercase my-12">Lookbook</h1> {% endcomment %}
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-4 md:gap-x-2 md:gap-y-16 mt-12">
+        {% for look in collection.metafields.custom.lookbook.value %}
+          <div class="h-[45%] md:h-[60%] max-h-[450px] relative">
+            {% render 'collection-card'
+            , look: look
+            , look_index: forloop.index %}
+          </div>
+        {% endfor %}
+        {%- comment -%}
+          Hidden look-detail templates (client-side modal will use these)
+        {%- endcomment -%}
+        <div id="look-detail-templates" style="display:none;">
           {% for look in collection.metafields.custom.lookbook.value %}
-            <div class="h-[45%] md:h-[60%] max-h-[450px] relative">
-              {% render 'collection-card'
-              , look: look
-              , look_index: forloop.index %}
+            {% for photo in look.look_photos.value limit: 1 %}
+              {% assign current_look_id = photo.id | split: '/' | last %}
+            {% endfor %}
+            <div class="look-detail-template" data-look-id="{{ current_look_id }}">
+              {% render 'look-detail', look: look, collection: collection, look_index: forloop.index %}
             </div>
           {% endfor %}
         </div>
-      </div>
-    {% else %}
-      {% comment %} GENERAL SHOPPING {% endcomment %}
-      <div class="max-w-[1260px] mx-auto md:px-[120px] md:pt-15">
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-[6px] md:gap-x-2 ">
-          {% for product in collection.products %}
-            {% assign variant_metafields = product.variants | map: 'metafields' %}
-            {% if product.handle != 'routeins' %}
-              <div class="h-[45%] md:h-[60%] max-h-[450px] relative">
-                {% render 'product-card'
-                  , product: product %}
-              </div>
-            {% endif %}
-          {% endfor %}
-        </div>
-      </div>
-    {% endif %}
 
-    {% if paginate.pages > 1 %}
-      <div class="fixed bottom-0 left-0 w-full bg-black/80 p-4 flex justify-center gap-4 z-50">
-        {% if paginate.previous %}
-          <a href="{{ paginate.previous.url }}" class="text-white hover:opacity-80">Previous</a>
-        {% endif %}
-        <span class="text-white">Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
-        {% if paginate.next %}
-          <a href="{{ paginate.next.url }}" class="text-white hover:opacity-80">Next</a>
-        {% endif %}
+        <script>
+        (function () {
+          // Utility: create simple modal container
+          function createModal() {
+            const modal = document.createElement('div');
+            modal.id = 'look-modal';
+            modal.style.position = 'fixed';
+            modal.style.inset = '0';
+            modal.style.zIndex = 99999;
+            modal.style.overflow = 'auto';
+            modal.style.background = 'rgba(0,0,0,0.85)';
+            modal.style.display = 'none';
+            modal.style.padding = '20px';
+            modal.style.boxSizing = 'border-box';
+
+            const inner = document.createElement('div');
+            inner.id = 'look-modal-inner';
+            inner.style.maxWidth = '1000px';
+            inner.style.margin = '40px auto';
+            inner.style.background = '#fff';
+            inner.style.borderRadius = '12px';
+            inner.style.padding = '20px';
+            inner.style.boxSizing = 'border-box';
+            inner.style.color = '#000';
+
+            const closeBtn = document.createElement('button');
+            closeBtn.id = 'look-modal-close';
+            closeBtn.textContent = 'Close';
+            closeBtn.style.position = 'absolute';
+            closeBtn.style.right = '20px';
+            closeBtn.style.top = '20px';
+            closeBtn.style.padding = '8px 12px';
+            closeBtn.style.zIndex = 100000;
+            closeBtn.addEventListener('click', hideModal);
+
+            modal.appendChild(closeBtn);
+            modal.appendChild(inner);
+            document.body.appendChild(modal);
+            return modal;
+          }
+
+          function showModal(html) {
+            if (!window.__lookModal) window.__lookModal = createModal();
+            const modal = window.__lookModal;
+            const inner = modal.querySelector('#look-modal-inner');
+            inner.innerHTML = html;
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+          }
+
+          function hideModal() {
+            if (!window.__lookModal) return;
+            window.__lookModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+          }
+
+          // Click handler for collection cards
+          document.addEventListener('click', function (e) {
+            const a = e.target.closest('a.collection-card-link');
+            if (!a) return;
+            // Only intercept on touch/mobile; but it's ok to for all devices
+            e.preventDefault();
+            const lookId = a.getAttribute('data-look-id');
+
+            // Find template HTML
+            const tpl = document.querySelector('.look-detail-template[data-look-id="' + lookId + '"]');
+            if (tpl) {
+              showModal(tpl.innerHTML);
+            } else {
+              // Fallback: navigate if template missing
+              window.location.href = a.href;
+            }
+          }, { passive: false, capture: false });
+
+          // Close modal on Esc
+          document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') hideModal();
+          });
+        })();
+        </script>
       </div>
-    {% endif %}
-  {% endpaginate %}
-{% endif %}
+    </div>
+  {% else %}
+    {% comment %} GENERAL SHOPPING {% endcomment %}
+    <div class="max-w-[1260px] mx-auto md:px-[120px] md:pt-15">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-[6px] md:gap-x-2 ">
+        {% for product in collection.products %}
+          {% assign variant_metafields = product.variants | map: 'metafields' %}
+          {% if product.handle != 'routeins' %}
+            <div class="h-[45%] md:h-[60%] max-h-[450px] relative">
+              {% render 'product-card'
+                , product: product %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if paginate.pages > 1 %}
+    <div class="fixed bottom-0 left-0 w-full bg-black/80 p-4 flex justify-center gap-4 z-50">
+      {% if paginate.previous %}
+        <a href="{{ paginate.previous.url }}" class="text-white hover:opacity-80">Previous</a>
+      {% endif %}
+      <span class="text-white">Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
+      {% if paginate.next %}
+        <a href="{{ paginate.next.url }}" class="text-white hover:opacity-80">Next</a>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endpaginate %}
+{% comment %} {% endif %} {% endcomment %}
 
 {% schema %}
   {

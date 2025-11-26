@@ -1701,7 +1701,6 @@ video {
 .outline{
   outline-style: solid;
 }
-/* blur-up gives an initial fade/transition for low-res images */
 .blur-up {
   transition: filter 0.3s ease, opacity 0.3s ease;
   filter: blur(8px);

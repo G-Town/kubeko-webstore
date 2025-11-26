@@ -14,7 +14,7 @@
     
     {% if image_1 %}
       <img
-        class="h-full object-cover blur-up"
+        class="h-full object-cover"
         alt="{{ product_1.title | default: section.settings.image_1_alt | default: 'Left column image' }}"
         src="{{ image_1 | image_url: 100 }}"
         data-src="{{ image_1 | image_url }}"
@@ -28,8 +28,9 @@
                 {{ image_1 | img_url: '1600x' }} 1600w,
                 {{ image_1 | img_url: 'master' }} {{ image_1.width }}w"
         sizes="(max-width: 767px) 100vw, 50vw"
-        onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
+        onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) {  window.loadHighResImage(this); }"
       >
+      {% comment %} blur-up - this.classList.add('blur-sm'); {% endcomment %}
     {% elsif product_1 %}
       <div class="h-full w-full pb-4">
         {% render 'product-card', product: product_1, custom_aspect_ratio: true %}
@@ -44,7 +45,7 @@
     
     {% if image_2 %}
       <img
-        class="w-full h-full object-cover blur-up"
+        class="w-full h-full object-cover "
         alt="{{ product_2.title | default: section.settings.image_2_alt | default: 'Right column image' }}"
         src="{{ image_2 | img_url: '100x' }}"
         data-src="{{ image_2 | image_url }}"
@@ -58,8 +59,9 @@
                 {{ image_2 | img_url: '1600x' }} 1600w,
                 {{ image_2 | img_url: 'master' }} {{ image_2.width }}w"
         sizes="(max-width: 767px) 100vw, 50vw"
-        onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"
+        onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) {  window.loadHighResImage(this); }"
       >
+      {% comment %} blur-up - this.classList.add('blur-sm'); {% endcomment %}
     {% elsif product_2 %}
       <div class="h-full w-full pb-4">
         {% render 'product-card', product: product_2, custom_aspect_ratio: true %}

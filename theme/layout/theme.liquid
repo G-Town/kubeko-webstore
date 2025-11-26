@@ -50,7 +50,22 @@
   </head>
 
   <body class="">
-    {% section 'video-intro' %}
+    <script>
+      // only fetch intro videos on first visit
+      document.addEventListener('DOMContentLoaded', function() {
+        if (!localStorage.getItem('hasSeenIntroVideo')) {
+          fetch('{{ "video-intro" | section_url }}')
+            .then(response => response.text())
+            .then(html => {
+              const tempDiv = document.createElement('div');
+              tempDiv.innerHTML = html;
+              document.body.prepend(tempDiv.firstElementChild);
+            })
+            .catch(err => console.error('Failed to load intro section:', err));
+        }
+      });
+    </script>
+    {% comment %} {% section 'video-intro' %} {% endcomment %}
     {% section 'header' %}
     {% comment %} TODO: min height removed? was min-h-screen {% endcomment %}
     <div class="min-h- {% if canonical_url != 'https://kubeko-dev.myshopify.com/'  %} pt-10 md:pt-12 {% endif %}">
