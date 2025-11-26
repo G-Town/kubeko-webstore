@@ -680,7 +680,7 @@
       // color chips
       card.querySelectorAll('.color-chip').forEach(chip => {
         chip.addEventListener('click', () => {
-          console.log("chip option value",chip.dataset.optionValue)
+          console.log("bind events ~ chip option value: ",chip.dataset.optionValue)
           // this.selectVariant(chip, productId, productData, { option1: chip.dataset.optionValue });
           this.selectVariant(chip, productId, 1, chip.dataset.optionValue);
         });
