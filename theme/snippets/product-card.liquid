@@ -94,25 +94,6 @@
         }
       }
     },
-
-    // updateCardImages: function(productId, images) {
-    //   const productCardElement = document.querySelector(`[data-product-card="${productId}"]`);
-    //   if (!productCardElement) return;
-
-    //   const mainImage = productCardElement.querySelector(`#primary-image-${productId}`);
-    //   const secondaryImage = productCardElement.querySelector(`#secondary-image-${productId}`);
-
-    //   function updateImage(img, url) {
-    //     if (!img || !url) return;
-    //     img.dataset.src = url;
-    //     img.dataset.highResLoaded = 'false';
-    //     img.classList.add('blur-sm');
-    //     window.loadHighResImage(img);
-    //   }
-
-    //   updateImage(mainImage, images[0]);
-    //   updateImage(secondaryImage, images[1]);
-    // },
     
     // Function to toggle product images on mobile
     toggleProductImages: function(thumbnailButton, event, productId) {
@@ -180,21 +161,6 @@
         secondaryImage.style.zIndex = '1';
       }
     },
-    
-    // Function for lazy loading high resolution images
-    // loadHighResImage: function(img) {
-    //   if (img.dataset.highResLoaded) return;
-      
-    //   const highResImage = new Image();
-    //   highResImage.src = img.dataset.src;
-      
-    //   highResImage.onload = function() {
-    //     img.src = highResImage.src;
-    //     img.classList.remove('blur-sm');
-    //     img.classList.add('blur-none');
-    //     img.dataset.highResLoaded = 'true';
-    //   };
-    // },
     
     // Get product data from cache or parse JSON
     getProductData: function(productId, element) {
@@ -487,129 +453,6 @@
       
       return false; // Prevent default form submission
     },
-    
-    // Initialize all product cards when the DOM is loaded
-    // init: function() {
-    //   console.log('Initializing ProductCardObject module');
-      
-    //   // Set up mobile image toggle functionality
-    //   const isMobile = window.innerWidth < 768;
-    //   if (isMobile) {
-    //     const thumbnailButtons = document.querySelectorAll('.product-thumbnail-toggle');
-    //     thumbnailButtons.forEach(button => {
-    //       const primaryImageUrl = button.dataset.primaryImage;
-    //       const secondaryImageUrl = button.dataset.secondaryImage;
-          
-    //       if (primaryImageUrl) {
-    //         const preloadPrimary = new Image();
-    //         preloadPrimary.src = primaryImageUrl;
-    //       }
-          
-    //       if (secondaryImageUrl) {
-    //         const preloadSecondary = new Image();
-    //         preloadSecondary.src = secondaryImageUrl;
-    //       }
-    //     });
-    //   }
-      
-    //   // Set up form submission event listeners to verify variant ID
-    //   document.querySelectorAll('form[action="/cart/add"]').forEach(form => {
-    //     form.addEventListener('submit', function(e) {
-    //       const variantInput = this.querySelector('input[name="id"]');
-    //       if (!variantInput || !variantInput.value) {
-    //         console.error('Preventing form submission: No variant ID found');
-    //         e.preventDefault();
-    //         return false;
-    //       }
-          
-    //       console.log(`Submitting form with variant ID: ${variantInput.value}`);
-    //     });
-        
-    //     // Add click handler to the Add to Cart button to ensure form has the right variant
-    //     const addButton = form.querySelector('.add-to-cart-button');
-    //     if (addButton) {
-    //       addButton.addEventListener('click', function(e) {
-    //         // Get the parent form
-    //         const form = this.closest('form[action="/cart/add"]');
-    //         if (!form) return;
-            
-    //         // Get the product ID from the form's data attribute
-    //         const productId = form.getAttribute('data-product-form');
-    //         if (!productId) return;
-            
-    //         // Get the variant input
-    //         const variantInput = form.querySelector('input[name="id"]');
-    //         if (!variantInput) return;
-            
-    //         // Log the variant ID that will be submitted
-    //         console.log(`Adding to cart with variant ID: ${variantInput.value} for product: ${productId}`);
-            
-    //         // Make sure input has a value and isn't empty
-    //         if (!variantInput.value) {
-    //           e.preventDefault();
-    //           console.error('No variant ID selected');
-    //           return false;
-    //         }
-    //       });
-    //     }
-    //   });
-      
-    //   // Pre-select default variants for products with only default variants
-    //   document.querySelectorAll('[data-product-card]').forEach(card => {
-    //     const productId = card.getAttribute('data-product-card');
-    //     const productData = this.getProductData(productId, card);
-
-    //     if (productData) {
-    //       const defaultVariant = productData.variants.find(v => v.available) || productData.variants[0];
-    //       console.log("🚀 ~ defaultVariant:", defaultVariant)
-
-    //       if (defaultVariant) {
-    //         const variantImages = this.getImagesForVariant(defaultVariant, productData.images);
-    //         this.updateCardImages(productId, variantImages);
-    //       }
-    //     }
-        
-    //     if (productData && productData.has_only_default_variant) {
-    //       const forms = card.querySelectorAll(`form[data-product-form="${productId}"]`);
-    //       forms.forEach(form => {
-    //         const addButton = form.querySelector('.add-to-cart-button');
-    //         if (addButton) {
-    //           // Check if the default variant is available
-    //           const defaultVariant = productData.variants[0];
-    //           if (defaultVariant && defaultVariant.available) {
-    //             addButton.disabled = false;
-    //             addButton.classList.add('active');
-                
-    //             // Show inventory if quantity is low
-    //             if (defaultVariant.inventory_quantity <= 10 && 
-    //                 defaultVariant.inventory_quantity > 0 && 
-    //                 defaultVariant.inventory_management === 'shopify') {
-    //               const inventoryIndicator = document.createElement('div');
-    //               inventoryIndicator.className = 'inventory-indicator text-xs mt-1';
-    //               inventoryIndicator.textContent = `Only ${defaultVariant.inventory_quantity} left`;
-    //               addButton.parentNode.appendChild(inventoryIndicator);
-    //             }
-    //           } else {
-    //             // Default variant is out of stock
-    //             addButton.disabled = true;
-    //             addButton.classList.add('out-of-stock');
-    //             addButton.textContent = 'OUT OF STOCK';
-    //           }
-    //         }
-    //       });
-    //     }
-    //   });
-      
-    //   // Set up inventory display for products without variants
-    //   document.querySelectorAll('.stock-status.in-stock').forEach(statusElem => {
-    //     const productCardElement = statusElem.closest('[data-product-card]');
-    //     if (!productCardElement) return;
-        
-    //     // Make the text smaller and dimmer
-    //     statusElem.style.fontSize = '0.7rem';
-    //     statusElem.style.opacity = '0.8';
-    //   });
-    // },
 
     initPage() {
       // Run once per page
@@ -681,7 +524,6 @@
       card.querySelectorAll('.color-chip').forEach(chip => {
         chip.addEventListener('click', () => {
           console.log("bind events ~ chip option value: ",chip.dataset.optionValue)
-          // this.selectVariant(chip, productId, productData, { option1: chip.dataset.optionValue });
           this.selectVariant(chip, productId, 1, chip.dataset.optionValue);
         });
       });
@@ -799,6 +641,7 @@
     </div>
   </button>
 
+  {% comment %} TODO: remove all remaining code pertaining to add to cart button, which was removed {% endcomment %}
   <!-- Product info and dropdown container -->
   <div class="relative z-10">
     <!-- Product info bar (always visible) -->

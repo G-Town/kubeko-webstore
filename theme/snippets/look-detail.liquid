@@ -6,11 +6,12 @@
 {% endcomment %}
 
 <div class="flex flex-col md:flex-row h-full md:h-90 relative overflow-hidden mx-auto max-w-[1260px] bg-[#f4f4f4]">
-  <!-- Back Button -->
+  <!-- Back Button (now acts as modal close) -->
   <div class="absolute top-4 left-4 z-50">
-    <a href="{{ collection.url }}" class="uppercase text-sm text-[#444444] p-2 hover:bg-[#D9D9D9] transition-colors">
-      &larr; Back to {{ collection.title }}
-    </a>
+    <button type="button" class="look-modal-close uppercase text-sm text-[#444444] p-2 hover:bg-[#D9D9D9] transition-colors cursor-pointer bg-transparent border-none">
+      {% comment %} &larr; Back to {{ collection.title }} {% endcomment %}
+      &larr; Back
+    </button>
   </div>
 
   <!-- Left Side - Scrollable Image Gallery -->

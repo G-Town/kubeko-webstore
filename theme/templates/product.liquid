@@ -621,6 +621,7 @@
                       <div class="flex items-center gap-1 pt-2" id="color-chips-container">
                         {%- for option in options -%}
                           {%- if option.name == 'Color' -%}
+                            {{ option.image }}
                             {%- for value in option.values -%}
                               {%- assign variant_for_color = null -%}
                               {%- for variant in product.variants -%}
@@ -637,12 +638,23 @@
                                 {%- endif -%}
 
                                 {%- assign has_image = variant_for_color.featured_image -%}
+                                {% assign swatch_img =  %}
+                                {{ swatch_img }}
 
                                 <div class="color-chip-container{% if is_selected %} active{% endif %}{% unless has_image %} disabled{% endunless %}">
                                   <button
                                     type="button"
                                     class="color-chip"
-                                    style="background-color: {{ value.swatch.color }};{% unless has_image %}opacity: 0.5;{% endunless %}"
+                                    {% comment %} style="background-color: {{ value.swatch.color }};{% unless has_image %}opacity: 0.5;{% endunless %}" {% endcomment %}
+                                    style="
+                                      {% if swatch_img %}
+                                        background-image: url('{{ swatch_img | image_url: '30x30' }}');
+                                        background-size: cover;
+                                        background-position: center;
+                                      {% else %}
+                                        background-color: {{ value.swatch.color }};
+                                      {% endif %}
+                                    "
                                     data-color-name="{{ value | escape }}"
                                     data-option-position="1"
                                     data-value="{{ value | escape }}"
@@ -1864,52 +1876,43 @@
     document.addEventListener('DOMContentLoaded', function() {
       
       // Initialize ADD TO CART buttons based on variant selection state
-      if (document.querySelector('.variant-button')) {
-        // Get total number of option types available for this product
+      if ({{ product.options | size }} > 1) {
+        // MULTI-OPTION PRODUCT (requires selecting both)
         const totalOptionTypes = {{ product.options | size }};
-        
-        // Check if we have variants selected already
+
         const selections = {};
         document.querySelectorAll('.variant-button[data-selected="true"]').forEach(selectedBtn => {
           const position = selectedBtn.getAttribute('data-option-position');
           const value = selectedBtn.getAttribute('data-value');
           selections[`option${position}`] = value;
         });
-        
-        // Check if all option types have been selected
+
         const allOptionsSelected = Object.keys(selections).length === totalOptionTypes;
-        
-        // Find the matching variant if all options are selected
+
         if (allOptionsSelected) {
           const variants = {{ product.variants | json }};
-          const matchingVariant = variants.find(variant => {
-            return Object.keys(selections).every(option => {
+          const matchingVariant = variants.find(variant =>
+            Object.keys(selections).every(option => {
               const position = parseInt(option.replace('option', ''));
               return variant[`option${position}`] === selections[`option${position}`];
-            });
-          });
-          
-          // Update button states with inventory check
+            })
+          );
+
           if (matchingVariant) {
             updateAddToCartButtons(true, matchingVariant);
-          } else if (allOptionsSelected) {
-            // All options selected but no matching variant
-            updateAddToCartButtons(false, null, true);
           } else {
-            // Not all options selected yet
-            updateAddToCartButtons(false);
+            updateAddToCartButtons(false, null, true);
           }
         } else {
-          // If no variants are selected yet, just initialize the buttons
           updateAddToCartButtons(false);
         }
-      } else if ({{ product.has_only_default_variant | json }}) {
-        // For products with only default variant, check its inventory
+
+      } else {
+        // SINGLE-OPTION PRODUCT (e.g., Color only)
         const defaultVariant = {{ product.selected_or_first_available_variant | json }};
-        if (defaultVariant) {
-          updateAddToCartButtons(true, defaultVariant);
-        }
+        updateAddToCartButtons(true, defaultVariant);
       }
+
       
       // Handle add to cart form submissions
       const buttons = document.querySelectorAll('form .add-to-cart-btn');

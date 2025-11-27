@@ -1,70 +1,3 @@
-{% comment %} Get URL parameters properly {% endcomment %}
-{%- capture contentForQuerystring -%}{{ content_for_header }}{%- endcapture -%}
-{%- assign pageUrl = contentForQuerystring 
-                      | split: '"pageurl":"'
-                      | last
-                      | split: '"'
-                      | first
-                      | split: '.myshopify.com'
-                      | last
-                      | replace: '\/', '/'
-                      | replace: '%20', ' '
-                      | replace: '\u0026', '&'
--%}
-{% comment %} {%- assign pageUrl = contentForQuerystring
-  | replace: '\u002F', '/'
-  | replace: '\\/', '/'
-  | replace: '%20', ' '
-  | replace: '\u0026', '&'
-  | split: '"pageurl":"'
-  | last
-  | split: '"'
-  | first
--%} {% endcomment %}
-
-{%- assign requested_look_id = '' -%}
-{%- if pageUrl contains 'look=' -%}
-  {%- assign requested_look_id = pageUrl | split: 'look=' | last | split: '&' | first -%}
-{%- endif -%}
-
-{% comment %} {% assign params = request.params %} {% endcomment %}
-
-{% comment %} DEBUG - Remove after testing {% endcomment %}
-{% comment %} <div style="background: yellow; padding: 10px; margin: 10px;">
-    <p><strong>Collections DEBUG:</strong></p>
-    <p>Page URL: {{ pageUrl }}</p>
-    <p>Requested Look ID: "{{ requested_look_id }}"</p>
-</div> {% endcomment %}
-
-{% comment %} {% if requested_look_id != blank and collection.metafields.custom.isdrop == true %} {% endcomment %}
-  {% comment %} LOOK DETAIL VIEW {% endcomment %}
-  {% comment %} {% assign found_look = false %}
-  {% for look in collection.metafields.custom.lookbook.value %}
-    {% for photo in look.look_photos.value limit: 1 %}
-      {%- assign current_look_id = photo.id | split: '/' | last -%}
-    {% endfor %}
-
-    {% if current_look_id == requested_look_id %}
-      {% assign found_look = true %}
-      {% render 'look-detail'
-        , look: look
-        , collection: collection
-        , look_index: forloop.index %}
-      {% break %}
-    {% endif %}
-  {% endfor %}
-
-  {% unless found_look %}
-    <div class="text-center py-12">
-      <p>Look not found. Requested ID: {{ requested_look_id }}</p>
-      <a href="{{ collection.url }}" class="uppercase text-sm text-[#444444] p-2 hover:bg-[#D9D9D9] transition-colors mt-4 inline-block">
-        &larr; Back to {{ collection.title }}
-      </a>
-    </div>
-  {% endunless %}
-{% else %} {% endcomment %}
-  {% comment %} MAIN COLLECTION VIEW {% endcomment %}
-  
 {% paginate collection.products by 24 %}
   {% if collection.metafields.custom.isdrop == true %}
     {% comment %} NAMED COLLECTION {% endcomment %}
@@ -104,30 +37,20 @@
             modal.style.overflow = 'auto';
             modal.style.background = 'rgba(0,0,0,0.85)';
             modal.style.display = 'none';
-            modal.style.padding = '20px';
+            modal.style.padding = '0px';
             modal.style.boxSizing = 'border-box';
 
             const inner = document.createElement('div');
             inner.id = 'look-modal-inner';
             inner.style.maxWidth = '1000px';
-            inner.style.margin = '40px auto';
+            inner.style.margin = '20px auto';
             inner.style.background = '#fff';
             inner.style.borderRadius = '12px';
             inner.style.padding = '20px';
             inner.style.boxSizing = 'border-box';
             inner.style.color = '#000';
+            inner.style.position = 'relative';
 
-            const closeBtn = document.createElement('button');
-            closeBtn.id = 'look-modal-close';
-            closeBtn.textContent = 'Close';
-            closeBtn.style.position = 'absolute';
-            closeBtn.style.right = '20px';
-            closeBtn.style.top = '20px';
-            closeBtn.style.padding = '8px 12px';
-            closeBtn.style.zIndex = 100000;
-            closeBtn.addEventListener('click', hideModal);
-
-            modal.appendChild(closeBtn);
             modal.appendChild(inner);
             document.body.appendChild(modal);
             return modal;
@@ -140,6 +63,15 @@
             inner.innerHTML = html;
             modal.style.display = 'block';
             document.body.style.overflow = 'hidden';
+
+            // Attach close handlers to any "back" buttons inside the modal
+            const backButtons = inner.querySelectorAll('.look-modal-close, .back-button');
+            backButtons.forEach(btn => {
+              btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                hideModal();
+              });
+            });
           }
 
           function hideModal() {
@@ -152,7 +84,6 @@
           document.addEventListener('click', function (e) {
             const a = e.target.closest('a.collection-card-link');
             if (!a) return;
-            // Only intercept on touch/mobile; but it's ok to for all devices
             e.preventDefault();
             const lookId = a.getAttribute('data-look-id');
 
@@ -169,6 +100,13 @@
           // Close modal on Esc
           document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') hideModal();
+          });
+
+          // Close modal when clicking outside the content
+          document.addEventListener('click', function(e) {
+            if (e.target.id === 'look-modal') {
+              hideModal();
+            }
           });
         })();
         </script>
@@ -218,27 +156,6 @@
   }
 {% endschema %}
 
-{% comment %} <script>
-  // Force reload when the page is restored from bfcache (mobile back/forward cache)
-  window.onpageshow = function(e) {
-    if (e.persisted) location.reload();
-  };
-
-  // Optional: guarantee hard reload on link click (bypass stale cache)
-  // document.addEventListener('click', function(e) {
-  //   const a = e.target.closest('a[href*="?look="]');
-  //   if (a) {
-  //     e.preventDefault();
-  //     const href = a.href + '&_t=' + Date.now(); // cache-busting token
-  //     window.location.replace(href);
-  //   }
-  // });
-
-  if ('scrollRestoration' in history) {
-    history.scrollRestoration = 'manual';
-  }
-</script> {% endcomment %}
-
 {% style %}
   .group:hover .group-hover\:opacity-100 {
     opacity: 1 !important;
@@ -246,5 +163,12 @@
 
   .group:hover .group-hover\:opacity-0 {
     opacity: 0 !important;
+  }
+
+  .look-modal-close {
+    transition: all 0.2s ease;
+  }
+  .look-modal-close:hover {
+    transform: translateX(-2px);
   }
 {% endstyle %}

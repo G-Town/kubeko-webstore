@@ -14,7 +14,12 @@
           {% endif %}
           
           <!-- Determine second image (for hover) -->
-          {% if collection.products.size > 1 %}
+          {% if collection.metafields.custom.second_image %}
+            {% assign second_image = collection.metafields.custom.second_image %}
+          {% else %}
+            {% assign second_image = first_image %}
+          {% endif %}
+          {% comment %} {% if collection.products.size > 1 %}
             {% assign second_product = collection.products[1] %}
             {% if second_product.featured_image %}
               {% assign second_image = second_product.featured_image %}
@@ -23,7 +28,8 @@
             {% endif %}
           {% else %}
             {% assign second_image = first_image %}
-          {% endif %}
+          {% endif %} {% endcomment %}
+
           
           <div class="relative block h-full overflow-visible">
             <a href="{{ collection.url }}" class="block h-full relative overflow-hidden">

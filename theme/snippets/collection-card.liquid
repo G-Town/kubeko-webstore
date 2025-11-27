@@ -6,8 +6,6 @@
     {%- assign look_id = photo.id | split: '/' | last -%}
 
     <div class="h-auto">
-      {% comment %} <a href="?look={{ look_id }}" class="block cursor-pointer touch-manipulation"> {% endcomment %}
-      {% comment %} <a href="{{ collection.url }}?look={{ look_id }}" class="block"> {% endcomment %}
       <a href="/pages/look-detail?look={{ look_id }}"
           class="collection-card-link block"
           data-look-id="{{ look_id }}"
