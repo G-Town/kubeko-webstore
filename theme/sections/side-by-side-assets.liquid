@@ -6,13 +6,15 @@
   - Products are rendered using the product-card snippet
 {% endcomment %}
 
-<div class="side-by-side-assets flex flex-col md:flex-row w-full mx-auto bg-[#f4f4f4] md:my-36">
+{% comment %} bg-[#f4f4f4] {% endcomment %}
+<div class="side-by-side-assets flex flex-col md:flex-row w-full mx-auto  md:my-36">
   {%- comment -%} Left Column {%- endcomment -%}
   <div class="side-by-side-column w-full md:w-1/2  relative">
     {% assign product_1 = all_products[section.settings.product_1] %}
     {% assign image_1 = section.settings.image_1 %}
     
     {% if image_1 %}
+      {% comment %} TODO: update to "image_url" {% endcomment %}
       <img
         class="h-full object-cover"
         alt="{{ product_1.title | default: section.settings.image_1_alt | default: 'Left column image' }}"
@@ -32,7 +34,7 @@
       >
       {% comment %} blur-up - this.classList.add('blur-sm'); {% endcomment %}
     {% elsif product_1 %}
-      <div class="h-full w-full pb-4">
+      <div class="h-full w-full pb-4 bg-[#f4f4f4]">
         {% render 'product-card', product: product_1, custom_aspect_ratio: true %}
       </div>
     {% endif %}
@@ -44,6 +46,7 @@
     {% assign image_2 = section.settings.image_2 %}
     
     {% if image_2 %}
+      {% comment %} TODO: update to "image_url" {% endcomment %}
       <img
         class="w-full h-full object-cover "
         alt="{{ product_2.title | default: section.settings.image_2_alt | default: 'Right column image' }}"
@@ -63,7 +66,7 @@
       >
       {% comment %} blur-up - this.classList.add('blur-sm'); {% endcomment %}
     {% elsif product_2 %}
-      <div class="h-full w-full pb-4">
+      <div class="h-full w-full pb-4 bg-[#f4f4f4]">
         {% render 'product-card', product: product_2, custom_aspect_ratio: true %}
       </div>
     {% endif %}

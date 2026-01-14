@@ -43,7 +43,7 @@
             const inner = document.createElement('div');
             inner.id = 'look-modal-inner';
             inner.style.maxWidth = '1000px';
-            inner.style.margin = '20px auto';
+            inner.style.margin = window.innerWidth < 768 ? '10px 5px' : '20px auto';
             inner.style.background = '#fff';
             inner.style.borderRadius = '12px';
             inner.style.padding = '20px';

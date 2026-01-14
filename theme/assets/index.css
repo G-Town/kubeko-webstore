@@ -834,6 +834,9 @@ video {
   height: 50vh;
 }
 /* TODO: custom heights used in product cards (eg. for 4 column display in collections.liquid) */
+.h-\[85\]{
+  height: 85vh;
+}
 .h-4\/5{
   height: 80vh;
 }

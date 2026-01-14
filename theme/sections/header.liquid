@@ -1302,6 +1302,9 @@
     });
     
     // Close items container and add vew cart and checkout buttons
+            // <a href="/cart" class="w-full bg-white text-black text-center py-2 uppercase hover:opacity-80 transition-opacity text-[13px] md:text-sm h-[33px]">
+            //   View Cart
+            // </a>
     html += `
           </div>
         </div>
@@ -1311,9 +1314,6 @@
             <p class="text-[13px] md:text-sm">$${(cart.total_price / 100).toFixed(0)}</p>
           </div>
           <div class="flex flex-col gap-4">
-            <a href="/cart" class="w-full bg-white text-black text-center py-2 uppercase hover:opacity-80 transition-opacity text-[13px] md:text-sm h-[33px]">
-              View Cart
-            </a>
             <form action="/cart" method="post">
               <input type="hidden" name="checkout" value="">
               <button type="submit" class="w-full bg-black text-white text-center py-2 uppercase hover:opacity-80 transition-opacity text-[13px] md:text-sm h-[33px]">

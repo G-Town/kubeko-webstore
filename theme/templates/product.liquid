@@ -151,12 +151,13 @@
             id="left-hero"
             class="w-full h-full object-contain"
             alt="{{ product.title }}"
-            src="{{ first_image | image_url: width: 900 }}"
+            src="{{ first_image | image_url: width: 600 }}"
             srcset="
+              {{ first_image | image_url: width: 600 }} 600w,
               {{ first_image | image_url: width: 900 }} 900w,
-              {{ first_image | image_url: width: 1200 }} 1200w
+              {{ first_image | image_url: width: 1200 }} 1200w,
             "
-            sizes="(max-width: 1200px) 35vw, 30vw"
+            sizes="(min-width: 768px) 50vw, 100vw"
             loading="eager"
           >
         </div>
@@ -190,12 +191,13 @@
             id="right-hero"
             class="w-full h-full object-contain snap-center"
             alt="{{ product.title }}"
-            src="{{ second_image | image_url: width: 900 }}"
+            src="{{ second_image | image_url: width: 600 }}"
             srcset="
-              {{ second_image | image_url: width: 900 }} 900w,
-              {{ second_image | image_url: width: 1200 }} 1200w
+              {{ second_image | image_url: width: 600 }} 600w,
+              {{ first_image | image_url: width: 900 }} 900w,
+              {{ second_image | image_url: width: 1200 }} 1200w,
             "
-            sizes="(max-width: 1200px) 35vw, 30vw"
+            sizes="(min-width: 768px) 50vw, 100vw"
             loading="eager"
           />
           <div id="right-gallery-rest"></div>
@@ -270,11 +272,25 @@
 
                           {%- assign has_image = variant_for_color.featured_image -%}
 
+                          {%- assign color_obj = shop.metaobjects['shopify--color-pattern'][value] -%}
+                          {% assign pattern_image = color_obj.image %}
+                          {% if pattern_image %}
+                            {% assign swatch_img = pattern_image | image_url: width: 30 %}
+                          {% endif %}
+
                           <div class="color-chip-container{% if is_selected %} active{% endif %}{% unless has_image %} disabled{% endunless %}">
                             <button
                               type="button"
                               class="color-chip {% unless has_image %}opacity-50{% endunless %}"
-                              style="background-color: {{ value.swatch.color }};"
+                              style="
+                                      {% if pattern_image %}
+                                        background-image: url('{{ swatch_img | image_url: '30x30' }}');
+                                        background-size: cover;
+                                        background-position: center;
+                                      {% else %}
+                                        background-color: {{ value.swatch.color }};
+                                      {% endif %}
+                                    "
                               data-color-name="{{ value | escape }}"
                               data-option-position="{{ color_option.position }}"
                               data-value="{{ value | escape }}"
@@ -311,6 +327,20 @@
                         {{ value }}
                       </button>
                     {% endfor %}
+                  {% else %}
+                    <div class="flex flex-col items-center absolute left-1/2 -translate-x-1/2 w-[90px] text-center">
+                      <span class="uppercase text-[13px] text-[#444444] mb-2">SIZE</span>
+                      <div class="flex flex-row justify-center w-full text-center">
+                        <button
+                          disabled
+                          type="button"
+                          class="variant-button text-center uppercase text-[13px] text-[#444444] w-full bg-[#D9D9D9]"
+                          data-option-position="{{ options[1].position }}"
+                        >
+                          <span class="uppercase text-[13px] text-[#444444] ">ONE SIZE</span>
+                        </button>
+                      </div>
+                    </div>
                   {% endif %}
                 </div>
               </div>
@@ -600,7 +630,7 @@
         
         <!-- Rest of the content in a single container - hidden by default -->
         {% comment %} max-h-0 product-details-container - transition-all duration-300 {% endcomment %}
-        <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] product-info-item overflow-hidden max-h-0 product-details-container">
+        <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] product-info-item overflow-hidden product-details-container">
           <!-- Variant Options and Add to Cart -->
           <div class="flex flex-col">
             {% if product.has_only_default_variant == false %}
@@ -621,9 +651,7 @@
                       <div class="flex items-center gap-1 pt-2" id="color-chips-container">
                         {%- for option in options -%}
                           {%- if option.name == 'Color' -%}
-                            {{ option.image }}
                             {%- for value in option.values -%}
-                              {%- assign variant_for_color = null -%}
                               {%- for variant in product.variants -%}
                                 {%- if variant.options contains value -%}
                                   {%- assign variant_for_color = variant -%}
@@ -638,16 +666,21 @@
                                 {%- endif -%}
 
                                 {%- assign has_image = variant_for_color.featured_image -%}
-                                {% assign swatch_img =  %}
-                                {{ swatch_img }}
+                                
+                                {% comment %} {%- assign color_obj = null -%} {% endcomment %}
+                                {%- assign color_obj = shop.metaobjects['shopify--color-pattern'][value] -%}
+                                {% assign pattern_image = color_obj.image %}
+                                {% if pattern_image %}
+                                  {% assign swatch_img = pattern_image | image_url: width: 30 %}
+                                {% endif %}
+                                {% comment %} {{ swatch_img }} {% endcomment %}
 
                                 <div class="color-chip-container{% if is_selected %} active{% endif %}{% unless has_image %} disabled{% endunless %}">
                                   <button
                                     type="button"
                                     class="color-chip"
-                                    {% comment %} style="background-color: {{ value.swatch.color }};{% unless has_image %}opacity: 0.5;{% endunless %}" {% endcomment %}
                                     style="
-                                      {% if swatch_img %}
+                                      {% if pattern_image %}
                                         background-image: url('{{ swatch_img | image_url: '30x30' }}');
                                         background-size: cover;
                                         background-position: center;
@@ -685,7 +718,7 @@
                         {% for value in options[1].values %}
                           <button
                             type="button"
-                            class="variant-button text-center uppercase text-[13px] text-[#444444] bg-transparent w-full {% if forloop.first %}font-medium{% endif %}"
+                            class="variant-button text-center uppercase text-[13px] text-[#444444] w-full"
                             data-option-position="{{ options[1].position }}"
                             data-value="{{ value | escape }}"
                             onclick="selectVariant(this, '{{ options[1].position }}', '{{ value | escape }}')"
@@ -695,6 +728,24 @@
                         {% endfor %}
                       </div>
                     </div>
+                  {% comment %} {% else %}
+                    <div class="flex flex-col items-center absolute left-1/2 -translate-x-1/2 w-[90px] text-center">
+                      <span class="uppercase text-[13px] text-[#444444] mb-2">ONE SIZE</span>
+                    </div> {% endcomment %}
+                  {% else %}
+                  <div class="flex flex-col items-center absolute left-1/2 -translate-x-1/2 w-[90px] text-center">
+                    <span class="uppercase text-[13px] text-[#444444] mb-2">SIZE</span>
+                      <div class="flex flex-row justify-center w-full text-center">
+                        <button
+                          disabled
+                          type="button"
+                          class="variant-button text-center uppercase text-[13px] text-[#444444] w-full bg-[#D9D9D9]"
+                          data-option-position="{{ options[1].position }}"
+                        >
+                          <span class="uppercase text-[13px] text-[#444444] ">ONE SIZE</span>
+                        </button>
+                      </div>
+                  </div>
                   {% endif %}
                 </div>
                 
@@ -964,8 +1015,10 @@
         return `${url.split('?')[0]}?width=${width}`;
       }
 
-      _buildSrcset(url, widths = [600, 900, 1200]) {
+      _buildSrcset(url, widths = [600, 900, 1200, 1800]) {
         if (!url) return '';
+        //TODO: update for final image res
+        // return [];
         return widths
           .map(w => `${this._buildSizedUrl(url, w)} ${w}w`)
           .join(', ');
@@ -1122,7 +1175,7 @@
 
         // Preload the chosen candidate via an off-DOM Image using same srcset decision (use 600 as mid)
         const tmp = new Image();
-        tmp.src = this._buildSizedUrl(url, 600);
+        tmp.src = this._buildSizedUrl(url, 1200);
         tmp.srcset = srcsetStr;
         tmp.sizes = sizesStr;
         tmp.onload = () => {
@@ -1364,7 +1417,7 @@
           this._replaceRightImage(
             allSlides[i],
             urls[i],
-            { preloadWidth: 400 }
+            { preloadWidth: 600 }
           );
         }
 
@@ -2722,7 +2775,7 @@
     min-height: 24px; /* Changed to 24px height */
     height: 24px; /* Set fixed height to 24px */
     border-radius: 1px;
-    background-color: transparent;
+    /* background-color: transparent; */
     box-sizing: border-box;
     white-space: nowrap;
   }
