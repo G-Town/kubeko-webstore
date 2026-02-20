@@ -151,13 +151,12 @@
             id="left-hero"
             class="w-full h-full object-contain"
             alt="{{ product.title }}"
-            src="{{ first_image | image_url: width: 600 }}"
+            src="{{ first_image | image_url: width: 1200 }}"
             srcset="
-              {{ first_image | image_url: width: 600 }} 600w,
-              {{ first_image | image_url: width: 900 }} 900w,
               {{ first_image | image_url: width: 1200 }} 1200w,
+              {{ first_image | image_url: width: 1800 }} 1800w
             "
-            sizes="(min-width: 768px) 50vw, 100vw"
+            sizes="35vw"
             loading="eager"
           >
         </div>
@@ -170,7 +169,12 @@
               id="mobile-hero"
               class="w-full h-full object-contain"
               alt="{{ product.title }}"
-              src="{{ first_image | image_url: width: 600 }}"
+              src="{{ first_image | image_url: width: 800 }}"
+              srcset="
+                {{ first_image | image_url: width: 800 }} 800w,
+                {{ first_image | image_url: width: 1600 }} 1600w
+              "
+              sizes="100vw"
               loading="eager"
             >
           </div>
@@ -191,13 +195,12 @@
             id="right-hero"
             class="w-full h-full object-contain snap-center"
             alt="{{ product.title }}"
-            src="{{ second_image | image_url: width: 600 }}"
+            src="{{ second_image | image_url: width: 1200 }}"
             srcset="
-              {{ second_image | image_url: width: 600 }} 600w,
-              {{ first_image | image_url: width: 900 }} 900w,
               {{ second_image | image_url: width: 1200 }} 1200w,
+              {{ second_image | image_url: width: 1800 }} 1800w
             "
-            sizes="(min-width: 768px) 50vw, 100vw"
+            sizes="35vw"
             loading="eager"
           />
           <div id="right-gallery-rest"></div>
@@ -213,10 +216,8 @@
       <div class="block bg-[#EFEFEF] md:hidden w-full z-10">
         <!-- Product Header Row -->
         <div class="p-[4px]">
-          <div class="px-4 bg-white py-3 flex justify-between items-center">
+          {% comment %} <div class="px-4 bg-white py-3 flex justify-between items-center">
             <h1 class="uppercase text-[13px] font-medium text-[#444444]">{{ product.title }}</h1>
-            {% comment %} <span class="text-[13px] text-[#444444]"></span> {% endcomment %}
-            {% comment %} ${{ product.price | money_without_currency }} {% endcomment %}
             {% if product.compare_at_price > product.price %}
               <div class="flex items-baseline">
                 <span class="text-[13px] text-[#444444]">
@@ -231,6 +232,26 @@
                 {{ product.price | money }}
               </span>
             {% endif %}
+          </div> {% endcomment %}
+          <div class="px-4 bg-white py-3 flex justify-between items-center">
+            <h1 class="uppercase text-[13px] font-medium text-[#444444]">{{ product.title }}</h1>
+            <div id="mobile-price-container">
+              {% assign first_variant = product.selected_or_first_available_variant %}
+              {% if first_variant.compare_at_price and first_variant.compare_at_price > first_variant.price %}
+                <div class="flex items-baseline">
+                  <span class="text-[13px] text-[#444444]" id="mobile-variant-price">
+                    {{ first_variant.price | money }}
+                  </span>
+                  <span class="text-[13px] text-black/50 line-through ml-2" id="mobile-variant-compare-price">
+                    {{ first_variant.compare_at_price | money }}
+                  </span>
+                </div>
+              {% else %}
+                <span class="text-[13px] text-[#444444]" id="mobile-variant-price">
+                  {{ first_variant.price | money }}
+                </span>
+              {% endif %}
+            </div>
           </div>
         </div>
         
@@ -623,6 +644,26 @@
               </span>
             {% endif %}
           </div>
+          {% comment %} <div class="flex justify-between items-end">
+            <h1 class="uppercase text-[13px] font-medium text-[#444444]">{{ product.title }}</h1>
+            <div id="desktop-price-container">
+              {% assign first_variant = product.selected_or_first_available_variant %}
+              {% if first_variant.compare_at_price and first_variant.compare_at_price > first_variant.price %}
+                <div class="flex items-baseline">
+                  <span class="text-[13px] text-[#444444]" id="desktop-variant-price">
+                    {{ first_variant.price | money }}
+                  </span>
+                  <span class="text-[13px] text-black/50 line-through ml-2" id="desktop-variant-compare-price">
+                    {{ first_variant.compare_at_price | money }}
+                  </span>
+                </div>
+              {% else %}
+                <span class="text-[13px] text-[#444444]" id="desktop-variant-price">
+                  {{ first_variant.price | money }}
+                </span>
+              {% endif %}
+            </div>
+          </div> {% endcomment %}
         </div>
         
         <!-- Visible gap - transparent divider -->
@@ -909,9 +950,46 @@
       });
     });
 
+    /* ============================================
+      MOBILE GALLERY UTILITIES (Global Functions)
+      ============================================ */
+
+    function updateActiveMobileThumbnail(activeIndex) {
+      const currentThumbnails = document.querySelectorAll('.mobile-thumbnail');
+      currentThumbnails.forEach((thumb, index) => {
+        if (index === activeIndex) {
+          thumb.classList.remove('opacity-30');
+          thumb.classList.add('opacity-100');
+        } else {
+          thumb.classList.remove('opacity-100');
+          thumb.classList.add('opacity-30');
+        }
+      });
+    }
+
+    function scrollToMobileImage(index) {
+      const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
+      const currentSlides = document.querySelectorAll('.mobile-gallery-slide');
+      
+      if (!mobileGalleryContainer || index < 0 || index >= currentSlides.length) return;
+      
+      const containerWidth = mobileGalleryContainer.offsetWidth;
+      const scrollPosition = index * containerWidth;
+
+      mobileGalleryContainer.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      });
+
+      updateActiveMobileThumbnail(index);
+    }
+
+    // Expose globally
+    window.updateActiveMobileThumbnail = updateActiveMobileThumbnail;
+    window.scrollToMobileImage = scrollToMobileImage;
 
     /* ===========================
-      Prioritized color-first image manager
+      PRODUCT IMAGE MANAGER CLASS
       =========================== */
     class ProductImageManager {
       constructor({ variants = window.productVariants || [], allImages = window.allProductImages || [] } = {}) {
@@ -919,16 +997,13 @@
         this.allImages = allImages;
         this.currentVariant = null;
         // this.init();
-      }
 
-      _groupVariantsByColor() {
-        const map = {};
-        (this.variants || []).forEach(v => {
-          const color = v.option1 || '__no_color__';
-          if (!map[color]) map[color] = [];
-          map[color].push(v);
-        });
-        return map;
+        // Constants
+        this.DESKTOP_WIDTHS = [1200, 1800];
+        this.MOBILE_WIDTHS = [800, 1600];
+        this.THUMBNAIL_WIDTH = 150;
+        this.DESKTOP_SIZES = '35vw';
+        this.MOBILE_SIZES = '100vw';
       }
 
       // Return an array of image URLs for a variant, preserving order (main first)
@@ -979,529 +1054,177 @@
         return result.length ? result : [featuredSrc];
       }
 
-      // Public: load a variant's images into the DOM
-      // If force===true, re-load even if currently loaded.
-      async loadVariant(variant, { force = false } = {}) {
-        if (!variant) return;
-        if (!force && this.currentVariant && this.currentVariant.id === variant.id) return;
-
-        const images = this.getImagesForVariant(variant);
-        if (!images || images.length === 0) return;
-
-        let activeRightIndex = 0;
-        const rightContainer = document.getElementById('image-scroll-container');
-        if (rightContainer) {
-          const containerHeight = rightContainer.offsetHeight;
-          const scrollPosition = rightContainer.scrollTop;
-          activeRightIndex = Math.round(scrollPosition / containerHeight);
-        }
-        let activeMobileIndex = 0;
-        const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
-        if (mobileGalleryContainer) {
-          const containerWidth = mobileGalleryContainer.offsetWidth;
-          const scrollPosition = mobileGalleryContainer.scrollLeft;
-          activeMobileIndex  = Math.round(scrollPosition / containerWidth);
-        }
-
-        this.updateAllImages(images, activeRightIndex)
-        this.updateAllMobileImages(images, activeMobileIndex);
-        // this.initMobileGallery(images);
-        // this.initMobileThumbnails(images);
-
-        this.currentVariant = variant;
-      }
-
       _buildSizedUrl(url, width) {
         return `${url.split('?')[0]}?width=${width}`;
       }
 
-      _buildSrcset(url, widths = [600, 900, 1200, 1800]) {
+      _buildSrcset(url, widths = [1200, 1800]) {
         if (!url) return '';
-        //TODO: update for final image res
-        // return [];
         return widths
           .map(w => `${this._buildSizedUrl(url, w)} ${w}w`)
           .join(', ');
       }
 
-      // updateHeroImages(images) {
-      //   const [leftImage, rightImage] = images;
-      //   const leftEl = document.getElementById('left-hero');
-      //   const rightEl = document.getElementById('right-hero');
-      //   if (!leftImage || !leftEl) return;
+      // Public: load a variant's images into the DOM
+      // If force===true, re-load even if currently loaded.
+      loadVariant(variant, { force = false } = {}) {
+        if (!variant) return;
+        if (!force && this.currentVariant && this.currentVariant.id === variant.id) return;
 
-      //   // Set responsive attributes for left
-      //   leftEl.src = this._buildSizedUrl(leftImage, 600);
-      //   leftEl.srcset = this._buildSrcset(leftImage);
-      //   leftEl.sizes = '(max-width: 767px) 100vw, 35vw';
+        const images = this.getImagesForVariant(variant);
+        if (!images?.length) return;
 
-      //   // Set responsive attributes for right if it exists
-      //   if (rightImage && rightEl) {
-      //     rightEl.src = this._buildSizedUrl(rightImage, 600);
-      //     rightEl.srcset = this._buildSrcset(rightImage);
-      //     rightEl.sizes = '(max-width: 767px) 100vw, 35vw';
-      //   }
-      // }
+        this._updateDesktop(images);
+        this._updateMobile(images);
 
-      // updateRightGallery(urls = [], activeIndex = 0) {
-      //   const restContainer = document.getElementById("right-gallery-rest");
-      //   if (!restContainer) return;
-
-      //   restContainer.innerHTML = "";
-
-      //   urls.forEach((src) => {
-      //     const img = document.createElement("img");
-
-      //     img.className = "object-contain w-full h-full snap-center";
-      //     img.loading = "lazy";
-      //     img.decoding = "async";
-
-      //     img.src = this._buildSizedUrl(src, 400);
-      //     img.srcset = this._buildSrcset(src);
-      //     img.sizes  = "(max-width: 767px) 100vw, 35vw";
-
-      //     restContainer.appendChild(img);
-      //   });
-
-      //   // Restore scroll position
-      //   // const container = document.getElementById("image-scroll-container");
-      //   // if (container) {
-      //   //   container.scrollTop = activeIndex * container.offsetHeight;
-      //   // }
-      // }
-
-      // updateRightGallery(urls = [], activeIndex = 0) {
-      //   console.log("active idx", activeIndex)
-      //   const restContainer = document.getElementById("right-gallery-rest");
-      //   if (!restContainer) return;
-
-      //   const existing = Array.from(restContainer.querySelectorAll('img'));
-      //   const total = urls.length;
-
-      //   // If active index is out of bounds, normalize
-      //   if (activeIndex < 0) activeIndex = 0;
-      //   if (activeIndex >= total) activeIndex = total - 1;
-
-      //   // Helper to replace one image at a given index
-      //   const replaceAtIndex = (idx) => {
-      //     console.log("replacing image ", idx)
-      //     if (idx < 0 || idx >= total) return;
-      //     const oldImg = existing[idx];
-      //     const newUrl = urls[idx];
-
-      //     // Preload the replacement
-      //     const temp = new Image();
-      //     temp.src = this._buildSizedUrl(newUrl, 400);
-      //     temp.srcset = this._buildSrcset(newUrl);
-      //     temp.sizes = "(max-width: 767px) 100vw, 35vw";
-
-      //     temp.onload = () => {
-      //       oldImg.src = temp.src;
-      //       oldImg.srcset = temp.srcset;
-      //       oldImg.sizes = temp.sizes;
-      //     };
-      //   };
-
-      //   // --- Step 1: Replace active image first ---
-      //   replaceAtIndex(activeIndex);
-
-      //   // --- Step 2: Replace the images AFTER the active one ---
-      //   for (let i = activeIndex + 1; i < Math.min(existing.length, total); i++) {
-      //     replaceAtIndex(i);
-      //   }
-
-      //   // --- Step 3: Replace the images BEFORE the active one ---
-      //   for (let i = 0; i < activeIndex; i++) {
-      //     replaceAtIndex(i);
-      //   }
-
-      //   // --- Step 4: Append new images if new variant has more ---
-      //   for (let i = existing.length; i < total; i++) {
-      //     const url = urls[i];
-      //     const img = document.createElement("img");
-
-      //     img.className = "object-contain w-full h-full snap-center";
-      //     img.loading = "lazy";
-      //     img.decoding = "async";
-
-      //     img.src = this._buildSizedUrl(url, 400);
-      //     img.srcset = this._buildSrcset(url);
-      //     img.sizes = "(max-width: 767px) 100vw, 35vw";
-
-      //     restContainer.appendChild(img);
-      //   }
-
-      //   // --- Step 5: Remove extra old images if necessary ---
-      //   if (existing.length > total) {
-      //     for (let i = total; i < existing.length; i++) {
-      //       existing[i].remove();
-      //     }
-      //   }
-      // }
-
-      updateAllImages(images, activeIndex) {
-        const leftUrl  = images[0];
-        const rightUrl = images[1];
-        const galleryUrls = images.slice(2);
-
-        this._replaceLeftHero(leftUrl);
-
-        this._syncGalleryLength(galleryUrls);
-
-        const rightEls = this._getRightSideElements(); // hero + gallery img nodes
-        const rightSeqUrls = [rightUrl, ...galleryUrls];
-
-        // Update active right-side element first
-        this._replaceRightImage(rightEls[activeIndex], rightSeqUrls[activeIndex]);
-
-        // Update the rest
-        for (let i = 0; i < rightSeqUrls.length; i++) {
-          if (i === activeIndex) continue; // skip active one
-          this._replaceRightImage(rightEls[i], rightSeqUrls[i]);
-        }
+        this.currentVariant = variant;
       }
 
-      _replaceLeftHero(url) {
-        const leftEl = document.getElementById('left-hero');
-        if (!leftEl || !url) return;
+      // SIMPLIFIED: Desktop update (no preloading, no DOM recreation)
+      _updateDesktop(images) {
+        const leftHero = document.getElementById('left-hero');
+        const rightHero = document.getElementById('right-hero');
+        const galleryContainer = document.getElementById('right-gallery-rest');
+        
+        if (!leftHero) return;
 
-        const srcsetStr = this._buildSrcset(url);
-        const sizesStr = '(max-width: 767px) 100vw, 35vw';
-        const lqip = this._buildSizedUrl(url, 100);
+        // Update left hero
+        this._setImage(leftHero, images[0], this.DESKTOP_WIDTHS, this.DESKTOP_SIZES);
 
-        leftEl.removeAttribute('srcset');
-        leftEl.removeAttribute('sizes');
-        leftEl.src = lqip;
-
-        // Preload the chosen candidate via an off-DOM Image using same srcset decision (use 600 as mid)
-        const tmp = new Image();
-        tmp.src = this._buildSizedUrl(url, 1200);
-        tmp.srcset = srcsetStr;
-        tmp.sizes = sizesStr;
-        tmp.onload = () => {
-          leftEl.srcset = srcsetStr;
-          leftEl.sizes = sizesStr;
-        };
-      }
-
-      _replaceRightImage(el, url, { preloadWidth = 600 } = {}) {
-        if (!el || !url) return;
-
-        const srcsetStr = this._buildSrcset(url);
-        const sizesStr = '(max-width: 767px) 100vw, 35vw';
-        const tmp = new Image();
-
-        tmp.src = this._buildSizedUrl(url, preloadWidth);
-        tmp.srcset = srcsetStr;
-        tmp.sizes = sizesStr;
-
-        tmp.onload = () => {
-          el.src = tmp .src;
-          el.srcset = srcsetStr;
-          el.sizes = sizesStr;
-        };
-      }
-
-      _getRightSideElements() {
-        const hero = document.getElementById('right-hero');
-        const galleryEls = Array.from(document
-          .getElementById('right-gallery-rest')
-          .querySelectorAll('img'));
-        return [hero, ...galleryEls];
-      }
-
-      _syncGalleryLength(galleryUrls = []) {
-        const restContainer = document.getElementById('right-gallery-rest');
-        if (!restContainer) return;
-
-        const existing = Array.from(restContainer.querySelectorAll('img'));
-        const needed = galleryUrls.length;
-
-        // Append missing ones
-        for (let i = existing.length; i < needed; i++) {
-          const url = galleryUrls[i];
-          const img = document.createElement('img');
-          img.className = 'object-contain w-full h-full snap-center';
-          img.loading = 'lazy';
-          img.decoding = 'async';
-
-          img.src = this._buildSizedUrl(url, 400);
-          img.srcset = this._buildSrcset(url);
-          img.sizes = '(max-width: 767px) 100vw, 35vw';
-
-          restContainer.appendChild(img);
+        // Update right hero
+        if (rightHero && images[1]) {
+          this._setImage(rightHero, images[1], this.DESKTOP_WIDTHS, this.DESKTOP_SIZES);
         }
 
-        // Remove extras
-        if (existing.length > needed) {
-          for (let i = needed; i < existing.length; i++) {
-            existing[i].remove();
+        // Update or create right gallery images
+        if (galleryContainer) {
+          const galleryUrls = images.slice(2);
+          const existingImgs = galleryContainer.querySelectorAll('img');
+          
+          // Update existing
+          existingImgs.forEach((img, i) => {
+            if (galleryUrls[i]) {
+              this._setImage(img, galleryUrls[i], this.DESKTOP_WIDTHS, this.DESKTOP_SIZES);
+            } else {
+              img.remove(); // Remove if no corresponding URL
+            }
+          });
+          
+          // Add new if needed
+          for (let i = existingImgs.length; i < galleryUrls.length; i++) {
+            const img = this._createImage(galleryUrls[i], this.DESKTOP_WIDTHS, this.DESKTOP_SIZES);
+            galleryContainer.appendChild(img);
           }
         }
       }
 
-      // TODO: integrate other update mobile gallery into PIM class
-      initMobileGallery(images) {
-        const mobileGallery = document.getElementById('mobile-gallery-container');
-        if (!mobileGallery) return;
+      // SIMPLIFIED: Mobile update
+      _updateMobile(images) {
+        const mobileHero = document.getElementById('mobile-hero');
+        const mobileContainer = document.getElementById('mobile-gallery-container');
+        
+        if (!mobileHero) return;
 
-        // Keep the mobile hero (index 0); clear the rest
-        const slides = Array.from(mobileGallery.querySelectorAll('.mobile-gallery-slide'));
-        slides.slice(1).forEach(el => el.remove());
-
-        // Add remaining slides
-        images.slice(1).forEach((src) => {
-          const slide = document.createElement('div');
-          slide.className = "w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative";
-
-          const mid = this._buildSizedUrl(src, 400);
-
-          slide.innerHTML = `
-            <img
-              src="${mid}"
-              class="w-full h-full object-contain"
-              loading="lazy"
-              decoding="async"
-            />
-          `;
-
-          mobileGallery.appendChild(slide);
-        });
-
-        // Re-init scroll functionality if defined
-        if (window.initMobileGallery) {
-          setTimeout(() => initMobileGallery(true), 60);
+        // Capture current scroll position BEFORE updating
+        let currentScrollIndex = 0;
+        if (mobileContainer) {
+          const containerWidth = mobileContainer.offsetWidth;
+          const scrollPosition = mobileContainer.scrollLeft;
+          currentScrollIndex = Math.round(scrollPosition / containerWidth);
         }
-      }
 
-      initMobileThumbnails(images) {
-        const wrapper = document.querySelector('.mobile-thumbnail-wrapper .mobile-gallery');
-        if (!wrapper) return;
+        // Update mobile hero
+        this._setImage(mobileHero, images[0], this.MOBILE_WIDTHS, this.MOBILE_SIZES);
 
-        wrapper.innerHTML = "";
-
-        images.forEach((src, idx) => {
-          const low = this._buildSizedUrl(src, 100);
-
-          const btn = document.createElement('button');
-          btn.type = "button";
-          btn.className = "flex-shrink-0 h-[70px] w-[45.5px] mr-3 mobile-thumbnail bg-transparent border-0 p-0";
-          btn.dataset.index = idx;
-          btn.onclick = () => {
-            if (window.scrollToMobileImage) {
-              window.scrollToMobileImage(idx);
+        // Update mobile gallery slides
+        if (mobileContainer) {
+          const existingSlides = Array.from(mobileContainer.querySelectorAll('.mobile-gallery-slide'));
+          
+          // First slide already exists in HTML (mobile-hero), skip it
+          // Update additional slides
+          existingSlides.slice(1).forEach((slide, i) => {
+            const img = slide.querySelector('img');
+            const urlIndex = i + 1; // Offset because first slide is index 0
+            if (images[urlIndex] && img) {
+              this._setImage(img, images[urlIndex], this.MOBILE_WIDTHS, this.MOBILE_SIZES);
+            } else if (!images[urlIndex]) {
+              slide.remove();
             }
-          };
-
-          btn.innerHTML = `
-            <img
-              src="${low}"
-              class="w-full h-full object-cover"
-              alt=""
-              loading="lazy"
-              decoding="async"
-            />
-          `;
-
-          wrapper.appendChild(btn);
-        });
-      }
-
-      // updateMobileGallery(urls = [], activeIndex = 0) {
-      //   const mobileGallery = document.getElementById('mobile-gallery-container');
-      //   if (!mobileGallery) return;
-
-      //   mobileGallery.innerHTML = '';
-
-      //   urls.forEach((src, idx) => {
-      //     const slide = document.createElement('div');
-      //     slide.className = "w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative";
-      //     slide.dataset.index = idx;
-      //     slide.onclick = () => {
-      //       if (window.scrollToMobileImage) window.scrollToMobileImage(idx);
-      //     };
-
-      //     if (idx === activeIndex) {
-      //       // LQIP active index img
-      //       const low = this._buildSizedUrl(src, 100);
-      //       const mid = this._buildSizedUrl(src, 400);
-      //       slide.innerHTML = `
-      //         <img
-      //           src="${low}"
-      //           data-src="${mid}"
-      //           class="w-full h-full object-cover blur-sm"
-      //           alt=""
-      //           loading="eager"
-      //           decoding="async"
-      //         />
-      //       `;
-      //       const img = slide.querySelector('img');
-      //       this.loadHighResImage(img);
-      //     } else {
-      //       // other images: lazy mid-res only
-      //       const mid = this._buildSizedUrl(src, 400);
-      //       slide.innerHTML = `
-      //         <img
-      //           src="${mid}"
-      //           class="w-full h-full object-cover"
-      //           alt=""
-      //           loading="lazy"
-      //           decoding="async"
-      //         />
-      //       `;
-      //     }
-
-      //     // slide.innerHTML = `<img src="${src}" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async" />`;
-      //     mobileGallery.appendChild(slide);
-      //   });
-
-      //   // re-init mobile gallery scroller if you have a handler
-      //   if (window.initMobileGallery) setTimeout(() => initMobileGallery(true), 80);
-      // }
-
-      // updateMobileThumbnails(urls = []) {
-      //   const mobileThumbnailWrapper = document.querySelector('.mobile-thumbnail-wrapper .mobile-gallery');
-      //   if (!mobileThumbnailWrapper) return;
-      //   mobileThumbnailWrapper.innerHTML = '';
-      //   urls.forEach((src, idx) => {
-      //     const btn = document.createElement('button');
-      //     btn.type = 'button';
-      //     btn.className = 'flex-shrink-0 h-[70px] w-[45.5px] mr-3 mobile-thumbnail bg-transparent border-0 p-0';
-      //     btn.dataset.index = idx;
-      //     btn.onclick = () => {
-      //       if (window.scrollToMobileImage) window.scrollToMobileImage(idx);
-      //     };
-      //     btn.innerHTML = `<img src="${src}" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async" />`;
-      //     mobileThumbnailWrapper.appendChild(btn);
-      //   });
-      // }
-
-      // updateAllMobileImages(urls, activeIndex) {
-      //   const els = this._getMobileElements();
-
-      //   // active first
-      //   this._replaceMobileImage(els[activeIndex], urls[activeIndex], 600);
-
-      //   // rest
-      //   for (let i = 0; i < urls.length; i++) {
-      //     if (i === activeIndex) continue;
-      //     this._replaceMobileImage(els[i], urls[i], 400);
-      //   }
-
-      //   // sync slides
-      //   this._syncMobileGallery(urls.slice(1));
-      // }
-
-      updateAllMobileImages(urls, activeIndex) {
-        const container = document.getElementById('mobile-gallery-container');
-        if (!container) return;
-
-        // First: sync DOM length
-        this._syncMobileGallery(urls);
-
-        // Now collect stable elements AFTER sync
-        const allSlides = Array.from(
-          container.querySelectorAll('.mobile-gallery-slide img')
-        );
-
-        // Replace active first
-        this._replaceRightImage(
-          allSlides[activeIndex],
-          urls[activeIndex],
-          { preloadWidth: 600 }
-        );
-
-        // Replace others
-        for (let i = 0; i < urls.length; i++) {
-          if (i === activeIndex) continue;
-          this._replaceRightImage(
-            allSlides[i],
-            urls[i],
-            { preloadWidth: 600 }
-          );
+          });
+          
+          // Add new slides if needed
+          for (let i = existingSlides.length; i < images.length; i++) {
+            const slide = this._createMobileSlide(images[i]);
+            mobileContainer.appendChild(slide);
+          }
         }
+        
+        // Update thumbnails
+        this._updateMobileThumbnails(images);
 
-        // Update thumbnails last
-        this.updateMobileThumbnails(urls);
-
-        // FIX: Force the opacity update immediately after rebuilding thumbnails
+        // Set active thumbnail based on current scroll position (not always 0)
+        const maxIndex = images.length - 1;
+        const targetIndex = Math.min(currentScrollIndex, maxIndex); // Cap if fewer images
+        
         if (typeof window.updateActiveMobileThumbnail === 'function') {
-            window.updateActiveMobileThumbnail(activeIndex);
+          window.updateActiveMobileThumbnail(targetIndex);
         }
       }
 
-      updateMobileThumbnails(urls = []) {
+      _updateMobileThumbnails(images) {
         const wrapper = document.querySelector('.mobile-thumbnail-wrapper .mobile-gallery');
         if (!wrapper) return;
 
-        wrapper.innerHTML = '';
-
-        urls.forEach((src, idx) => {
+        wrapper.innerHTML = ''; // Clear and rebuild
+        
+        images.forEach((url, idx) => {
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'flex-shrink-0 h-[70px] w-[45.5px] mr-3 mobile-thumbnail bg-transparent border-0 p-0';
           btn.dataset.index = idx;
-
           btn.onclick = () => {
             if (window.scrollToMobileImage) window.scrollToMobileImage(idx);
           };
 
-          const thumb = this._buildSizedUrl(src, 200);
-
-          btn.innerHTML = `
-            <img src="${thumb}" class="w-full h-full object-cover" loading="lazy" decoding="async">
-          `;
+          const thumb = this._buildSizedUrl(url, 150);
+          btn.innerHTML = `<img src="${thumb}" class="w-full h-full object-cover" loading="lazy" decoding="async">`;
+          
           wrapper.appendChild(btn);
         });
-      }
-
-      _getMobileElements() {
-        const hero = document.getElementById('mobile-hero');
-        const galleryEls = Array.from(
-          document.querySelectorAll('#mobile-gallery-container .mobile-gallery-slide img')
-        );
-        return [hero, ...galleryEls];
-      }
-
-      _replaceMobileImage(el, url, preloadWidth = 400) {
-        this._replaceRightImage(el, url, { preloadWidth });
-      }
-
-      _syncMobileGallery(urls = []) {
-        const container = document.getElementById('mobile-gallery-container');
-        if (!container) return;
-
-        // Collect existing slides, but KEEP index 0 (mobile-hero)
-        const slides = Array.from(container.querySelectorAll('.mobile-gallery-slide'));
-
-        const needed = urls.length;
-
-        // Existing: slides.length
-        // Desired: needed
-
-        // Add missing slides
-        for (let i = slides.length; i < needed; i++) {
-          const url = urls[i];
-
-          const slide = document.createElement('div');
-          slide.className = "w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative";
-
-          const img = document.createElement('img');
-          img.className = "w-full h-full object-contain";
-          img.loading = "lazy";
-          img.decoding = "async";
-          img.src = this._buildSizedUrl(url, 400);
-
-          slide.appendChild(img);
-          container.appendChild(slide);
+        
+        // Update active thumbnail
+        if (typeof window.updateActiveMobileThumbnail === 'function') {
+          window.updateActiveMobileThumbnail(0);
         }
+      }
 
-        // Remove extra slides
-        if (slides.length > needed) {
-          for (let i = needed; i < slides.length; i++) {
-            slides[i].remove();
-          }
-        }
+      _setImage(imgElement, url, widths, sizes) {
+        imgElement.src = this._buildSizedUrl(url, widths[0]);
+        imgElement.srcset = this._buildSrcset(url, widths);
+        imgElement.sizes = sizes;
+      }
+
+      _createImage(url, widths, sizes) {
+        const img = document.createElement('img');
+        img.className = 'w-full h-full object-contain snap-center';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        this._setImage(img, url, widths, sizes);
+        return img;
+      }
+
+      _createMobileSlide(url) {
+        const slide = document.createElement('div');
+        slide.className = 'w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative';
+        
+        const img = document.createElement('img');
+        img.className = 'w-full h-full object-contain';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        this._setImage(img, url, this.MOBILE_WIDTHS, this.MOBILE_SIZES);
+        
+        slide.appendChild(img);
+        return slide;
       }
     }
 
@@ -1510,116 +1233,116 @@
       - quick guards
       - immediate image load for color-only selection (uses first variant with that color)
       =========================== */
-    function selectVariant(element, optionPosition, optionValue) {
-      if (!element) return;
+    // function selectVariant(element, optionPosition, optionValue) {
+    //   if (!element) return;
 
-      // Ignore disabled or aria-disabled
-      if (element.disabled || element.getAttribute('aria-disabled') === 'true' || element.dataset.hasImage === 'false') return;
+    //   // Ignore disabled or aria-disabled
+    //   if (element.disabled || element.getAttribute('aria-disabled') === 'true' || element.dataset.hasImage === 'false') return;
 
-      // Don't re-select active
-      if (element.closest('.color-chip-container')?.classList.contains('active')) return;
+    //   // Don't re-select active
+    //   if (element.closest('.color-chip-container')?.classList.contains('active')) return;
 
-      // Clear previous selection for this option group
-      const selectableItems = document.querySelectorAll(
-        `.variant-button[data-option-position="${optionPosition}"], .color-chip[data-option-position="${optionPosition}"]`
-      );
-      selectableItems.forEach(item => {
-        item.removeAttribute('data-selected');
-        item.classList.remove('bg-[#D9D9D9]');
-      });
+    //   // Clear previous selection for this option group
+    //   const selectableItems = document.querySelectorAll(
+    //     `.variant-button[data-option-position="${optionPosition}"], .color-chip[data-option-position="${optionPosition}"]`
+    //   );
+    //   selectableItems.forEach(item => {
+    //     item.removeAttribute('data-selected');
+    //     item.classList.remove('bg-[#D9D9D9]');
+    //   });
 
-      // Mark clicked
-      element.setAttribute('data-selected', 'true');
-      if (element.classList.contains('variant-button') && !element.classList.contains('color-chip')) {
-        element.classList.add('bg-[#D9D9D9]');
-      }
+    //   // Mark clicked
+    //   element.setAttribute('data-selected', 'true');
+    //   if (element.classList.contains('variant-button') && !element.classList.contains('color-chip')) {
+    //     element.classList.add('bg-[#D9D9D9]');
+    //   }
 
-      // Build selections map
-      const selections = {};
-      document.querySelectorAll('.variant-button[data-selected="true"], .color-chip[data-selected="true"]').forEach(selectedItem => {
-        const pos = selectedItem.getAttribute('data-option-position');
-        const val = selectedItem.getAttribute('data-value');
-        selections[`option${pos}`] = val;
-      });
+    //   // Build selections map
+    //   const selections = {};
+    //   document.querySelectorAll('.variant-button[data-selected="true"], .color-chip[data-selected="true"]').forEach(selectedItem => {
+    //     const pos = selectedItem.getAttribute('data-option-position');
+    //     const val = selectedItem.getAttribute('data-value');
+    //     selections[`option${pos}`] = val;
+    //   });
 
-      const totalOptionTypes = {{ product.options | size }};
-      const allOptionsSelected = Object.keys(selections).length === totalOptionTypes;
+    //   const totalOptionTypes = {{ product.options | size }};
+    //   const allOptionsSelected = Object.keys(selections).length === totalOptionTypes;
 
-      const variants = window.productVariants || [];
+    //   const variants = window.productVariants || [];
 
-      // When a Color (optionPosition === "1") is clicked: show images for that color immediately
-      if (optionPosition === "1") {
-        const colorValue = optionValue;
-        // find first variant with that color that has a featured image (prefer available)
-        let colorVariant = variants.find(v => v.option1 === colorValue && v.featured_image && v.available) ||
-                          variants.find(v => v.option1 === colorValue && v.featured_image) ||
-                          variants.find(v => v.option1 === colorValue);
+    //   // When a Color (optionPosition === "1") is clicked: show images for that color immediately
+    //   if (optionPosition === "1") {
+    //     const colorValue = optionValue;
+    //     // find first variant with that color that has a featured image (prefer available)
+    //     let colorVariant = variants.find(v => v.option1 === colorValue && v.featured_image && v.available) ||
+    //                       variants.find(v => v.option1 === colorValue && v.featured_image) ||
+    //                       variants.find(v => v.option1 === colorValue);
 
-        if (colorVariant && window.productImageManager) {
-          window.productImageManager.loadVariant(colorVariant);
-        }
+    //     if (colorVariant && window.productImageManager) {
+    //       window.productImageManager.loadVariant(colorVariant);
+    //     }
 
-        // Collect available sizes for this color
-        const availableSizes = variants
-          .filter(v => v.option1 === colorValue && v.available)
-          .map(v => v.option2);
+    //     // Collect available sizes for this color
+    //     const availableSizes = variants
+    //       .filter(v => v.option1 === colorValue && v.available)
+    //       .map(v => v.option2);
 
-        // 1. If no sizes are available, disable ATC immediately
-        if (availableSizes.length === 0) {
-          updateAddToCartButtons(false, null, true);
-        }
+    //     // 1. If no sizes are available, disable ATC immediately
+    //     if (availableSizes.length === 0) {
+    //       updateAddToCartButtons(false, null, true);
+    //     }
 
-        // 2. Update size buttons availability
-        const sizeButtons = document.querySelectorAll(
-          '.variant-button[data-option-position="2"]'
-        );
+    //     // 2. Update size buttons availability
+    //     const sizeButtons = document.querySelectorAll(
+    //       '.variant-button[data-option-position="2"]'
+    //     );
 
-        sizeButtons.forEach(btn => {
-          const sizeValue = btn.getAttribute("data-value");
+    //     sizeButtons.forEach(btn => {
+    //       const sizeValue = btn.getAttribute("data-value");
 
-          if (!availableSizes.includes(sizeValue)) {
-            btn.disabled = true;
-            btn.classList.add("opacity-50");
-          } else {
-            btn.disabled = false;
-            btn.classList.remove("opacity-50");
-          }
-        });
-      }
+    //       if (!availableSizes.includes(sizeValue)) {
+    //         btn.disabled = true;
+    //         btn.classList.add("opacity-50");
+    //       } else {
+    //         btn.disabled = false;
+    //         btn.classList.remove("opacity-50");
+    //       }
+    //     });
+    //   }
 
-      // Determine full matching variant only if all options are selected
-      let matchingVariant = null;
-      if (allOptionsSelected) {
-        matchingVariant = variants.find(variant => {
-          return Object.keys(selections).every(option => {
-            const position = parseInt(option.replace('option', ''), 10);
-            return variant[`option${position}`] === selections[`option${position}`];
-          });
-        });
-      }
+    //   // Determine full matching variant only if all options are selected
+    //   let matchingVariant = null;
+    //   if (allOptionsSelected) {
+    //     matchingVariant = variants.find(variant => {
+    //       return Object.keys(selections).every(option => {
+    //         const position = parseInt(option.replace('option', ''), 10);
+    //         return variant[`option${position}`] === selections[`option${position}`];
+    //       });
+    //     });
+    //   }
 
-      // Compute unavailable combination state
-      let isUnavailableCombination = false;
-      if (allOptionsSelected && !matchingVariant) isUnavailableCombination = true;
+    //   // Compute unavailable combination state
+    //   let isUnavailableCombination = false;
+    //   if (allOptionsSelected && !matchingVariant) isUnavailableCombination = true;
 
-      // Update add-to-cart + inventory UI
-      if (matchingVariant) {
-        updateAddToCartButtons(true, matchingVariant);
-      } else if (isUnavailableCombination) {
-        updateAddToCartButtons(false, null, true);
-      } else {
-        // Not all options selected: only enable cart when a combination exists? keep your existing logic
-        updateAddToCartButtons(false);
-      }
+    //   // Update add-to-cart + inventory UI
+    //   if (matchingVariant) {
+    //     updateAddToCartButtons(true, matchingVariant);
+    //   } else if (isUnavailableCombination) {
+    //     updateAddToCartButtons(false, null, true);
+    //   } else {
+    //     // Not all options selected: only enable cart when a combination exists? keep your existing logic
+    //     updateAddToCartButtons(false);
+    //   }
 
-      // Update variant-id only when we have a full matchingVariant
-      if (matchingVariant) {
-        const desktopId = document.getElementById('variant-id');
-        const mobileId = document.getElementById('variant-id-mobile');
-        if (desktopId) desktopId.value = matchingVariant.id;
-        if (mobileId) mobileId.value = matchingVariant.id;
-      }
-    }
+    //   // Update variant-id only when we have a full matchingVariant
+    //   if (matchingVariant) {
+    //     const desktopId = document.getElementById('variant-id');
+    //     const mobileId = document.getElementById('variant-id-mobile');
+    //     if (desktopId) desktopId.value = matchingVariant.id;
+    //     if (mobileId) mobileId.value = matchingVariant.id;
+    //   }
+    // }
 
     /* ===========================
       Init: create manager and simulate initial UI state
@@ -1639,12 +1362,14 @@
             data.variants[0];
 
         if (firstVariant) {
-            const images = productImageManager.getImagesForVariant(firstVariant);
+            // const images = productImageManager.getImagesForVariant(firstVariant);
+            productImageManager.loadVariant(firstVariant);
 
-            productImageManager._syncGalleryLength(images.slice(2));
-            productImageManager.initMobileThumbnails(images);
-            productImageManager.initMobileGallery(images);
-            // Mark selected color chip
+            // productImageManager._syncGalleryLength(images.slice(2));
+            // productImageManager.initMobileThumbnails(images);
+            // productImageManager.initMobileGallery(images);
+
+            // UI: Mark selected color chip
             const colorBtn = document.querySelector(
                 `.color-chip[data-value="${firstVariant.option1}"]`
             );
@@ -1654,114 +1379,171 @@
                     ?.classList.add("active");
             }
         }
+
+        // Add mobile gallery scroll listener
+        const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
+        if (mobileGalleryContainer) {
+          let scrollTimeout;
+          
+          mobileGalleryContainer.addEventListener('scroll', function() {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+              const containerWidth = mobileGalleryContainer.offsetWidth;
+              const scrollPosition = mobileGalleryContainer.scrollLeft;
+              const activeIndex = Math.round(scrollPosition / containerWidth);
+              updateActiveMobileThumbnail(activeIndex);
+            }, 50);
+          }, { passive: true });
+        }
     });
-    // let productImageManager = null;
-    // document.addEventListener('DOMContentLoaded', function () {
-    //   const data = {
-    //     variants: window.productVariants || [],
-    //     allImages: window.allProductImages || []
-    //   };
 
-    //   productImageManager = new ProductImageManager(data);
-    //   // expose globally for other scripts
-    //   window.productImageManager = productImageManager;
+    
 
-    //   // Initial UI selection: mark color chip for first available variant
-    //   const firstVariant = (window.productVariants || []).find(v => v.available) || (window.productVariants || [])[0];
-    //   if (firstVariant) {
-    //     // load its images right away
-    //     productImageManager.loadVariant(firstVariant, { force: true });
-    //     // mark color UI
-    //     const colorBtn = document.querySelector(`.color-chip[data-value="${firstVariant.option1}"]`);
-    //     if (colorBtn) {
-    //       // visually select it without re-triggering a redundant image load (loadVariant already called in manager.init)
-    //       colorBtn.setAttribute('data-selected', 'true');
-    //       colorBtn.closest('.color-chip-container')?.classList.add('active');
-    //     }
-    //   }
-    // });
-
-    // Moved this function to global scope (outside the DOMContentLoaded listener):
-    function initMobileGallery(preserveActiveIndex = false) {
-      const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
-      const mobileSlides = document.querySelectorAll('.mobile-gallery-slide');
-      const mobileThumbnails = document.querySelectorAll('.mobile-thumbnail');
-
-      if (!mobileGalleryContainer || !mobileSlides.length) return;
-
-      let activeIndex = 0;
-      
-      if (preserveActiveIndex) {
-        // Calculate current active index based on scroll position
-        const containerWidth = mobileGalleryContainer.offsetWidth;
-        const scrollPosition = mobileGalleryContainer.scrollLeft;
-        activeIndex = Math.round(scrollPosition / containerWidth);
-        
-        // Make sure the index is within bounds of new image set
-        activeIndex = Math.min(activeIndex, mobileSlides.length - 1);
+    class VariantSelector {
+      constructor(productImageManager, variants) {
+        this.imageManager = productImageManager;
+        this.variants = variants;
+        this.selections = {}; // Current option selections
+        this.totalOptions = {{ product.options | size }};
       }
 
-      window.scrollToMobileImage = function(index) {
-        const currentSlides = document.querySelectorAll('.mobile-gallery-slide');
-        if (index < 0 || index >= currentSlides.length) return;
+      // Main entry point (called from onclick handlers)
+      selectOption(element, optionPosition, optionValue) {
+        if (!this._isSelectable(element)) return;
         
-        const containerWidth = mobileGalleryContainer.offsetWidth;
-        const scrollPosition = index * containerWidth;
+        this._updateUI(element, optionPosition, optionValue);
+        this._updateSelections(optionPosition, optionValue);
+        
+        const matchingVariant = this._findMatchingVariant();
+        
+        // Handle color change (load images immediately)
+        if (optionPosition === "1") {
+          this._handleColorChange(optionValue);
+        }
+        
+        // Update form and buttons based on selection state
+        this._updateFormAndButtons(matchingVariant);
+      }
 
-        mobileGalleryContainer.scrollTo({
-          left: scrollPosition,
-          behavior: 'smooth'
+      _isSelectable(element) {
+        return !element.disabled && 
+              element.getAttribute('aria-disabled') !== 'true' &&
+              !element.closest('.color-chip-container')?.classList.contains('active');
+      }
+
+      _updateUI(element, optionPosition, optionValue) {
+        // Clear previous selections for this option
+        const selectableItems = document.querySelectorAll(
+          `.variant-button[data-option-position="${optionPosition}"], 
+          .color-chip[data-option-position="${optionPosition}"]`
+        );
+        selectableItems.forEach(item => {
+          item.removeAttribute('data-selected');
+          item.classList.remove('bg-[#D9D9D9]');
         });
 
-        updateActiveMobileThumbnail(index);
-      };
+        // Mark new selection
+        element.setAttribute('data-selected', 'true');
+        if (element.classList.contains('variant-button') && !element.classList.contains('color-chip')) {
+          element.classList.add('bg-[#D9D9D9]');
+        }
+      }
 
-      function updateActiveMobileThumbnail(activeIndex) {
-        const currentThumbnails = document.querySelectorAll('.mobile-thumbnail');
-        currentThumbnails.forEach((thumb, index) => {
-          if (index === activeIndex) {
-            thumb.classList.remove('opacity-30');
-            thumb.classList.add('opacity-100');
+      _updateSelections(optionPosition, optionValue) {
+        this.selections[`option${optionPosition}`] = optionValue;
+      }
+
+      _findMatchingVariant() {
+        const allSelected = Object.keys(this.selections).length === this.totalOptions;
+        
+        if (!allSelected) return null;
+        
+        return this.variants.find(variant => {
+          return Object.keys(this.selections).every(option => {
+            const position = parseInt(option.replace('option', ''), 10);
+            return variant[`option${position}`] === this.selections[`option${position}`];
+          });
+        });
+      }
+
+      _handleColorChange(colorValue) {
+        // Find first variant with this color that has images
+        const colorVariant = this.variants.find(v => v.option1 === colorValue && v.featured_image && v.available) ||
+                            this.variants.find(v => v.option1 === colorValue && v.featured_image) ||
+                            this.variants.find(v => v.option1 === colorValue);
+
+        if (colorVariant && this.imageManager) {
+          this.imageManager.loadVariant(colorVariant);
+        }
+
+        // Update size availability for this color
+        this._updateSizeAvailability(colorValue);
+      }
+
+      _updateSizeAvailability(colorValue) {
+        const availableSizes = this.variants
+          .filter(v => v.option1 === colorValue && v.available)
+          .map(v => v.option2);
+
+        const sizeButtons = document.querySelectorAll('.variant-button[data-option-position="2"]');
+        
+        sizeButtons.forEach(btn => {
+          const sizeValue = btn.getAttribute("data-value");
+          if (!availableSizes.includes(sizeValue)) {
+            btn.disabled = true;
+            btn.classList.add("opacity-50");
           } else {
-            thumb.classList.remove('opacity-100');
-            thumb.classList.add('opacity-30');
+            btn.disabled = false;
+            btn.classList.remove("opacity-50");
           }
         });
+
+        // Disable add-to-cart if no sizes available
+        if (availableSizes.length === 0) {
+          updateAddToCartButtons(false, null, true);
+        }
       }
 
-      window.updateActiveMobileThumbnail = updateActiveMobileThumbnail;
+      _updateFormAndButtons(matchingVariant) {
+        const allSelected = Object.keys(this.selections).length === this.totalOptions;
+        const isUnavailableCombination = allSelected && !matchingVariant;
 
-      updateActiveMobileThumbnail(activeIndex);
+        // Update hidden variant ID inputs
+        if (matchingVariant) {
+          const desktopId = document.getElementById('variant-id');
+          const mobileId = document.getElementById('variant-id-mobile');
+          if (desktopId) desktopId.value = matchingVariant.id;
+          if (mobileId) mobileId.value = matchingVariant.id;
+        }
 
-      // Remove existing scroll listeners to avoid duplicates
-      if (window.mobileScrollHandler) {
-        mobileGalleryContainer.removeEventListener('scroll', window.mobileScrollHandler);
+        // Update add-to-cart buttons
+        if (matchingVariant) {
+          updateAddToCartButtons(true, matchingVariant);
+        } else if (isUnavailableCombination) {
+          updateAddToCartButtons(false, null, true);
+        } else {
+          updateAddToCartButtons(false);
+        }
       }
+    }
 
-      // Handle scroll events to update thumbnails
-      let scrollTimeout;
-      window.mobileScrollHandler = function() {
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-          const containerWidth = mobileGalleryContainer.offsetWidth;
-          const scrollPosition = mobileGalleryContainer.scrollLeft;
-          const activeIndex = Math.round(scrollPosition / containerWidth);
-          updateActiveMobileThumbnail(activeIndex);
-        }, 50);
-      };
+    // Initialize on page load
+    let variantSelector;
+    document.addEventListener('DOMContentLoaded', () => {
+      // ... existing productImageManager initialization ...
+      
+      variantSelector = new VariantSelector(
+        productImageManager,
+        window.productVariants || []
+      );
+      window.variantSelector = variantSelector;
+    });
 
-      mobileGalleryContainer.addEventListener('scroll', window.mobileScrollHandler, { passive: true });
-
-      // Add click handlers to slides
-      const currentSlides = document.querySelectorAll('.mobile-gallery-slide');
-      currentSlides.forEach((slide) => {
-        slide.addEventListener('click', function(e) {
-          const index = parseInt(this.dataset.index);
-          if (!isNaN(index)) {
-            scrollToMobileImage(index);
-          }
-        });
-      });
+    // Global function for onclick handlers
+    function selectVariant(element, optionPosition, optionValue) {
+      if (window.variantSelector) {
+        window.variantSelector.selectOption(element, optionPosition, optionValue);
+      }
     }
 
     document.addEventListener('DOMContentLoaded', function() {

@@ -1,22 +1,9 @@
-{% comment %} {%- assign first_image = product.images[0] | default: product.featured_image -%}
-{%- assign second_image = product.images[1] | default: first_image -%} {% endcomment %}
 {% assign first_variant = product.first_available_variant %}
-{% assign first_image = first_variant.featured_image %}
+{% comment %} {% assign first_image = first_variant.featured_image %} {% endcomment %}
+{% assign first_image = product.featured_image %}
+{% assign second_image = product.images[1] %}
 
-{% assign first_image_index = 0 %}
-
-{% assign second_image = nil %}
-
-{% for image in product.images %}
-  {% if image.src == first_image.src %}
-    {% assign first_image_index = forloop.index0 %}
-  {% endif %}
-{% endfor %}
-
-{% assign next_index = first_image_index | plus: 1 %}
-{% if product.images.size > next_index %}
-  {% assign second_image = product.images[next_index] %}
-{% endif %}
+{%- assign card_sizes = image_sizes | default: "(max-width: 767px) 50vw, (max-width: 1536px) 20vw, 300px" -%}
 
 {%- assign unique_id = product.id -%}
 
@@ -39,7 +26,7 @@
     },
 
     buildSrcset: function(baseUrl) {
-      const widths = [200, 400, 600, 800];
+      const widths = [400, 600, 900, 1200];
       return widths.map(w => 
         `${this.buildImageUrl(baseUrl, w)} ${w}w`
       ).join(', ');
@@ -83,7 +70,7 @@
         //   ${images[0].replace(/(\.[a-z]+)$/i, '_1200x$1')} 1200w
         // `;
         mainImage.srcset = this.buildSrcset(images[0]);
-        mainImage.sizes = "(max-width: 767px) 50vw, (max-width: 1536px) 20vw, 300px";
+        mainImage.sizes = "{{ card_sizes }}";
       }
 
       // Update secondary image
@@ -93,32 +80,32 @@
         //   ${images[1].replace(/(\.[a-z]+)$/i, '_1200x$1')} 1200w
         // `;
         secondaryImage.srcset = this.buildSrcset(images[1]);
-        secondaryImage.sizes = "(max-width: 767px) 50vw, (max-width: 1536px) 20vw, 300px";
+        secondaryImage.sizes = "{{ card_sizes }}";
       }
 
       // Update mobile toggle thumbnails
       const toggleButton = productCardElement.querySelector(`#thumbnail-toggle-${productId}`);
       if (toggleButton) {
-        // Store thumbnail-sized URLs (80w for mobile thumbnail)
-        toggleButton.dataset.primaryImage = this.buildImageUrl(images[0], 80);
-        toggleButton.dataset.secondaryImage = this.buildImageUrl(images[1], 80);
+        // Store thumbnail-sized URLs (120w for mobile thumbnail)
+        toggleButton.dataset.primaryImage = this.buildImageUrl(images[0], 120 );
+        toggleButton.dataset.secondaryImage = this.buildImageUrl(images[1], 120 );
 
         const thumbContainer = productCardElement.querySelector(`#thumb-container-${productId}`);
         if (thumbContainer && images[1]) {
           const thumbImg = thumbContainer.querySelector('img');
           if (thumbImg) {
             // Just update the src on existing img
-            thumbImg.src = this.buildImageUrl(images[1], 80);
+            thumbImg.src = this.buildImageUrl(images[1], 120 );
             thumbImg.alt = "Alternate view";
           } else {
-            thumbContainer.innerHTML = `
-              <img
-                src="${images[1].replace(/(\.[a-z]+)$/i, '_80x$1')}"
-                alt="Alternate view"
-                class="w-full h-auto object-contain block"
-                loading="eager"
-              >
-            `;
+            // thumbContainer.innerHTML = `
+            //   <img
+            //     src="${images[1].replace(/(\.[a-z]+)$/i, '_120x$1')}"
+            //     alt="Alternate view"
+            //     class="w-full h-auto object-contain block"
+            //     loading="eager"
+            //   >
+            // `;
           }
         }
       }
@@ -138,42 +125,55 @@
       
       // Get all needed elements
       const activeThumbContainer = document.getElementById(`thumb-container-${productId}`);
-      const thumbImg = activeThumbContainer.querySelector('img');
+      if (!activeThumbContainer) return;
       const primaryImageUrl = thumbnailButton.dataset.primaryImage;
       const secondaryImageUrl = thumbnailButton.dataset.secondaryImage;
       const mainImage = document.getElementById(`primary-image-${productId}`);
       const secondaryImage = document.getElementById(`secondary-image-${productId}`);
-      
-      if (!mainImage || !secondaryImage || !activeThumbContainer || !thumbImg) return;
-      
+      if (!mainImage || !secondaryImage) return;
+
+      // Lazily create the thumbnail image ONCE
+      let thumbImg = activeThumbContainer.querySelector('img');
+      if (!thumbImg) {
+        thumbImg = document.createElement('img');
+        thumbImg.className = 'w-full h-full object-contain block';
+        thumbImg.loading = 'lazy';
+        thumbImg.alt = 'Alternate view';
+        activeThumbContainer.appendChild(thumbImg);
+      }
+
       // Toggle state
       productCardElement.classList.toggle('images-toggled');
       const isShowingSecondary = productCardElement.classList.contains('images-toggled');
 
-      // Just swap the src - don't recreate the element
+      // Swap thumbnail src ONLY
       if (isShowingSecondary) {
-        // thumbImg.src = primaryImageUrl;
-        // thumbImg.alt = "Primary view";
-        activeThumbContainer.innerHTML = `<img 
-          src="${primaryImageUrl}" 
-          alt="Primary view" 
-          class="w-full h-auto object-contain block"
-          loading="eager"
-          id="thumb-active-${productId}"
-          style="display: block; margin: 0;"
-        >`;
+        thumbImg.src = primaryImageUrl;
+        thumbImg.alt = 'Primary view';
       } else {
-        // thumbImg.src = secondaryImageUrl;
-        // thumbImg.alt = "Alternate view";
-        activeThumbContainer.innerHTML = `<img 
-          src="${secondaryImageUrl}" 
-          alt="Alternate view" 
-          class="w-full h-auto object-contain block"
-          loading="eager"
-          id="thumb-active-${productId}"
-          style="display: block; margin: 0;"
-        >`;
+        thumbImg.src = secondaryImageUrl;
+        thumbImg.alt = 'Alternate view';
       }
+
+      // if (isShowingSecondary) {
+      //   activeThumbContainer.innerHTML = `<img 
+      //     src="${primaryImageUrl}" 
+      //     alt="Primary view" 
+      //     class="w-full h-auto object-contain block"
+      //     loading="eager"
+      //     id="thumb-active-${productId}"
+      //     style="display: block; margin: 0;"
+      //   >`;
+      // } else {
+      //   activeThumbContainer.innerHTML = `<img 
+      //     src="${secondaryImageUrl}" 
+      //     alt="Alternate view" 
+      //     class="w-full h-auto object-contain block"
+      //     loading="eager"
+      //     id="thumb-active-${productId}"
+      //     style="display: block; margin: 0;"
+      //   >`;
+      // }
 
       // Handle main image switching (this part stays the same)
       mainImage.style.transition = "none";
@@ -192,20 +192,97 @@
       }
     },
 
-    // setupImagePrefetch: function(card) {
-    //   // Only run on desktop
-    //   if (window.innerWidth < 768) return;
+    handleProductCardClick: function(event, productId) {
+      console.log("🔴 CLICKED ELEMENT:", event.target);
+      console.log("🔴 CLICKED ELEMENT TAG:", event.target.tagName);
+      console.log("🔴 CLICKED ELEMENT CLASSES:", event.target.className);
 
-    //   const secondaryImage = card.querySelector(`#secondary-image-${productId}`);
-      
-    //   // Prefetch on mouseenter
-    //   card.addEventListener('mouseenter', function() {
-    //     if (secondaryImage.loading === "lazy") {
-    //       secondaryImage.display = "block"; // test
-    //       secondaryImage.loading = "eager"; // Triggers immediate load
-    //     }
-    //   }, { once: true }); // Only runs once per card
-    // },
+      // event.preventDefault();
+      // event.stopPropagation();
+
+      if (!event) return;
+
+      // const productCard = event.currentTarget.closest('.group');
+      // if (!productCard) return;
+      const productLink = event.target.closest('.product-card-link');
+      if (!productLink) return;
+      const productCard = productLink.closest('.group');
+      if (!productCard) return;
+
+      // console.log("test")
+
+      const isMobile = window.matchMedia('(max-width: 767px)').matches;
+      // const productLink = productCard.querySelector('a[href]');
+      const thumbnailToggle = productCard.querySelector('.product-thumbnail-toggle');
+      const thumbContainer = document.getElementById(`thumb-container-${productId}`);
+
+      /*
+        DESKTOP BEHAVIOR
+        - Always navigate
+      */
+      if (!isMobile) {
+        return;
+      }
+
+
+      // Determine current state
+      const isExpanded = productCard.classList.contains('mobile-expanded');
+
+      /*
+        MOBILE — FIRST TAP
+        - Expand card
+        - Prevent navigation
+        - Reveal thumbnail toggle
+        - Lazily create thumbnail image
+      */
+      if (!isExpanded) {
+        event.preventDefault();
+        // event.stopPropagation();
+
+        document.querySelectorAll('.mobile-expanded').forEach(card => {
+        if (card !== productCard) {
+          card.classList.remove('mobile-expanded');
+          
+          const cardId = card.getAttribute('data-product-card');
+          const thumbToggle = document.getElementById(`thumbnail-toggle-${cardId}`);
+          if (thumbToggle) {
+            thumbToggle.classList.add('mobile-hidden');
+          }
+        }
+      });
+
+        productCard.classList.add('mobile-expanded');
+
+        if (thumbnailToggle) {
+          thumbnailToggle.classList.remove('mobile-hidden');
+        }
+
+        // Lazily create thumbnail image ONCE on expansion
+        if (thumbContainer && thumbnailToggle && !thumbContainer.querySelector('img')) {
+          const secondaryImageUrl = thumbnailToggle.dataset.secondaryImage;
+
+          if (secondaryImageUrl) {
+            const img = document.createElement('img');
+            img.className = 'w-full h-full object-contain block';
+            img.loading = 'lazy';
+            img.alt = 'Alternate view';
+            img.src = secondaryImageUrl;
+
+            thumbContainer.appendChild(img);
+          }
+        }
+
+        return;
+      }
+
+      /*
+        MOBILE — SECOND TAP
+        - Allow normal navigation to PDP
+      */
+      if (productLink) {
+        window.location.href = productLink.href;
+      }
+    },
     
     // Get product data from cache or parse JSON
     getProductData: function(productId, element) {
@@ -518,18 +595,9 @@
       if (defaultVariant) {
         const variantImages = this.getImagesForVariant(defaultVariant, productData.images);
         this.updateCardImages(productId, variantImages);
-
-        // Mark the correct color chip active
-        // const colorChip = card.querySelector(
-        //   `.color-chip[data-option-value="${defaultVariant.option1}"]`
-        // );
-        // if (colorChip) {
-        //   card.querySelectorAll('.color-chip').forEach(chip => chip.classList.remove('active'));
-        //   colorChip.classList.add('active');
-        // }
       }
 
-      // 2. Handle has_only_default_variant edge case
+      // 2. Handle has_only_default_variant edge case TODO: refactor to own method
       if (productData.has_only_default_variant) {
         const forms = card.querySelectorAll(`form[data-product-form="${productId}"]`);
           forms.forEach(form => {
@@ -559,23 +627,7 @@
             }
           });
       }
-
-      // 3. Bind events for this card (color chips, size buttons, etc.)
-      this.bindEvents(card, productId, productData);
     },
-
-    bindEvents(card, productId, productData) {
-      // color chips
-      card.querySelectorAll('.color-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-          console.log("bind events ~ chip option value: ",chip.dataset.optionValue)
-          this.selectVariant(chip, productId, 1, chip.dataset.optionValue);
-        });
-      });
-
-      // TODO: add size button events if needed
-    },
-
     
     // Empty placeholder for checkCardVisibility (overridden to do nothing on mobile)
     checkCardVisibility: function() {
@@ -590,99 +642,252 @@
   // window.ProductCardObject = ProductCardObject;
   // window.loadHighResImage = ProductCardObject.loadHighResImage;
   window.toggleProductImages = ProductCardObject.toggleProductImages;
+  window.handleProductCardClick = ProductCardObject.handleProductCardClick.bind(ProductCardObject);
+
 
   // Initialize when DOM is loaded
   document.addEventListener('DOMContentLoaded', function() {
     ProductCardObject.initPage();
+
+    console.log("Setting up event delegation...");
+    // Handle product card clicks with delegation
+    // document.addEventListener('click', function(event) {
+    //   console.log("Document click detected, target:", event.target);
+
+    //   const productLink = event.target.closest('.product-card-link');
+    //   console.log("Product link from delegation:", productLink);
+
+    //   if (productLink) {
+    //     const productId = productLink.dataset.productId;
+    //     console.log("Calling handleProductCardClick with ID:", productId);
+    //     ProductCardObject.handleProductCardClick(event, productId);
+    //   }
+    // }, true); // ← Add 'true' for capture phase
+
+    // Remove all viewport-based classes on initialization
+    document.querySelectorAll('.group').forEach(card => {
+      card.classList.remove('card-visible');
+      card.classList.remove('card-visible-delayed');
+    });
+    
+    // Function to normalize variant button sizes within a product card
+    function normalizeVariantButtonSizes() {
+      // Process each product card separately
+      document.querySelectorAll('[data-product-card]').forEach(card => {
+        // Find the maximum width for color variants
+        let maxColorWidth = 0;
+        card.querySelectorAll('.color-variant').forEach(btn => {
+          // Temporarily remove inline styles for accurate measurement
+          const originalStyles = btn.getAttribute('style');
+          btn.removeAttribute('style');
+          const width = btn.offsetWidth;
+          if (width > maxColorWidth) maxColorWidth = width;
+          // Restore original styles
+          if (originalStyles) btn.setAttribute('style', originalStyles);
+        });
+        
+        // Find the maximum width for size variants
+        let maxSizeWidth = 0;
+        card.querySelectorAll('.size-variant').forEach(btn => {
+          // Temporarily remove inline styles for accurate measurement
+          const originalStyles = btn.getAttribute('style');
+          btn.removeAttribute('style');
+          const width = btn.offsetWidth;
+          if (width > maxSizeWidth) maxSizeWidth = width;
+          // Restore original styles
+          if (originalStyles) btn.setAttribute('style', originalStyles);
+        });
+        
+        // Apply the max widths to all buttons in each column
+        if (maxColorWidth > 0) {
+          card.querySelectorAll('.color-variant').forEach(btn => {
+            btn.style.width = maxColorWidth + 'px';
+          });
+        }
+        
+        if (maxSizeWidth > 0) {
+          card.querySelectorAll('.size-variant').forEach(btn => {
+            btn.style.width = maxSizeWidth + 'px';
+          });
+        }
+      });
+    }
+    
+    // Run the normalization after a small delay to ensure DOM is fully rendered
+    setTimeout(normalizeVariantButtonSizes, 100);
+    
+    // Add a click handler to close expanded cards when clicking outside
+    document.addEventListener('click', function(event) {
+      // Only on mobile
+      if (window.innerWidth >= 767) {
+        console.log("🟡 Desktop - skipping");
+        return;
+      }
+
+      console.log("🟡 is mobile");
+      
+      // Get all expanded cards
+      const expandedCards = document.querySelectorAll('.mobile-expanded');
+      if (expandedCards.length === 0) return;
+      
+      // Check if the click was outside of any expanded card
+      let clickedOutside = true;
+      for (const card of expandedCards) {
+        if (card.contains(event.target)) {
+          clickedOutside = false;
+          break;
+        }
+      }
+
+      console.log("🟡 Clicked outside?", clickedOutside);
+      
+      // If clicked outside, collapse all expanded cards
+      if (clickedOutside) {
+        expandedCards.forEach(card => {
+          console.log("🟡 Collapsing all cards");
+          card.classList.remove('mobile-expanded');
+          
+          // Hide the thumbnail toggle
+          const productId = card.getAttribute('data-product-card');
+          const thumbnailToggle = document.getElementById(`thumbnail-toggle-${productId}`);
+          if (thumbnailToggle) {
+            thumbnailToggle.classList.add('mobile-hidden');
+          }
+          
+          // Hide the dropdown
+          const dropdown = card.querySelector('.product-dropdown');
+          if (dropdown) {
+            dropdown.classList.remove('mobile-dropdown-visible');
+            dropdown.classList.add('mobile-dropdown-hidden');
+          }
+        });
+      }
+    });
+
+    // Modify the selectVariant function to update button styles
+    const originalSelectVariant = ProductCardObject.selectVariant;
+    ProductCardObject.selectVariant = function(button, productId, optionPosition, optionValue) {
+      // Call the original function first
+      originalSelectVariant.call(this, button, productId, optionPosition, optionValue);
+      
+      // Get the product card
+      const productCardElement = button.closest(`[data-product-card="${productId}"]`);
+      if (!productCardElement) return;
+      
+      // Get all selected buttons to ensure they keep their styles
+      const allSelectedButtons = productCardElement.querySelectorAll('.variant-button.selected');
+      allSelectedButtons.forEach(btn => {
+        // Make sure selected buttons maintain their style
+        btn.style.backgroundColor = 'rgba(217, 217, 217, 0.9)';
+        btn.style.color = 'black';
+        btn.style.fontWeight = '500';
+      });
+      
+      // Clear any inline styles from non-selected buttons to allow hover effects
+      const allNonSelectedButtons = productCardElement.querySelectorAll('.variant-button:not(.selected)');
+      allNonSelectedButtons.forEach(btn => {
+        btn.style.backgroundColor = '';
+        btn.style.color = '';
+        btn.style.fontWeight = '';
+      });
+    };
+
+    // New click handler for product card color chips
+    document.addEventListener('click', function(event) {
+      const chip = event.target.closest('.color-chip');
+      if (!chip) {
+        return; // Not a chip click, ignore
+      }
+
+      // We are inside a product card and clicked a color chip.
+      event.stopPropagation(); // Prevent other click handlers on the card.
+
+      const productCardElement = chip.closest('[data-product-card]');
+      // const productCardElement = event.target.closest('[data-product-card]');
+      if (!productCardElement) return;
+
+      productCardElement.querySelectorAll('.color-chip-container').forEach(c => c.classList.remove('active'));
+      chip.closest('.color-chip-container').classList.add('active');
+
+      // Handle active state
+      // const allChipContainers = productCardElement.querySelectorAll('.color-chip-container');
+      // allChipContainers.forEach(container => container.classList.remove('active'));
+      // chip.closest('.color-chip-container').classList.add('active');
+    });
+
   });
 </script>
 
-<div class="group relative flex flex-col text-black {% if custom_aspect_ratio %}h-full{% endif %} overflow-visible " data-product-card="{{ unique_id }}">
+<div class="group relative flex flex-col text-black
+            {% if custom_aspect_ratio %}h-full{% endif %} overflow-visible "
+      data-product-card="{{ unique_id }}">
   <!-- Hidden product data for JavaScript -->
-  <div class="hidden" data-product-json='{"id":{{ product.id }},"variants":{{ product.variants | json }},"images":{{ product.images | json }},"options":{{ product.options_with_values | json }},"has_only_default_variant":{{ product.has_only_default_variant | json }}}'></div>
+  <div class="hidden"
+        data-product-json=
+          '{"id":{{ product.id }},
+          "variants":{{ product.variants | json }},
+          "images":{{ product.images | json }},
+          "options":{{ product.options_with_values | json }},
+          "has_only_default_variant":{{ product.has_only_default_variant | json }}}'>
+  </div>
 
   <!-- Product link (image only) -->
-  <a href="{{ product.url }}" class="block relative w-full overflow-hidden product-card-link {% if custom_aspect_ratio %}flex-grow{% endif %}" id="product-link-{{ product.id }}" {% unless custom_aspect_ratio %}style="aspect-ratio: {{ first_image.aspect_ratio | default: 1.0 }};"{% endunless %} onclick="handleProductCardClick(event, '{{ product.id }}')">
-    <!-- First image with LQIP -->
-     {% comment %} blur-up {% endcomment %}
-    {% comment %} <img
-      id="primary-image-{{ product.id }}"
-      class="relative h-full object-contain md:group-hover:opacity-0"
-      alt="{{ product.title }}"
-      src="{{ first_image | image_url: width: 400 }}"
-      data-src="{{ first_image | image_url: width: 900 }}"
-      sizes="(max-width: 767px) 50vw, 20vw"
-      width="{{ first_image.width }}"
-      height="{{ first_image.height }}"
-      loading="eager"
-      onload="if (!this.dataset.highResLoaded) window.loadHighResImage(this);"
-      style="position: relative; z-index: 2; opacity: 1; will-change: opacity; transition: none;"
-    > {% endcomment %}
+  <a href="{{ product.url }}"
+      class="block relative w-full overflow-hidden product-card-link
+            {% if custom_aspect_ratio %}flex-grow{% endif %}"
+      style="aspect-ratio: 4 / 5;"
+      id="product-link-{{ product.id }}"
+      onclick="handleProductCardClick(event, '{{ product.id }}')">
     <img
       id="primary-image-{{ product.id }}"
       class="relative h-full w-auto mx-auto object-contain md:group-hover:opacity-0"
       alt="{{ product.title }}"
       src="{{ first_image | image_url: width: 400 }}"
       srcset="
-        {{ first_image | image_url: width: 200 }} 200w,
         {{ first_image | image_url: width: 400 }} 400w,
         {{ first_image | image_url: width: 600 }} 600w,
-        {{ first_image | image_url: width: 800 }} 800w,
+        {{ first_image | image_url: width: 900 }} 900w,
+        {{ first_image | image_url: width: 1200 }} 1200w,
       "
-      sizes="(max-width: 767px) 50vw, (max-width: 1536px) 20vw, 300px"
+      sizes="{{ card_sizes }}"
       loading="eager"
     >
-    <!-- Second image (hover image) with LQIP -->
-     {% comment %} blur-up {% endcomment %}
-    {% comment %} <img
-      id="secondary-image-{{ product.id }}"
-      class="absolute inset-0 h-full w-auto mx-auto object-contain opacity-0 md:group-hover:opacity-100"
-      alt="{{ product.title }} (hover)"
-      src="{{ second_image | image_url: width: 100 }}"
-      data-src="{{ second_image | image_url: width: 900  }}"
-      sizes="(max-width: 767px) 50vw, 20vw"
-      width="{{ second_image.width }}"
-      height="{{ second_image.height }}"
-      loading="lazy" 
-      onload="if (!this.dataset.highResLoaded) window.loadHighResImage(this);"
-      style="position: absolute; inset: 0; z-index: 1; opacity: 0; will-change: opacity; transition: none;"
-    > {% endcomment %}
     <img
       id="secondary-image-{{ product.id }}"
       class="absolute inset-0 h-full w-auto mx-auto object-contain opacity-0 md:group-hover:opacity-100"
       alt="{{ product.title }}"
       src="{{ second_image | image_url: width: 400 }}"
       srcset="
-        {{ second_image | image_url: width: 200 }} 200w,
         {{ second_image | image_url: width: 400 }} 400w,
         {{ second_image | image_url: width: 600 }} 600w,
         {{ second_image | image_url: width: 800 }} 800w,
+        {{ second_image | image_url: width: 1200 }} 1200w,
       "
-      sizes="(max-width: 767px) 50vw, (max-width: 1536px) 20vw, 300px"
+      sizes="{{ card_sizes }}"
       loading="eager"
     >
   </a>
   
   <!-- Secondary image thumbnail (mobile only) -->
   <button 
-    class="absolute top-0 right-0 w-auto h-auto max-w-[120px] z-20 overflow-hidden md:hidden product-thumbnail-toggle mobile-hidden" 
+    class="absolute top-0 right-0 w-auto h-auto z-20 overflow-hidden md:hidden product-thumbnail-toggle mobile-hidden" 
     onclick="toggleProductImages(this, event, '{{ product.id }}')"
-    data-primary-image="{{ first_image | image_url: width: 80 }}"
-    data-secondary-image="{{ second_image | image_url: width: 80 }}"
+    data-primary-image="{{ first_image | image_url: width: 120 }}"
+    data-secondary-image="{{ second_image | image_url: width: 120 }}"
     style="padding: 0; margin: 0; line-height: 0; top: 20px; right: 0; border: none; background: none;"
     id="thumbnail-toggle-{{ product.id }}">
     <!-- Container for the active thumbnail image -->
     <div id="thumb-container-{{ product.id }}">
-      <img 
-        src="{{ second_image | image_url: width: 80 }}"
+      {% comment %} <img 
+        src="{{ second_image | image_url: width: 120 }}"
         alt="{{ product.title }} (alternate)" 
         class="w-full h-auto object-contain block"
         loading="eager"
-        width="{{ second_image.width | default: 80 }}"
-        height="{{ second_image.height | default: 80 }}"
+        width="{{ second_image.width | default: 120 }}"
+        height="{{ second_image.height | default: 120 }}"
         id="thumb-active-{{ product.id }}"
         style="display: block; margin: 0;"
-      >
+      > {% endcomment %}
     </div>
   </button>
 
@@ -699,9 +904,9 @@
         <div class="text-xs text-black">
           {% if product.available %}
             {{ product.price | money_without_trailing_zeros }}
-            {% if product.inventory_quantity <= 10 and product.inventory_quantity > 0 and product.inventory_management == 'shopify' %}
+            {% comment %} {% if product.inventory_quantity <= 10 and product.inventory_quantity > 0 and product.inventory_management == 'shopify' %}
               <span class="stock-status in-stock text-sm ml-2">({{ product.inventory_quantity }} left)</span>
-            {% endif %}
+            {% endif %} {% endcomment %}
           {% else %}
             <span class="stock-status out-of-stock">Sold Out</span>
           {% endif %}
@@ -770,211 +975,213 @@
   </div>
 </div>
 
-<script>
-  // Add the handleProductCardClick function
-  function handleProductCardClick(event, productId) {
-    // Check if we're on mobile
-    if (window.innerWidth >= 768) return;
+{% comment %} <script>
+  // function handleProductCardClick(event, productId) {
+  //   // Check if we're on mobile
+  //   if (window.innerWidth >= 768) return;
+
+  //   console.log("test")
     
-    // Get the product card
-    const productCardElement = document.querySelector(`[data-product-card="${productId}"]`);
-    if (!productCardElement) return;
+  //   // Get the product card
+  //   const productCardElement = document.querySelector(`[data-product-card="${productId}"]`);
+  //   if (!productCardElement) return;
     
-    // Prevent the default link behavior
-    event.preventDefault();
+  //   // Prevent the default link behavior
+  //   event.preventDefault();
     
-    // Check if the card is already expanded
-    if (productCardElement.classList.contains('mobile-expanded')) {
-      // Second click - navigate to product page
-      window.location.href = event.currentTarget.getAttribute('href');
-      return;
-    }
+  //   // Check if the card is already expanded
+  //   if (productCardElement.classList.contains('mobile-expanded')) {
+  //     // Second click - navigate to product page
+  //     window.location.href = event.currentTarget.getAttribute('href');
+  //     return;
+  //   }
     
-    // First click - show thumbnail toggle and dropdown
-    event.stopPropagation();
+  //   // First click - show thumbnail toggle and dropdown
+  //   event.stopPropagation();
     
-    // Close any other expanded cards first
-    document.querySelectorAll('.mobile-expanded').forEach(card => {
-      if (card !== productCardElement) {
-        card.classList.remove('mobile-expanded');
+  //   // Close any other expanded cards first
+  //   document.querySelectorAll('.mobile-expanded').forEach(card => {
+  //     if (card !== productCardElement) {
+  //       card.classList.remove('mobile-expanded');
         
-        // Hide the thumbnail toggle
-        const cardId = card.getAttribute('data-product-card');
-        const thumbToggle = document.getElementById(`thumbnail-toggle-${cardId}`);
-        if (thumbToggle) {
-          thumbToggle.classList.add('mobile-hidden');
-        }
+  //       // Hide the thumbnail toggle
+  //       const cardId = card.getAttribute('data-product-card');
+  //       const thumbToggle = document.getElementById(`thumbnail-toggle-${cardId}`);
+  //       if (thumbToggle) {
+  //         thumbToggle.classList.add('mobile-hidden');
+  //       }
         
-        // Hide the dropdown
-        const dropdown = card.querySelector('.product-dropdown');
-        if (dropdown) {
-          dropdown.classList.remove('mobile-dropdown-visible');
-          dropdown.classList.add('mobile-dropdown-hidden');
-        }
-      }
-    });
+  //       // Hide the dropdown
+  //       const dropdown = card.querySelector('.product-dropdown');
+  //       if (dropdown) {
+  //         dropdown.classList.remove('mobile-dropdown-visible');
+  //         dropdown.classList.add('mobile-dropdown-hidden');
+  //       }
+  //     }
+  //   });
     
-    // Expand this card
-    productCardElement.classList.add('mobile-expanded');
+  //   // Expand this card
+  //   productCardElement.classList.add('mobile-expanded');
     
-    // Make the thumbnail toggle and dropdown visible
-    const thumbnailToggle = document.getElementById(`thumbnail-toggle-${productId}`);
-    if (thumbnailToggle) {
-      thumbnailToggle.classList.remove('mobile-hidden');
-    }
+  //   // Make the thumbnail toggle and dropdown visible
+  //   const thumbnailToggle = document.getElementById(`thumbnail-toggle-${productId}`);
+  //   if (thumbnailToggle) {
+  //     thumbnailToggle.classList.remove('mobile-hidden');
+  //   }
     
-    // Make the dropdown visible
-    const dropdown = productCardElement.querySelector('.product-dropdown');
-    if (dropdown) {
-      dropdown.classList.remove('mobile-dropdown-hidden');
-      dropdown.classList.add('mobile-dropdown-visible');
-    }
-  }
+  //   // Make the dropdown visible
+  //   const dropdown = productCardElement.querySelector('.product-dropdown');
+  //   if (dropdown) {
+  //     dropdown.classList.remove('mobile-dropdown-hidden');
+  //     dropdown.classList.add('mobile-dropdown-visible');
+  //   }
+  // }
 
   // Extend the ProductCardObject namespace with the new x`functionality
   document.addEventListener('DOMContentLoaded', function() {
-    // Remove all viewport-based classes on initialization
-    document.querySelectorAll('.group').forEach(card => {
-      card.classList.remove('card-visible');
-      card.classList.remove('card-visible-delayed');
-    });
-
-    // Add the mobile click handler to the ProductCardObject namespace
-    ProductCardObject.handleProductCardClick = handleProductCardClick;
+    // // Remove all viewport-based classes on initialization
+    // document.querySelectorAll('.group').forEach(card => {
+    //   card.classList.remove('card-visible');
+    //   card.classList.remove('card-visible-delayed');
+    // });
     
-    // Function to normalize variant button sizes within a product card
-    function normalizeVariantButtonSizes() {
-      // Process each product card separately
-      document.querySelectorAll('[data-product-card]').forEach(card => {
-        // Find the maximum width for color variants
-        let maxColorWidth = 0;
-        card.querySelectorAll('.color-variant').forEach(btn => {
-          // Temporarily remove inline styles for accurate measurement
-          const originalStyles = btn.getAttribute('style');
-          btn.removeAttribute('style');
-          const width = btn.offsetWidth;
-          if (width > maxColorWidth) maxColorWidth = width;
-          // Restore original styles
-          if (originalStyles) btn.setAttribute('style', originalStyles);
-        });
+    // // Function to normalize variant button sizes within a product card
+    // function normalizeVariantButtonSizes() {
+    //   // Process each product card separately
+    //   document.querySelectorAll('[data-product-card]').forEach(card => {
+    //     // Find the maximum width for color variants
+    //     let maxColorWidth = 0;
+    //     card.querySelectorAll('.color-variant').forEach(btn => {
+    //       // Temporarily remove inline styles for accurate measurement
+    //       const originalStyles = btn.getAttribute('style');
+    //       btn.removeAttribute('style');
+    //       const width = btn.offsetWidth;
+    //       if (width > maxColorWidth) maxColorWidth = width;
+    //       // Restore original styles
+    //       if (originalStyles) btn.setAttribute('style', originalStyles);
+    //     });
         
-        // Find the maximum width for size variants
-        let maxSizeWidth = 0;
-        card.querySelectorAll('.size-variant').forEach(btn => {
-          // Temporarily remove inline styles for accurate measurement
-          const originalStyles = btn.getAttribute('style');
-          btn.removeAttribute('style');
-          const width = btn.offsetWidth;
-          if (width > maxSizeWidth) maxSizeWidth = width;
-          // Restore original styles
-          if (originalStyles) btn.setAttribute('style', originalStyles);
-        });
+    //     // Find the maximum width for size variants
+    //     let maxSizeWidth = 0;
+    //     card.querySelectorAll('.size-variant').forEach(btn => {
+    //       // Temporarily remove inline styles for accurate measurement
+    //       const originalStyles = btn.getAttribute('style');
+    //       btn.removeAttribute('style');
+    //       const width = btn.offsetWidth;
+    //       if (width > maxSizeWidth) maxSizeWidth = width;
+    //       // Restore original styles
+    //       if (originalStyles) btn.setAttribute('style', originalStyles);
+    //     });
         
-        // Apply the max widths to all buttons in each column
-        if (maxColorWidth > 0) {
-          card.querySelectorAll('.color-variant').forEach(btn => {
-            btn.style.width = maxColorWidth + 'px';
-          });
-        }
+    //     // Apply the max widths to all buttons in each column
+    //     if (maxColorWidth > 0) {
+    //       card.querySelectorAll('.color-variant').forEach(btn => {
+    //         btn.style.width = maxColorWidth + 'px';
+    //       });
+    //     }
         
-        if (maxSizeWidth > 0) {
-          card.querySelectorAll('.size-variant').forEach(btn => {
-            btn.style.width = maxSizeWidth + 'px';
-          });
-        }
-      });
-    }
+    //     if (maxSizeWidth > 0) {
+    //       card.querySelectorAll('.size-variant').forEach(btn => {
+    //         btn.style.width = maxSizeWidth + 'px';
+    //       });
+    //     }
+    //   });
+    // }
     
-    // Run the normalization after a small delay to ensure DOM is fully rendered
-    setTimeout(normalizeVariantButtonSizes, 100);
+    // // Run the normalization after a small delay to ensure DOM is fully rendered
+    // setTimeout(normalizeVariantButtonSizes, 100);
     
-    // Add a click handler to close expanded cards when clicking outside
-    document.addEventListener('click', function(event) {
-      // Only on mobile
-      if (window.innerWidth >= 768) return;
+    // // Add a click handler to close expanded cards when clicking outside
+    // document.addEventListener('click', function(event) {
+    //   // Only on mobile
+    //   if (window.innerWidth >= 768) return;
       
-      // Get all expanded cards
-      const expandedCards = document.querySelectorAll('.mobile-expanded');
-      if (expandedCards.length === 0) return;
+    //   // Get all expanded cards
+    //   const expandedCards = document.querySelectorAll('.mobile-expanded');
+    //   if (expandedCards.length === 0) return;
       
-      // Check if the click was outside of any expanded card
-      let clickedOutside = true;
-      for (const card of expandedCards) {
-        if (card.contains(event.target)) {
-          clickedOutside = false;
-          break;
-        }
-      }
+    //   // Check if the click was outside of any expanded card
+    //   let clickedOutside = true;
+    //   for (const card of expandedCards) {
+    //     if (card.contains(event.target)) {
+    //       clickedOutside = false;
+    //       break;
+    //     }
+    //   }
       
-      // If clicked outside, collapse all expanded cards
-      if (clickedOutside) {
-        expandedCards.forEach(card => {
-          card.classList.remove('mobile-expanded');
+    //   // If clicked outside, collapse all expanded cards
+    //   if (clickedOutside) {
+    //     expandedCards.forEach(card => {
+    //       card.classList.remove('mobile-expanded');
           
-          // Hide the thumbnail toggle
-          const productId = card.getAttribute('data-product-card');
-          const thumbnailToggle = document.getElementById(`thumbnail-toggle-${productId}`);
-          if (thumbnailToggle) {
-            thumbnailToggle.classList.add('mobile-hidden');
-          }
+    //       // Hide the thumbnail toggle
+    //       const productId = card.getAttribute('data-product-card');
+    //       const thumbnailToggle = document.getElementById(`thumbnail-toggle-${productId}`);
+    //       if (thumbnailToggle) {
+    //         thumbnailToggle.classList.add('mobile-hidden');
+    //       }
           
-          // Hide the dropdown
-          const dropdown = card.querySelector('.product-dropdown');
-          if (dropdown) {
-            dropdown.classList.remove('mobile-dropdown-visible');
-            dropdown.classList.add('mobile-dropdown-hidden');
-          }
-        });
-      }
-    });
+    //       // Hide the dropdown
+    //       const dropdown = card.querySelector('.product-dropdown');
+    //       if (dropdown) {
+    //         dropdown.classList.remove('mobile-dropdown-visible');
+    //         dropdown.classList.add('mobile-dropdown-hidden');
+    //       }
+    //     });
+    //   }
+    // });
 
-    // Modify the selectVariant function to update button styles
-    const originalSelectVariant = ProductCardObject.selectVariant;
-    ProductCardObject.selectVariant = function(button, productId, optionPosition, optionValue) {
-      // Call the original function first
-      originalSelectVariant.call(this, button, productId, optionPosition, optionValue);
+    // // Modify the selectVariant function to update button styles
+    // const originalSelectVariant = ProductCardObject.selectVariant;
+    // ProductCardObject.selectVariant = function(button, productId, optionPosition, optionValue) {
+    //   // Call the original function first
+    //   originalSelectVariant.call(this, button, productId, optionPosition, optionValue);
       
-      // Get the product card
-      const productCardElement = button.closest(`[data-product-card="${productId}"]`);
-      if (!productCardElement) return;
+    //   // Get the product card
+    //   const productCardElement = button.closest(`[data-product-card="${productId}"]`);
+    //   if (!productCardElement) return;
       
-      // Get all selected buttons to ensure they keep their styles
-      const allSelectedButtons = productCardElement.querySelectorAll('.variant-button.selected');
-      allSelectedButtons.forEach(btn => {
-        // Make sure selected buttons maintain their style
-        btn.style.backgroundColor = 'rgba(217, 217, 217, 0.9)';
-        btn.style.color = 'black';
-        btn.style.fontWeight = '500';
-      });
+    //   // Get all selected buttons to ensure they keep their styles
+    //   const allSelectedButtons = productCardElement.querySelectorAll('.variant-button.selected');
+    //   allSelectedButtons.forEach(btn => {
+    //     // Make sure selected buttons maintain their style
+    //     btn.style.backgroundColor = 'rgba(217, 217, 217, 0.9)';
+    //     btn.style.color = 'black';
+    //     btn.style.fontWeight = '500';
+    //   });
       
-      // Clear any inline styles from non-selected buttons to allow hover effects
-      const allNonSelectedButtons = productCardElement.querySelectorAll('.variant-button:not(.selected)');
-      allNonSelectedButtons.forEach(btn => {
-        btn.style.backgroundColor = '';
-        btn.style.color = '';
-        btn.style.fontWeight = '';
-      });
-    };
+    //   // Clear any inline styles from non-selected buttons to allow hover effects
+    //   const allNonSelectedButtons = productCardElement.querySelectorAll('.variant-button:not(.selected)');
+    //   allNonSelectedButtons.forEach(btn => {
+    //     btn.style.backgroundColor = '';
+    //     btn.style.color = '';
+    //     btn.style.fontWeight = '';
+    //   });
+    // };
 
-    // New click handler for product card color chips
-    document.addEventListener('click', function(event) {
-      const chip = event.target.closest('.color-chip');
-      const productCardElement = event.target.closest('[data-product-card]');
+    // // New click handler for product card color chips
+    // document.addEventListener('click', function(event) {
+    //   const chip = event.target.closest('.color-chip');
+    //   // const productCardElement = event.target.closest('[data-product-card]');
 
-      if (!chip || !productCardElement) {
-        return;
-      }
+    //   // if (!chip || !productCardElement) {
+    //   //   return;
+    //   // }
+    //   // Only handle if a color chip was clicked
+    //   if (!chip) {
+    //     return; // Not a chip click, ignore
+    //   }
 
-      // We are inside a product card and clicked a color chip.
-      event.stopPropagation(); // Prevent other click handlers on the card.
+    //   // We are inside a product card and clicked a color chip.
+    //   event.stopPropagation(); // Prevent other click handlers on the card.
 
-      // Handle active state
-      const allChipContainers = productCardElement.querySelectorAll('.color-chip-container');
-      allChipContainers.forEach(container => container.classList.remove('active'));
-      chip.closest('.color-chip-container').classList.add('active');
-    });
+    //   // Handle active state
+    //   const allChipContainers = productCardElement.querySelectorAll('.color-chip-container');
+    //   allChipContainers.forEach(container => container.classList.remove('active'));
+    //   chip.closest('.color-chip-container').classList.add('active');
+    // });
   });
-</script>
+</script> {% endcomment %}
 
 {% style %}
   /* Global secondary image handling */
@@ -1082,6 +1289,8 @@
     }
     
     .product-thumbnail-toggle {
+      width: 80px;
+      height: 80px;
       border-radius: 0;
       transition: transform 0.2s cubic-bezier(0.33, 0.66, 0.66, 1);
       background-color: white;

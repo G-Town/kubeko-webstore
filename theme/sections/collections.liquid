@@ -120,8 +120,10 @@
           {% assign variant_metafields = product.variants | map: 'metafields' %}
           {% if product.handle != 'routeins' %}
             <div class="h-[45%] md:h-[60%] max-h-[450px] relative">
-              {% render 'product-card'
-                , product: product %}
+              {% render 'product-card',
+                product: product,
+                image_sizes: "(max-width: 767px) 50vw, (max-width: 1536px) 20vw"
+              %}
             </div>
           {% endif %}
         {% endfor %}

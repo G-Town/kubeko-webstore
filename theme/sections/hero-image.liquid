@@ -36,28 +36,37 @@
 {% unless has_look_param %}
   {%- if section.settings.image != blank -%}
     <div class="hero-image w-full {{ section.settings.hero_height }} relative">
-      {%- assign desktop_img_url_tiny = section.settings.image | image_url: width: 100 -%}
-      {%- assign desktop_img_url = section.settings.image | image_url: width: 2000 -%}
-      {%- assign desktop_img_url_800 = section.settings.image | image_url: width: 800 -%}
-      {%- assign desktop_img_url_400 = section.settings.image | image_url: width: 400 -%}
+      {%- assign desktop_img_url_1200 = section.settings.image | image_url: width: 1200 -%}
+      {%- assign desktop_img_url_1600 = section.settings.image | image_url: width: 1600 -%}
+      {%- assign desktop_img_url_2000 = section.settings.image | image_url: width: 2000 -%}
 
       {%- assign mobile_image = section.settings.mobile_image | default: section.settings.image -%}
-      {%- assign mobile_img_url_tiny = mobile_image | image_url: width: 100 -%}
-      {%- assign mobile_img_url = mobile_image | image_url: width: 1000 -%}
-      {%- assign mobile_img_url_600 = mobile_image | image_url: width: 600 -%}
+      {% comment %} {%- assign mobile_img_url_tiny = mobile_image | image_url: width: 100 -%}
       {%- assign mobile_img_url_400 = mobile_image | image_url: width: 400 -%}
+      {%- assign mobile_img_url_600 = mobile_image | image_url: width: 600 -%} {% endcomment %}
+      {%- assign mobile_img_url_1000 = mobile_image | image_url: width: 1000 -%}
+      {%- assign mobile_img_url_1200 = mobile_image | image_url: width: 1200 -%}
+      {%- assign mobile_img_url_1600 = mobile_image | image_url: width: 1600 -%}
 
         <picture>
           <!-- Desktop image -->
         <source
           media="(min-width: 768px)"
-          srcset="{{ desktop_img_url_tiny }} 100w, {{ desktop_img_url_400 }} 400w, {{ desktop_img_url_800 }} 800w, {{ desktop_img_url }} 2000w"
+          srcset="
+            {{ desktop_img_url_1200 }} 1000w,
+            {{ desktop_img_url_1600 }} 1200w,
+            {{ desktop_img_url_2000 }} 2000w
+          "
           sizes="(min-width: 1260px) 1260px, 100vw"
           type="image/webp">
           <!-- Mobile image -->
         <source
-          srcset="{{ mobile_img_url_tiny }} 100w, {{ mobile_img_url_400 }} 400w, {{ mobile_img_url_600 }} 600w, {{ mobile_img_url }} 1000w"
-          sizes="(min-width: 1260px) 1260px, 100vw"
+          srcset="
+            {{ mobile_img_url_1000 }} 1000w,
+            {{ mobile_img_url_1200 }} 1200w,
+            {{ mobile_img_url_1600 }} 1600w
+          "
+          sizes="100vw"
           type="image/webp">
         <img
           src="{{ mobile_img_url_tiny }}"

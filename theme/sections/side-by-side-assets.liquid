@@ -35,7 +35,11 @@
       {% comment %} blur-up - this.classList.add('blur-sm'); {% endcomment %}
     {% elsif product_1 %}
       <div class="h-full w-full pb-4 bg-[#f4f4f4]">
-        {% render 'product-card', product: product_1, custom_aspect_ratio: true %}
+        {% render 'product-card',
+          product: product_1,
+          custom_aspect_ratio: true,
+          image_sizes: "(max-width: 767px) 100vw, 40vw"
+        %}
       </div>
     {% endif %}
   </div>
@@ -67,7 +71,11 @@
       {% comment %} blur-up - this.classList.add('blur-sm'); {% endcomment %}
     {% elsif product_2 %}
       <div class="h-full w-full pb-4 bg-[#f4f4f4]">
-        {% render 'product-card', product: product_2, custom_aspect_ratio: true %}
+        {% render 'product-card',
+          product: product_2,
+          custom_aspect_ratio: true,
+          image_sizes: "(max-width: 767px) 100vw, 40vw"
+        %}
       </div>
     {% endif %}
   </div>

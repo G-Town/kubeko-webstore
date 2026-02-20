@@ -21,7 +21,10 @@
         <div class="swiper-wrapper">
           {%- for product in collection.products limit: products_limit -%}
             <div class="swiper-slide">
-              {% render 'product-card', product: product %}
+              {% render 'product-card',
+                product: product,
+                image_sizes: "(max-width: 767px) 50vw, (max-width: 1536px) 20vw, 300px" 
+              %}
             </div>
           {%- endfor -%}
         </div>
