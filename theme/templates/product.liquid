@@ -952,7 +952,8 @@
 
     /* ============================================
       MOBILE GALLERY UTILITIES (Global Functions)
-      ============================================ */
+      GLOBAL UTILITIES
+    ============================================ */
 
     function updateActiveMobileThumbnail(activeIndex) {
       const currentThumbnails = document.querySelectorAll('.mobile-thumbnail');
@@ -990,7 +991,7 @@
 
     /* ===========================
       PRODUCT IMAGE MANAGER CLASS
-      =========================== */
+    =========================== */
     class ProductImageManager {
       constructor({ variants = window.productVariants || [], allImages = window.allProductImages || [] } = {}) {
         this.variants = variants;
@@ -1228,183 +1229,38 @@
       }
     }
 
-    /* ===========================
-      Revised selectVariant
-      - quick guards
-      - immediate image load for color-only selection (uses first variant with that color)
-      =========================== */
-    // function selectVariant(element, optionPosition, optionValue) {
-    //   if (!element) return;
-
-    //   // Ignore disabled or aria-disabled
-    //   if (element.disabled || element.getAttribute('aria-disabled') === 'true' || element.dataset.hasImage === 'false') return;
-
-    //   // Don't re-select active
-    //   if (element.closest('.color-chip-container')?.classList.contains('active')) return;
-
-    //   // Clear previous selection for this option group
-    //   const selectableItems = document.querySelectorAll(
-    //     `.variant-button[data-option-position="${optionPosition}"], .color-chip[data-option-position="${optionPosition}"]`
-    //   );
-    //   selectableItems.forEach(item => {
-    //     item.removeAttribute('data-selected');
-    //     item.classList.remove('bg-[#D9D9D9]');
-    //   });
-
-    //   // Mark clicked
-    //   element.setAttribute('data-selected', 'true');
-    //   if (element.classList.contains('variant-button') && !element.classList.contains('color-chip')) {
-    //     element.classList.add('bg-[#D9D9D9]');
-    //   }
-
-    //   // Build selections map
-    //   const selections = {};
-    //   document.querySelectorAll('.variant-button[data-selected="true"], .color-chip[data-selected="true"]').forEach(selectedItem => {
-    //     const pos = selectedItem.getAttribute('data-option-position');
-    //     const val = selectedItem.getAttribute('data-value');
-    //     selections[`option${pos}`] = val;
-    //   });
-
-    //   const totalOptionTypes = {{ product.options | size }};
-    //   const allOptionsSelected = Object.keys(selections).length === totalOptionTypes;
-
-    //   const variants = window.productVariants || [];
-
-    //   // When a Color (optionPosition === "1") is clicked: show images for that color immediately
-    //   if (optionPosition === "1") {
-    //     const colorValue = optionValue;
-    //     // find first variant with that color that has a featured image (prefer available)
-    //     let colorVariant = variants.find(v => v.option1 === colorValue && v.featured_image && v.available) ||
-    //                       variants.find(v => v.option1 === colorValue && v.featured_image) ||
-    //                       variants.find(v => v.option1 === colorValue);
-
-    //     if (colorVariant && window.productImageManager) {
-    //       window.productImageManager.loadVariant(colorVariant);
-    //     }
-
-    //     // Collect available sizes for this color
-    //     const availableSizes = variants
-    //       .filter(v => v.option1 === colorValue && v.available)
-    //       .map(v => v.option2);
-
-    //     // 1. If no sizes are available, disable ATC immediately
-    //     if (availableSizes.length === 0) {
-    //       updateAddToCartButtons(false, null, true);
-    //     }
-
-    //     // 2. Update size buttons availability
-    //     const sizeButtons = document.querySelectorAll(
-    //       '.variant-button[data-option-position="2"]'
-    //     );
-
-    //     sizeButtons.forEach(btn => {
-    //       const sizeValue = btn.getAttribute("data-value");
-
-    //       if (!availableSizes.includes(sizeValue)) {
-    //         btn.disabled = true;
-    //         btn.classList.add("opacity-50");
-    //       } else {
-    //         btn.disabled = false;
-    //         btn.classList.remove("opacity-50");
-    //       }
-    //     });
-    //   }
-
-    //   // Determine full matching variant only if all options are selected
-    //   let matchingVariant = null;
-    //   if (allOptionsSelected) {
-    //     matchingVariant = variants.find(variant => {
-    //       return Object.keys(selections).every(option => {
-    //         const position = parseInt(option.replace('option', ''), 10);
-    //         return variant[`option${position}`] === selections[`option${position}`];
-    //       });
-    //     });
-    //   }
-
-    //   // Compute unavailable combination state
-    //   let isUnavailableCombination = false;
-    //   if (allOptionsSelected && !matchingVariant) isUnavailableCombination = true;
-
-    //   // Update add-to-cart + inventory UI
-    //   if (matchingVariant) {
-    //     updateAddToCartButtons(true, matchingVariant);
-    //   } else if (isUnavailableCombination) {
-    //     updateAddToCartButtons(false, null, true);
-    //   } else {
-    //     // Not all options selected: only enable cart when a combination exists? keep your existing logic
-    //     updateAddToCartButtons(false);
-    //   }
-
-    //   // Update variant-id only when we have a full matchingVariant
-    //   if (matchingVariant) {
-    //     const desktopId = document.getElementById('variant-id');
-    //     const mobileId = document.getElementById('variant-id-mobile');
-    //     if (desktopId) desktopId.value = matchingVariant.id;
-    //     if (mobileId) mobileId.value = matchingVariant.id;
-    //   }
-    // }
-
-    /* ===========================
-      Init: create manager and simulate initial UI state
-      =========================== */
-      document.addEventListener('DOMContentLoaded', () => {
-        const data = {
-            variants: window.productVariants || [],
-            allImages: window.allProductImages || []
-        };
-
-        productImageManager = new ProductImageManager(data);
-        window.productImageManager = productImageManager;
-
-        // Determine default variant
-        const firstVariant =
-            data.variants.find(v => v.available) ||
-            data.variants[0];
-
-        if (firstVariant) {
-            // const images = productImageManager.getImagesForVariant(firstVariant);
-            productImageManager.loadVariant(firstVariant);
-
-            // productImageManager._syncGalleryLength(images.slice(2));
-            // productImageManager.initMobileThumbnails(images);
-            // productImageManager.initMobileGallery(images);
-
-            // UI: Mark selected color chip
-            const colorBtn = document.querySelector(
-                `.color-chip[data-value="${firstVariant.option1}"]`
-            );
-            if (colorBtn) {
-                colorBtn.setAttribute("data-selected", "true");
-                colorBtn.closest(".color-chip-container")
-                    ?.classList.add("active");
-            }
-        }
-
-        // Add mobile gallery scroll listener
-        const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
-        if (mobileGalleryContainer) {
-          let scrollTimeout;
-          
-          mobileGalleryContainer.addEventListener('scroll', function() {
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-              const containerWidth = mobileGalleryContainer.offsetWidth;
-              const scrollPosition = mobileGalleryContainer.scrollLeft;
-              const activeIndex = Math.round(scrollPosition / containerWidth);
-              updateActiveMobileThumbnail(activeIndex);
-            }, 50);
-          }, { passive: true });
-        }
-    });
-
-    
-
+    /* =============================================
+      VARIANT SELECTOR CLASS
+    ============================================= */
     class VariantSelector {
       constructor(productImageManager, variants) {
         this.imageManager = productImageManager;
         this.variants = variants;
         this.selections = {}; // Current option selections
         this.totalOptions = {{ product.options | size }};
+      }
+
+      init(initialVariant) {
+        if (!initialVariant) return;
+        
+        // Set initial selection in the selections map
+        if (initialVariant.option1) {
+          this.selections['option1'] = initialVariant.option1;
+        }
+        if (initialVariant.option2) {
+          this.selections['option2'] = initialVariant.option2;
+        }
+        
+        // Update size availability for initial color
+        if (initialVariant.option1) {
+          this._updateSizeAvailability(initialVariant.option1);
+        }
+        
+        // Update price display
+        // TODO: add updateVariantPrice function to specify variant prices instead of lowest product price
+        // if (typeof window.updateVariantPrice === 'function') {
+        //   window.updateVariantPrice(initialVariant);
+        // }
       }
 
       // Main entry point (called from onclick handlers)
@@ -1527,19 +1383,64 @@
       }
     }
 
-    // Initialize on page load
+    /* ===========================
+      INITIALIZATION
+      Init: create manager and simulate initial UI state
+    =========================== */
+
+    let productImageManager;
     let variantSelector;
+
     document.addEventListener('DOMContentLoaded', () => {
-      // ... existing productImageManager initialization ...
-      
+      const data = {
+          variants: window.productVariants || [],
+          allImages: window.allProductImages || []
+      };
+
+      productImageManager = new ProductImageManager(data);
+      window.productImageManager = productImageManager;
+
+      // Initialize VariantSelector (depends on productImageManager)
       variantSelector = new VariantSelector(
         productImageManager,
         window.productVariants || []
       );
       window.variantSelector = variantSelector;
+
+      // Load initial variant
+      const firstVariant = data.variants.find(v => v.available) || data.variants[0];
+
+      if (firstVariant) {
+        productImageManager.loadVariant(firstVariant);
+        variantSelector.init(firstVariant);
+
+        // UI: Mark selected color chip
+        const colorBtn = document.querySelector(`.color-chip[data-value="${firstVariant.option1}"]`);
+        if (colorBtn) {
+          colorBtn.setAttribute("data-selected", "true");
+          colorBtn.closest(".color-chip-container")?.classList.add("active");
+        }
+      }
+
+      // mobile gallery scroll listener
+      const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
+      if (mobileGalleryContainer) {
+        let scrollTimeout;
+        mobileGalleryContainer.addEventListener('scroll', function() {
+          clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(() => {
+            const containerWidth = mobileGalleryContainer.offsetWidth;
+            const scrollPosition = mobileGalleryContainer.scrollLeft;
+            const activeIndex = Math.round(scrollPosition / containerWidth);
+            updateActiveMobileThumbnail(activeIndex);
+          }, 50);
+        }, { passive: true });
+      }
     });
 
-    // Global function for onclick handlers
+    /* =============================================
+      GLOBAL FUNCTION FOR ONCLICK HANDLERS
+    ============================================= */
     function selectVariant(element, optionPosition, optionValue) {
       if (window.variantSelector) {
         window.variantSelector.selectOption(element, optionPosition, optionValue);
@@ -1709,7 +1610,6 @@
     }
     
     document.addEventListener('DOMContentLoaded', function() {
-      
       // Initialize ADD TO CART buttons based on variant selection state
       if ({{ product.options | size }} > 1) {
         // MULTI-OPTION PRODUCT (requires selecting both)
