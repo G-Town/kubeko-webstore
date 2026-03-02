@@ -44,6 +44,9 @@
     {{ 'index.css' | asset_url | stylesheet_tag }}
     {{ 'swiper-bundle.min.css' | asset_url | stylesheet_tag }}
     <script src="{{ 'swiper-bundle.min.js' | asset_url }}" defer></script>
+
+    {% comment %} script for product-card {% endcomment %}
+    <script src="{{ 'product-card.js' | asset_url }}" defer></script>
     
     {% comment %} Progressive image loading support {% endcomment %}
     {% render 'progressive-image-loader' %}

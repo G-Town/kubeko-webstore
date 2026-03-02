@@ -1,1061 +1,10 @@
 {% assign first_variant = product.first_available_variant | default: product.variants.first %}
 {% assign first_image = first_variant.featured_image | default: product.featured_image %}
 
-
-{% comment %} version 4 {% endcomment %}
-{% comment %} Find the start index of the first variant's images {% endcomment %}
-{% comment %} {% assign first_image_index = 0 %}
-{% for image in product.images %}
-  {% if image.id == first_variant.featured_image.id %}
-    {% assign first_image_index = forloop.index0 %}
-    {% break %}
-  {% endif %}
-{% endfor %} {% endcomment %}
-
-{% comment %} Collect all variant featured image IDs for boundary detection {% endcomment %}
-{% comment %} {% assign variant_featured_ids = "" %}
-{% for variant in product.variants %}
-  {% if variant.featured_image %}
-    {% unless variant.id == first_variant.id %}
-      {% assign variant_featured_ids = variant_featured_ids | append: variant.featured_image.id | append: "," %}
-    {% endunless %}
-  {% endif %}
-{% endfor %} {% endcomment %}
-
-{% comment %} Find where the first variant's images end {% endcomment %}
-{% comment %} {% assign last_image_index = product.images.size %}
-{% for image in product.images %}
-  {% if forloop.index0 > first_image_index %}
-    {% assign image_id_str = image.id | append: "," %}
-    {% if variant_featured_ids contains image_id_str %}
-      {% assign last_image_index = forloop.index0 %}
-      {% break %}
-    {% endif %}
-  {% endif %}
-{% endfor %} {% endcomment %}
-
-{% comment %} {% assign variant_image_count = last_image_index | minus: first_image_index %}
-{% assign variant_images = product.images | slice: first_image_index, variant_image_count %} {% endcomment %}
-
-{% comment %} version 3 {% endcomment %}
-{% comment %} {% assign first_image_index = 0 %}
-{% for image in product.images %}
-  {% if image.id == first_variant.featured_image.id %}
-    {% assign first_image_index = forloop.index0 %}
-    {% break %}
-  {% endif %}
-{% endfor %}
-
-{% assign variant_images = product.images | slice: first_image_index, product.images.size %} {% endcomment %}
-
-{% comment %} version 2 {% endcomment %}
-{% comment %} {% for image in product.images %}
-  {% if image.src == first_image.src %}
-    {% assign first_image_index = forloop.index0 %}
-    {% break %}
-  {% endif %}
-{% endfor %}
-
-{% assign first_image = product.images[first_image_index] %}
-{% assign next_index = first_image_index | plus: 1 %}
-{% if next_index < product.images.size %}
-  {% assign second_image = product.images[next_index] %}
-{% else %}
-  {% assign second_image = nil %}
-{% endif %} {% endcomment %}
-
-{% comment %} {{ first_variant.featured_image.id }} {% endcomment %}
-
-{% comment %} version 1 {% endcomment %}
-{% comment %} {% assign first_image = product.featured_image %}
-{% assign second_image = product.images[1] %} {% endcomment %}
-
 {%- assign card_sizes = image_sizes | default: "(max-width: 767px) 50vw, (max-width: 1536px) 20vw, 300px" -%}
 
 {%- assign unique_id = product.id -%}
 
-<script>
-  // Product Card namespace to avoid global conflicts
-  window.ProductCardObject = window.ProductCard || {
-    // Cache for product data to avoid re-parsing JSON
-    productDataCache: {},
-
-    buildImageUrl: function(baseUrl, width) {
-      if (!baseUrl) return '';
-      
-      // Remove any existing size suffix
-      let url = baseUrl.replace(/_\d+x\d*\./, '.');
-      
-      // Add width parameter before file extension
-      url = url.replace(/(\.(jpg|jpeg|png|gif|webp))(\?|$)/i, `_${width}x$1$3`);
-      
-      return url;
-    },
-
-    buildSrcset: function(baseUrl) {
-      const widths = [400, 600, 900, 1200];
-      return widths.map(w => 
-        `${this.buildImageUrl(baseUrl, w)} ${w}w`
-      ).join(', ');
-    },
-
-    // getImagesForVariant: function(variant, allImages) {
-    //   if (!variant.featured_image || !allImages.length) return [];
-
-    //   featuredSrc = variant.featured_image.src;
-    //   startIndex = allImages.findIndex(imgUrl => imgUrl.includes(featuredSrc));
-      
-    //   if (startIndex === -1) return [];
-
-    //   const result = [allImages[startIndex]];
-    //   if (startIndex + 1 < allImages.length) {
-    //     result.push(allImages[startIndex + 1]);
-    //   }
-
-    //   return result;
-    // },
-    getImagesForVariant: function(variant, allImages, allVariants) {
-      // Fallback: if variant has no featured image, return all images
-      if (!variant.featured_image) return allImages;
-      if (!allImages.length) return [];
-
-      const featuredSrc = variant.featured_image.src;
-      const startIndex = allImages.findIndex(imgUrl => imgUrl.includes(featuredSrc));
-
-      // console.log('featuredSrc:', featuredSrc);
-      // console.log('startIndex:', startIndex);
-
-      if (startIndex === -1) return [];
-
-      // Build a set of featured image URLs for all OTHER variants,
-      // to use as boundary markers
-      const otherVariantFeaturedSrcs = new Set(
-        (allVariants || [])
-          .filter(v => v.featured_image && v.featured_image.src !== featuredSrc)
-          .map(v => v.featured_image.src)
-      );
-
-      // console.log('otherVariantFeaturedSrcs:', [...otherVariantFeaturedSrcs]);
-      // console.log('allImages sample:', allImages.slice(0, 5));
-
-      // Collect images from startIndex until we hit another variant's featured image
-      const result = [];
-      for (let i = startIndex; i < allImages.length; i++) {
-        if (i !== startIndex && otherVariantFeaturedSrcs.has(allImages[i])) break;
-        result.push(allImages[i]);
-      }
-
-      return result;
-    },
-
-    // updateCardImages: function (productId, images) {
-    //   const productCardElement = document.querySelector(`[data-product-card="${productId}"]`);
-    //   if (!productCardElement) return;
-
-    //   const mainImage = productCardElement.querySelector(`#primary-image-${productId}`);
-    //   const secondaryImage = productCardElement.querySelector(`#secondary-image-${productId}`);
-
-    //   // Update primary image
-    //   if (mainImage && images[0]) {
-    //     // mainImage.srcset = `
-    //     //   ${images[0].replace(/(\.[a-z]+)$/i, '_900x$1')} 900w,
-    //     //   ${images[0].replace(/(\.[a-z]+)$/i, '_1200x$1')} 1200w
-    //     // `;
-    //     mainImage.srcset = this.buildSrcset(images[0]);
-    //     mainImage.sizes = "{{ card_sizes }}";
-    //   }
-
-    //   // Update secondary image
-    //   if (secondaryImage && images[1]) {
-    //     // secondaryImage.srcset = `
-    //     //   ${images[1].replace(/(\.[a-z]+)$/i, '_900x$1')} 900w,
-    //     //   ${images[1].replace(/(\.[a-z]+)$/i, '_1200x$1')} 1200w
-    //     // `;
-    //     secondaryImage.srcset = this.buildSrcset(images[1]);
-    //     secondaryImage.sizes = "{{ card_sizes }}";
-    //   }
-
-    //   // Update mobile toggle thumbnails
-    //   const toggleButton = productCardElement.querySelector(`#thumbnail-toggle-${productId}`);
-    //   if (toggleButton) {
-    //     // Store thumbnail-sized URLs (120w for mobile thumbnail)
-    //     toggleButton.dataset.primaryImage = this.buildImageUrl(images[0], 120 );
-    //     toggleButton.dataset.secondaryImage = this.buildImageUrl(images[1], 120 );
-
-    //     const thumbContainer = productCardElement.querySelector(`#thumb-container-${productId}`);
-    //     if (thumbContainer && images[1]) {
-    //       const thumbImg = thumbContainer.querySelector('img');
-    //       if (thumbImg) {
-    //         // Just update the src on existing img
-    //         thumbImg.src = this.buildImageUrl(images[1], 120 );
-    //         thumbImg.alt = "Alternate view";
-    //       } else {
-    //         // thumbContainer.innerHTML = `
-    //         //   <img
-    //         //     src="${images[1].replace(/(\.[a-z]+)$/i, '_120x$1')}"
-    //         //     alt="Alternate view"
-    //         //     class="w-full h-auto object-contain block"
-    //         //     loading="eager"
-    //         //   >
-    //         // `;
-    //       }
-    //     }
-    //   }
-    // },
-    updateCardImages: function(productId, images) {
-      const gallery = document.getElementById(`gallery-${productId}`);
-      if (!gallery) return;
-
-      const productCardElement = document.querySelector(`[data-product-card="${productId}"]`);
-      if (!productCardElement) return;
-
-      const productData = this.getProductData(productId, productCardElement);
-      const altText = productData ? productData.title : '';
-      const firstImg = gallery.querySelector('.product-card-slide img');
-      const sizes = firstImg ? firstImg.sizes : '';
-
-      // Clear all existing slides
-      gallery.innerHTML = '';
-
-      // Rebuild all slides from scratch
-      for (let i = 0; i < images.length; i++) {
-        const slide = this.buildSlide(images[i], altText, i, productId, sizes);
-        gallery.appendChild(slide);
-      }
-
-      // Reset scroll position to first slide
-      gallery.scrollLeft = 0;
-
-      this.updateScrollbar(productId);
-    },
-    
-    // Function to toggle product images on mobile
-    // toggleProductImages: function(thumbnailButton, event, productId) {
-    //   // Prevent default actions
-    //   if (event) {
-    //     event.preventDefault();
-    //     event.stopPropagation();
-    //   }
-      
-    //   // Get elements
-    //   const productCardElement = thumbnailButton.closest('.group');
-    //   if (!productCardElement) return;
-      
-    //   // Get all needed elements
-    //   const activeThumbContainer = document.getElementById(`thumb-container-${productId}`);
-    //   if (!activeThumbContainer) return;
-    //   const primaryImageUrl = thumbnailButton.dataset.primaryImage;
-    //   const secondaryImageUrl = thumbnailButton.dataset.secondaryImage;
-    //   const mainImage = document.getElementById(`primary-image-${productId}`);
-    //   const secondaryImage = document.getElementById(`secondary-image-${productId}`);
-    //   if (!mainImage || !secondaryImage) return;
-
-    //   // Lazily create the thumbnail image ONCE
-    //   let thumbImg = activeThumbContainer.querySelector('img');
-    //   if (!thumbImg) {
-    //     thumbImg = document.createElement('img');
-    //     thumbImg.className = 'w-full h-full object-contain block';
-    //     thumbImg.loading = 'lazy';
-    //     thumbImg.alt = 'Alternate view';
-    //     activeThumbContainer.appendChild(thumbImg);
-    //   }
-
-    //   // Toggle state
-    //   productCardElement.classList.toggle('images-toggled');
-    //   const isShowingSecondary = productCardElement.classList.contains('images-toggled');
-
-    //   // Swap thumbnail src ONLY
-    //   if (isShowingSecondary) {
-    //     thumbImg.src = primaryImageUrl;
-    //     thumbImg.alt = 'Primary view';
-    //   } else {
-    //     thumbImg.src = secondaryImageUrl;
-    //     thumbImg.alt = 'Alternate view';
-    //   }
-
-    //   // if (isShowingSecondary) {
-    //   //   activeThumbContainer.innerHTML = `<img 
-    //   //     src="${primaryImageUrl}" 
-    //   //     alt="Primary view" 
-    //   //     class="w-full h-auto object-contain block"
-    //   //     loading="eager"
-    //   //     id="thumb-active-${productId}"
-    //   //     style="display: block; margin: 0;"
-    //   //   >`;
-    //   // } else {
-    //   //   activeThumbContainer.innerHTML = `<img 
-    //   //     src="${secondaryImageUrl}" 
-    //   //     alt="Alternate view" 
-    //   //     class="w-full h-auto object-contain block"
-    //   //     loading="eager"
-    //   //     id="thumb-active-${productId}"
-    //   //     style="display: block; margin: 0;"
-    //   //   >`;
-    //   // }
-
-    //   // Handle main image switching (this part stays the same)
-    //   mainImage.style.transition = "none";
-    //   secondaryImage.style.transition = "none";
-      
-    //   if (isShowingSecondary) {
-    //     mainImage.style.opacity = '0';
-    //     mainImage.style.zIndex = '1';
-    //     secondaryImage.style.opacity = '1';
-    //     secondaryImage.style.zIndex = '2';
-    //   } else {
-    //     mainImage.style.opacity = '1';
-    //     mainImage.style.zIndex = '2';
-    //     secondaryImage.style.opacity = '0';
-    //     secondaryImage.style.zIndex = '1';
-    //   }
-    // },
-
-    handleProductCardClick: function(event, productId) {
-      // console.log("🔴 CLICKED ELEMENT:", event.target);
-      // console.log("🔴 CLICKED ELEMENT TAG:", event.target.tagName);
-      // console.log("🔴 CLICKED ELEMENT CLASSES:", event.target.className);
-
-      // event.preventDefault();
-      // event.stopPropagation();
-
-      if (!event) return;
-
-      // const productCard = event.currentTarget.closest('.group');
-      // if (!productCard) return;
-      const productLink = event.target.closest('.product-card-link');
-      if (!productLink) return;
-      const productCard = productLink.closest('.group');
-      if (!productCard) return;
-
-      // console.log("test")
-
-      const isMobile = window.matchMedia('(max-width: 767px)').matches;
-      // const productLink = productCard.querySelector('a[href]');
-      const thumbnailToggle = productCard.querySelector('.product-thumbnail-toggle');
-      const thumbContainer = document.getElementById(`thumb-container-${productId}`);
-
-      /*
-        DESKTOP BEHAVIOR
-        - Always navigate
-      */
-      if (!isMobile) {
-        return;
-      }
-
-
-      // Determine current state
-      const isExpanded = productCard.classList.contains('mobile-expanded');
-
-      /*
-        MOBILE — FIRST TAP
-        - Expand card
-        - Prevent navigation
-        - Reveal thumbnail toggle
-        - Lazily create thumbnail image
-      */
-      if (!isExpanded) {
-        event.preventDefault();
-        // event.stopPropagation();
-
-        document.querySelectorAll('.mobile-expanded').forEach(card => {
-        if (card !== productCard) {
-          card.classList.remove('mobile-expanded');
-          
-          const cardId = card.getAttribute('data-product-card');
-          const thumbToggle = document.getElementById(`thumbnail-toggle-${cardId}`);
-          if (thumbToggle) {
-            thumbToggle.classList.add('mobile-hidden');
-          }
-        }
-      });
-
-        productCard.classList.add('mobile-expanded');
-
-        if (thumbnailToggle) {
-          thumbnailToggle.classList.remove('mobile-hidden');
-        }
-
-        // Lazily create thumbnail image ONCE on expansion
-        if (thumbContainer && thumbnailToggle && !thumbContainer.querySelector('img')) {
-          const secondaryImageUrl = thumbnailToggle.dataset.secondaryImage;
-
-          if (secondaryImageUrl) {
-            const img = document.createElement('img');
-            img.className = 'w-full h-full object-contain block';
-            img.loading = 'lazy';
-            img.alt = 'Alternate view';
-            img.src = secondaryImageUrl;
-
-            thumbContainer.appendChild(img);
-          }
-        }
-
-        return;
-      }
-
-      /*
-        MOBILE — SECOND TAP
-        - Allow normal navigation to PDP
-      */
-      if (productLink) {
-        window.location.href = productLink.href;
-      }
-    },
-    
-    // Get product data from cache or parse JSON
-    getProductData: function(productId, element) {
-      // If we already have it cached, return it
-      if (this.productDataCache[productId]) {
-        return this.productDataCache[productId];
-      }
-      
-      // Get the product card - use provided element to find the closest card if possible
-      let productCardElement;
-      if (element) {
-        productCardElement = element.closest(`[data-product-card="${productId}"]`);
-      }
-      
-      // Fallback to document query if we couldn't find it from the element
-      if (!productCardElement) {
-        productCardElement = document.querySelector(`[data-product-card="${productId}"]`);
-      }
-      
-      if (!productCardElement) {
-        console.error('Could not find product card with ID:', productId);
-        return null;
-      }
-      
-      // Get the product data element
-      const productDataElem = productCardElement.querySelector('[data-product-json]');
-      if (!productDataElem) {
-        console.error('Could not find product data element for product ID:', productId);
-        return null;
-      }
-      
-      try {
-        // Parse the product data
-        const productData = JSON.parse(productDataElem.getAttribute('data-product-json'));
-        
-        // Cache it for future use
-        this.productDataCache[productId] = productData;
-        
-        return productData;
-      } catch (error) {
-        console.error('Error parsing product data for product ID:', productId, error);
-        return null;
-      }
-    },
-    
-    // Function to handle variant selection
-    selectVariant: function(button, productId, optionPosition, optionValue) {
-      console.log(`Selecting variant for product ${productId}: option ${optionPosition} = ${optionValue}`);
-      
-      // Get the product card - use button.closest() to ensure we're in the right card
-      const productCardElement = button.closest(`[data-product-card="${productId}"]`);
-      if (!productCardElement) {
-        console.error('Could not find product card with ID:', productId);
-        return;
-      }
-      
-      // Get the product data - pass the button for context
-      const productData = this.getProductData(productId, button);
-      if (!productData) return;
-      
-      // Clear previous selection for this option group - scoped to this product card
-      productCardElement.querySelectorAll(`.variant-button[data-option-position="${optionPosition}"]`).forEach(btn => {
-        btn.classList.remove('selected');
-        // btn.classList.remove('bg-[#D9D9D9]');
-      });
-      
-      // Mark this button as selected
-      button.classList.add('selected');
-      // button.classList.add('bg-[#D9D9D9]');
-      
-      // Get all current selections for this product - scoped to this product card
-      const selections = {};
-      productCardElement.querySelectorAll(`.variant-button.selected`).forEach(selectedBtn => {
-        const pos = selectedBtn.getAttribute('data-option-position');
-        const val = selectedBtn.getAttribute('data-value');
-        selections[`option${pos}`] = val;
-      });
-      
-      console.log(`Current selections for product ${productId}:`, selections);
-      
-      // Check if all options are selected
-      const totalOptions = productData.options.length;
-      const allSelected = Object.keys(selections).length === totalOptions;
-
-      // Always update images when a color is selected, even if other options aren't
-      if (optionPosition === 1 && optionValue) {
-        const colorVariant = productData.variants.find(v => v.option1 === optionValue);
-        if (colorVariant) {
-          const variantImages = this.getImagesForVariant(colorVariant, productData.images, productData.variants);
-          console.log("🚀 ~ variantImages:", variantImages)
-          this.updateCardImages(productId, variantImages);
-        }
-      }
-      
-      // Find matching variant
-      let matchingVariant = null;
-      if (allSelected) {
-        // Try to find exact match
-        matchingVariant = productData.variants.find(variant => {
-          return Object.keys(selections).every(optionKey => {
-            const match = variant[optionKey] === selections[optionKey];
-            console.log(`Comparing ${optionKey}: ${variant[optionKey]} vs ${selections[optionKey]} = ${match}`);
-            return match;
-          });
-        });
-        
-        if (matchingVariant) {
-          console.log(`Found matching variant for product ${productId}:`, matchingVariant.id);
-        } else {
-          console.log(`No matching variant found for product ${productId} with selections:`, selections);
-        }
-      }
-      
-      if (matchingVariant) {
-        // const variantImages = this.getImagesForVariant(matchingVariant, productData.images);
-        // this.updateCardImages(productId, variantImages);
-
-
-        // Update variant input
-        const variantInput = productCardElement.querySelector(`input[name="id"]`);
-        
-        if (variantInput) {
-          variantInput.value = matchingVariant.id;
-          variantInput.setAttribute('data-selected-variant', matchingVariant.id);
-          console.log(`Updated variant input to: ${matchingVariant.id}`);
-          
-          // Force trigger a change event to ensure any listeners are notified
-          const event = new Event('change', { bubbles: true });
-          variantInput.dispatchEvent(event);
-        } else {
-          console.warn(`Could not find variant input for product ${productId}`);
-        }
-        
-        // Update the add to cart button state based on inventory
-        const addButton = productCardElement.querySelector('.add-to-cart-button');
-        if (addButton) {
-          // Check if the variant is available (has inventory)
-          const isAvailable = matchingVariant.available;
-          const inventory = matchingVariant.inventory_quantity;
-          const inventoryPolicy = matchingVariant.inventory_policy;
-          
-          console.log(`Variant inventory for ${matchingVariant.id}: ${inventory}, Policy: ${inventoryPolicy}, Available: ${isAvailable}`);
-          
-          if (isAvailable) {
-            // Variant is in stock
-            addButton.disabled = false;
-            addButton.classList.add('active');
-            addButton.classList.remove('out-of-stock');
-            addButton.textContent = 'ADD TO CART';
-            
-            // Add inventory indicator if inventory tracking is enabled and quantity is shown
-            if (inventory > 0 && inventory <= 10) {
-              const inventoryIndicator = productCardElement.querySelector('.inventory-indicator') || document.createElement('div');
-              inventoryIndicator.className = 'inventory-indicator text-xs mt-1';
-              inventoryIndicator.textContent = `Only ${inventory} left`;
-              
-              // Add the indicator below the add to cart button if it doesn't exist
-              if (!productCardElement.querySelector('.inventory-indicator')) {
-                addButton.parentNode.appendChild(inventoryIndicator);
-              }
-            } else {
-              // Remove inventory indicator if quantity is high or not relevant
-              const inventoryIndicator = productCardElement.querySelector('.inventory-indicator');
-              if (inventoryIndicator) {
-                inventoryIndicator.remove();
-              }
-            }
-            
-            console.log(`Enabled add to cart button for product ${productId}`);
-          } else {
-            // Variant is out of stock
-            addButton.disabled = true;
-            addButton.classList.remove('active');
-            addButton.classList.add('out-of-stock');
-            addButton.textContent = 'OUT OF STOCK';
-            
-            // Remove any existing inventory indicator
-            const inventoryIndicator = productCardElement.querySelector('.inventory-indicator');
-            if (inventoryIndicator) {
-              inventoryIndicator.remove();
-            }
-            
-            console.log(`Variant out of stock for product ${productId}`);
-          }
-        }
-      } else {
-        // Update the button states to disabled if no matching variant
-        productCardElement.querySelectorAll(`.add-to-cart-button`).forEach(btn => {
-          if (!productData.has_only_default_variant) {
-            btn.disabled = true;
-            btn.classList.remove('active');
-            
-            // Only show "OUT OF STOCK" if all required options are selected
-            // but the specific combination is unavailable
-            if (Object.keys(selections).length === totalOptions) {
-              btn.classList.add('out-of-stock');
-              btn.textContent = 'OUT OF STOCK';
-            } else {
-              btn.classList.remove('out-of-stock');
-              btn.textContent = 'ADD TO CART';
-            }
-            
-            console.log(`Disabled add to cart button for product ${productId}`);
-            
-            // Remove any existing inventory indicator
-            const inventoryIndicator = productCardElement.querySelector('.inventory-indicator');
-            if (inventoryIndicator) {
-              inventoryIndicator.remove();
-            }
-          }
-        });
-      }
-    },
-    
-    // Direct add to cart function that ensures the proper variant ID is used
-    addToCart: function(button, productId) {
-      console.log(`Adding product ${productId} to cart`);
-      
-      // Get the form containing the button
-      const form = button.closest('form[action="/cart/add"]');
-      if (!form) {
-        console.error('No form found for add to cart button');
-        return false;
-      }
-      
-      // Get the variant ID input
-      const variantInput = form.querySelector('input[name="id"]');
-      if (!variantInput || !variantInput.value) {
-        console.error('No variant ID found in form');
-        return false;
-      }
-      
-      // Store original text and class state
-      const originalText = button.textContent;
-      const wasActive = button.classList.contains('active');
-      
-      // Get form data and submit with fetch
-      const formData = new FormData(form);
-      fetch('/cart/add.js', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => {
-        if (!response.ok) throw new Error('Add to cart failed');
-        return response.json();
-      })
-      .then(result => {
-        // Update cart count
-        return fetch('/cart.js');
-      })
-      .then(response => response.json())
-      .then(cart => {
-        // Update the cart count display
-        const cartCount = document.querySelector('.cart-count');
-        if (cartCount) {
-          cartCount.textContent = cart.item_count;
-          cartCount.style.display = cart.item_count > 0 ? 'block' : 'none';
-        }
-        
-        // Show success state
-        button.textContent = 'Added';
-        button.classList.remove('active'); // Remove potentially conflicting classes
-        button.classList.add('success');
-        
-        // Reset button after 2 seconds
-        setTimeout(() => {
-          button.textContent = originalText;
-          button.classList.remove('success');
-          // Re-add active class if it was active before
-          if (wasActive) {
-            button.classList.add('active');
-          }
-        }, 2000);
-      })
-      .catch(error => {
-        console.error('Error adding to cart:', error);
-        button.textContent = 'Error';
-        button.classList.remove('active');
-        button.classList.add('error');
-        
-        setTimeout(() => {
-          button.textContent = originalText;
-          button.classList.remove('error');
-          // Re-add active class if it was active before
-          if (wasActive) {
-            button.classList.add('active');
-          }
-        }, 2000);
-      });
-      
-      return false; // Prevent default form submission
-    },
-
-    updateScrollbar: function(productId) {
-      const gallery = document.getElementById(`gallery-${productId}`);
-      const track = gallery && gallery.closest('.product-card-link')
-        .querySelector('.product-card-scrollbar-track');
-      const thumb = document.getElementById(`scrollbar-thumb-${productId}`);
-
-      if (!gallery || !track || !thumb) return;
-
-      const totalSlides = gallery.querySelectorAll('.product-card-slide').length;
-
-      // Hide scrollbar for single-image products
-      if (totalSlides <= 1) {
-        track.style.opacity = '0';
-        return;
-      }
-
-      // Thumb width as a proportion of total slides
-      const thumbWidthPct = (1 / totalSlides) * 100;
-      thumb.style.width = `${thumbWidthPct}%`;
-
-      // Thumb position based on scroll progress
-      const scrollProgress = gallery.scrollLeft / (gallery.scrollWidth - gallery.clientWidth);
-      const maxTranslate = 100 * (totalSlides - 1);
-      thumb.style.transform = `translateX(${scrollProgress * maxTranslate}%)`;
-
-      track.style.opacity = '1';
-    },
-
-    buildSlide: function(imageUrl, altText, index, productId, sizes) {
-      const slide = document.createElement('div');
-      slide.className = 'product-card-slide';
-
-      const img = document.createElement('img');
-      img.id = `gallery-image-${index}-${productId}`;
-      img.alt = altText;
-      img.sizes = sizes;
-      img.loading = index === 0 ? 'eager' : 'lazy';
-
-      // Build srcset
-      img.srcset = this.buildSrcset(imageUrl);
-
-      // Use smallest srcset width as src fallback
-      img.src = this.buildImageUrl(imageUrl, 400);
-
-      slide.appendChild(img);
-      return slide;
-    },
-
-    appendRemainingSlides: function(productId, images, altText, sizes) {
-      const gallery = document.getElementById(`gallery-${productId}`);
-      if (!gallery) return;
-
-      // Guard against being called multiple times
-      if (gallery.dataset.initialized) return;
-      gallery.dataset.initialized = 'true';
-
-      // Skip index 0 — already server-rendered by Liquid
-      for (let i = 1; i < images.length; i++) {
-        const slide = this.buildSlide(images[i], altText, i, productId, sizes);
-        gallery.appendChild(slide);
-      }
-
-      this.updateScrollbar(productId);
-    },
-
-    initPage() {
-      // Run once per page
-      document.querySelectorAll('[data-product-card]').forEach(card => {
-        this.initCard(card);
-      });
-    },
-
-    // initCard(card) {
-    //   const productId = card.getAttribute('data-product-card');
-    //   const productData = this.getProductData(productId, card);
-
-    //   // need sizes to build gallery
-    //   const firstImg = gallery.querySelector('.product-card-slide img');
-    //   const sizes = firstImg ? firstImg.sizes : '';
-
-    //   if (!productData) return;
-
-    //   // 1. Pre-select first available variant
-    //   const defaultVariant = productData.variants.find(v => v.available) || productData.variants[0];
-
-    //   if (defaultVariant) {
-    //     const variantImages = this.getImagesForVariant(defaultVariant, productData.images, productData.variants);
-    //     this.updateCardImages(productId, variantImages);
-    //   }
-
-    //   // 2. Handle has_only_default_variant edge case TODO: refactor to own method
-    //   if (productData.has_only_default_variant) {
-    //     const forms = card.querySelectorAll(`form[data-product-form="${productId}"]`);
-    //       forms.forEach(form => {
-    //         const addButton = form.querySelector('.add-to-cart-button');
-    //         if (addButton) {
-    //           // Check if the default variant is available
-    //           const defaultVariant = productData.variants[0];
-    //           if (defaultVariant && defaultVariant.available) {
-    //             addButton.disabled = false;
-    //             addButton.classList.add('active');
-                
-    //             // Show inventory if quantity is low
-    //             if (defaultVariant.inventory_quantity <= 10 && 
-    //                 defaultVariant.inventory_quantity > 0 && 
-    //                 defaultVariant.inventory_management === 'shopify') {
-    //               const inventoryIndicator = document.createElement('div');
-    //               inventoryIndicator.className = 'inventory-indicator text-xs mt-1';
-    //               inventoryIndicator.textContent = `Only ${defaultVariant.inventory_quantity} left`;
-    //               addButton.parentNode.appendChild(inventoryIndicator);
-    //             }
-    //           } else {
-    //             // Default variant is out of stock
-    //             addButton.disabled = true;
-    //             addButton.classList.add('out-of-stock');
-    //             addButton.textContent = 'OUT OF STOCK';
-    //           }
-    //         }
-    //       });
-    //   }
-    // },
-    initCard: function(card) {
-      const productId = card.getAttribute('data-product-card');
-      const productData = this.getProductData(productId, card);
-      if (!productData) return;
-
-      const gallery = document.getElementById(`gallery-${productId}`);
-      const firstImg = gallery ? gallery.querySelector('.product-card-slide img') : null;
-      const sizes = firstImg ? firstImg.sizes : '';
-
-      // 1. Append remaining slides for default variant
-      const defaultVariant = productData.variants.find(v => v.available) || productData.variants[0];
-      if (defaultVariant) {
-        const variantImages = this.getImagesForVariant(defaultVariant, productData.images, productData.variants);
-        this.appendRemainingSlides(productId, variantImages, productData.title, sizes);
-      }
-
-      // 2. Attach scroll listener for scrollbar updates
-      if (gallery) {
-        gallery.addEventListener('scroll', () => {
-          this.updateScrollbar(productId);
-        }, { passive: true });
-      }
-
-      // 3. Handle has_only_default_variant edge case
-      if (productData.has_only_default_variant) {
-        const forms = card.querySelectorAll(`form[data-product-form="${productId}"]`);
-        forms.forEach(form => {
-          const addButton = form.querySelector('.add-to-cart-button');
-          if (addButton) {
-            const defaultVariant = productData.variants[0];
-            if (defaultVariant && defaultVariant.available) {
-              addButton.disabled = false;
-              addButton.classList.add('active');
-
-              if (defaultVariant.inventory_quantity <= 10 &&
-                  defaultVariant.inventory_quantity > 0 &&
-                  defaultVariant.inventory_management === 'shopify') {
-                const inventoryIndicator = document.createElement('div');
-                inventoryIndicator.className = 'inventory-indicator text-xs mt-1';
-                inventoryIndicator.textContent = `Only ${defaultVariant.inventory_quantity} left`;
-                addButton.parentNode.appendChild(inventoryIndicator);
-              }
-            } else {
-              addButton.disabled = true;
-              addButton.classList.add('out-of-stock');
-              addButton.textContent = 'OUT OF STOCK';
-            }
-          }
-        });
-      }
-    },
-    
-    // Empty placeholder for checkCardVisibility (overridden to do nothing on mobile)
-    checkCardVisibility: function() {
-      // This is intentionally empty for mobile - we only want click behavior
-      return;
-    }
-
-
-  };
-
-  // Make ProductCardObject globally available immediately
-  // window.ProductCardObject = ProductCardObject;
-  // window.loadHighResImage = ProductCardObject.loadHighResImage;
-  window.toggleProductImages = ProductCardObject.toggleProductImages;
-  window.handleProductCardClick = ProductCardObject.handleProductCardClick.bind(ProductCardObject);
-
-
-  // Initialize when DOM is loaded
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOMContentLoaded fired');
-    ProductCardObject.initPage();
-
-    console.log("Setting up event delegation...");
-    // Handle product card clicks with delegation
-    // document.addEventListener('click', function(event) {
-    //   console.log("Document click detected, target:", event.target);
-
-    //   const productLink = event.target.closest('.product-card-link');
-    //   console.log("Product link from delegation:", productLink);
-
-    //   if (productLink) {
-    //     const productId = productLink.dataset.productId;
-    //     console.log("Calling handleProductCardClick with ID:", productId);
-    //     ProductCardObject.handleProductCardClick(event, productId);
-    //   }
-    // }, true); // ← Add 'true' for capture phase
-
-    // Remove all viewport-based classes on initialization
-    document.querySelectorAll('.group').forEach(card => {
-      card.classList.remove('card-visible');
-      card.classList.remove('card-visible-delayed');
-    });
-    
-    // Function to normalize variant button sizes within a product card
-    function normalizeVariantButtonSizes() {
-      // Process each product card separately
-      document.querySelectorAll('[data-product-card]').forEach(card => {
-        // Find the maximum width for color variants
-        let maxColorWidth = 0;
-        card.querySelectorAll('.color-variant').forEach(btn => {
-          // Temporarily remove inline styles for accurate measurement
-          const originalStyles = btn.getAttribute('style');
-          btn.removeAttribute('style');
-          const width = btn.offsetWidth;
-          if (width > maxColorWidth) maxColorWidth = width;
-          // Restore original styles
-          if (originalStyles) btn.setAttribute('style', originalStyles);
-        });
-        
-        // Find the maximum width for size variants
-        let maxSizeWidth = 0;
-        card.querySelectorAll('.size-variant').forEach(btn => {
-          // Temporarily remove inline styles for accurate measurement
-          const originalStyles = btn.getAttribute('style');
-          btn.removeAttribute('style');
-          const width = btn.offsetWidth;
-          if (width > maxSizeWidth) maxSizeWidth = width;
-          // Restore original styles
-          if (originalStyles) btn.setAttribute('style', originalStyles);
-        });
-        
-        // Apply the max widths to all buttons in each column
-        if (maxColorWidth > 0) {
-          card.querySelectorAll('.color-variant').forEach(btn => {
-            btn.style.width = maxColorWidth + 'px';
-          });
-        }
-        
-        if (maxSizeWidth > 0) {
-          card.querySelectorAll('.size-variant').forEach(btn => {
-            btn.style.width = maxSizeWidth + 'px';
-          });
-        }
-      });
-    }
-    
-    // Run the normalization after a small delay to ensure DOM is fully rendered
-    setTimeout(normalizeVariantButtonSizes, 100);
-    
-    // Add a click handler to close expanded cards when clicking outside
-    document.addEventListener('click', function(event) {
-      // Only on mobile
-      if (window.innerWidth >= 767) {
-        console.log("🟡 Desktop - skipping");
-        return;
-      }
-
-      console.log("🟡 is mobile");
-      
-      // Get all expanded cards
-      const expandedCards = document.querySelectorAll('.mobile-expanded');
-      if (expandedCards.length === 0) return;
-      
-      // Check if the click was outside of any expanded card
-      let clickedOutside = true;
-      for (const card of expandedCards) {
-        if (card.contains(event.target)) {
-          clickedOutside = false;
-          break;
-        }
-      }
-
-      console.log("🟡 Clicked outside?", clickedOutside);
-      
-      // If clicked outside, collapse all expanded cards
-      if (clickedOutside) {
-        expandedCards.forEach(card => {
-          console.log("🟡 Collapsing all cards");
-          card.classList.remove('mobile-expanded');
-          
-          // Hide the thumbnail toggle
-          const productId = card.getAttribute('data-product-card');
-          const thumbnailToggle = document.getElementById(`thumbnail-toggle-${productId}`);
-          if (thumbnailToggle) {
-            thumbnailToggle.classList.add('mobile-hidden');
-          }
-          
-          // Hide the dropdown
-          const dropdown = card.querySelector('.product-dropdown');
-          if (dropdown) {
-            dropdown.classList.remove('mobile-dropdown-visible');
-            dropdown.classList.add('mobile-dropdown-hidden');
-          }
-        });
-      }
-    });
-
-    // Modify the selectVariant function to update button styles
-    const originalSelectVariant = ProductCardObject.selectVariant;
-    ProductCardObject.selectVariant = function(button, productId, optionPosition, optionValue) {
-      // Call the original function first
-      originalSelectVariant.call(this, button, productId, optionPosition, optionValue);
-      
-      // Get the product card
-      const productCardElement = button.closest(`[data-product-card="${productId}"]`);
-      if (!productCardElement) return;
-      
-      // Get all selected buttons to ensure they keep their styles
-      const allSelectedButtons = productCardElement.querySelectorAll('.variant-button.selected');
-      allSelectedButtons.forEach(btn => {
-        // Make sure selected buttons maintain their style
-        btn.style.backgroundColor = 'rgba(217, 217, 217, 0.9)';
-        btn.style.color = 'black';
-        btn.style.fontWeight = '500';
-      });
-      
-      // Clear any inline styles from non-selected buttons to allow hover effects
-      const allNonSelectedButtons = productCardElement.querySelectorAll('.variant-button:not(.selected)');
-      allNonSelectedButtons.forEach(btn => {
-        btn.style.backgroundColor = '';
-        btn.style.color = '';
-        btn.style.fontWeight = '';
-      });
-    };
-
-    // New click handler for product card color chips
-    document.addEventListener('click', function(event) {
-      const chip = event.target.closest('.color-chip');
-      if (!chip) {
-        return; // Not a chip click, ignore
-      }
-
-      // We are inside a product card and clicked a color chip.
-      event.stopPropagation(); // Prevent other click handlers on the card.
-
-      const productCardElement = chip.closest('[data-product-card]');
-      // const productCardElement = event.target.closest('[data-product-card]');
-      if (!productCardElement) return;
-
-      productCardElement.querySelectorAll('.color-chip-container').forEach(c => c.classList.remove('active'));
-      chip.closest('.color-chip-container').classList.add('active');
-
-      // Handle active state
-      // const allChipContainers = productCardElement.querySelectorAll('.color-chip-container');
-      // allChipContainers.forEach(container => container.classList.remove('active'));
-      // chip.closest('.color-chip-container').classList.add('active');
-    });
-
-  });
-</script>
 
 <div class="group relative flex flex-col text-black
             {% if custom_aspect_ratio %}h-full{% endif %} overflow-visible "
@@ -1110,6 +59,24 @@
         class="product-card-scrollbar-thumb"
       ></div>
     </div>
+
+    <!-- Gallery arrow buttons (desktop only) -->
+    <button
+      class="product-card-arrow product-card-arrow-left"
+      id="arrow-left-{{ product.id }}"
+      onclick="ProductCardObject.scrollGallery(event, '{{ product.id }}', -1)"
+      aria-label="Previous image"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 18l-6-6l6-6"/></svg>
+    </button>
+    <button
+      class="product-card-arrow product-card-arrow-right"
+      id="arrow-right-{{ product.id }}"
+      onclick="ProductCardObject.scrollGallery(event, '{{ product.id }}', 1)"
+      aria-label="Next image"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 18l6-6l-6-6"/></svg>
+    </button>
   </a>
   <!-- Product link (image only) TODO: remove -->
   {% comment %} <a href="{{ product.url }}"
@@ -1255,250 +222,8 @@
   </div>
 </div>
 
-{% comment %} <script>
-  // function handleProductCardClick(event, productId) {
-  //   // Check if we're on mobile
-  //   if (window.innerWidth >= 768) return;
-
-  //   console.log("test")
-    
-  //   // Get the product card
-  //   const productCardElement = document.querySelector(`[data-product-card="${productId}"]`);
-  //   if (!productCardElement) return;
-    
-  //   // Prevent the default link behavior
-  //   event.preventDefault();
-    
-  //   // Check if the card is already expanded
-  //   if (productCardElement.classList.contains('mobile-expanded')) {
-  //     // Second click - navigate to product page
-  //     window.location.href = event.currentTarget.getAttribute('href');
-  //     return;
-  //   }
-    
-  //   // First click - show thumbnail toggle and dropdown
-  //   event.stopPropagation();
-    
-  //   // Close any other expanded cards first
-  //   document.querySelectorAll('.mobile-expanded').forEach(card => {
-  //     if (card !== productCardElement) {
-  //       card.classList.remove('mobile-expanded');
-        
-  //       // Hide the thumbnail toggle
-  //       const cardId = card.getAttribute('data-product-card');
-  //       const thumbToggle = document.getElementById(`thumbnail-toggle-${cardId}`);
-  //       if (thumbToggle) {
-  //         thumbToggle.classList.add('mobile-hidden');
-  //       }
-        
-  //       // Hide the dropdown
-  //       const dropdown = card.querySelector('.product-dropdown');
-  //       if (dropdown) {
-  //         dropdown.classList.remove('mobile-dropdown-visible');
-  //         dropdown.classList.add('mobile-dropdown-hidden');
-  //       }
-  //     }
-  //   });
-    
-  //   // Expand this card
-  //   productCardElement.classList.add('mobile-expanded');
-    
-  //   // Make the thumbnail toggle and dropdown visible
-  //   const thumbnailToggle = document.getElementById(`thumbnail-toggle-${productId}`);
-  //   if (thumbnailToggle) {
-  //     thumbnailToggle.classList.remove('mobile-hidden');
-  //   }
-    
-  //   // Make the dropdown visible
-  //   const dropdown = productCardElement.querySelector('.product-dropdown');
-  //   if (dropdown) {
-  //     dropdown.classList.remove('mobile-dropdown-hidden');
-  //     dropdown.classList.add('mobile-dropdown-visible');
-  //   }
-  // }
-
-  // Extend the ProductCardObject namespace with the new x`functionality
-  document.addEventListener('DOMContentLoaded', function() {
-    // // Remove all viewport-based classes on initialization
-    // document.querySelectorAll('.group').forEach(card => {
-    //   card.classList.remove('card-visible');
-    //   card.classList.remove('card-visible-delayed');
-    // });
-    
-    // // Function to normalize variant button sizes within a product card
-    // function normalizeVariantButtonSizes() {
-    //   // Process each product card separately
-    //   document.querySelectorAll('[data-product-card]').forEach(card => {
-    //     // Find the maximum width for color variants
-    //     let maxColorWidth = 0;
-    //     card.querySelectorAll('.color-variant').forEach(btn => {
-    //       // Temporarily remove inline styles for accurate measurement
-    //       const originalStyles = btn.getAttribute('style');
-    //       btn.removeAttribute('style');
-    //       const width = btn.offsetWidth;
-    //       if (width > maxColorWidth) maxColorWidth = width;
-    //       // Restore original styles
-    //       if (originalStyles) btn.setAttribute('style', originalStyles);
-    //     });
-        
-    //     // Find the maximum width for size variants
-    //     let maxSizeWidth = 0;
-    //     card.querySelectorAll('.size-variant').forEach(btn => {
-    //       // Temporarily remove inline styles for accurate measurement
-    //       const originalStyles = btn.getAttribute('style');
-    //       btn.removeAttribute('style');
-    //       const width = btn.offsetWidth;
-    //       if (width > maxSizeWidth) maxSizeWidth = width;
-    //       // Restore original styles
-    //       if (originalStyles) btn.setAttribute('style', originalStyles);
-    //     });
-        
-    //     // Apply the max widths to all buttons in each column
-    //     if (maxColorWidth > 0) {
-    //       card.querySelectorAll('.color-variant').forEach(btn => {
-    //         btn.style.width = maxColorWidth + 'px';
-    //       });
-    //     }
-        
-    //     if (maxSizeWidth > 0) {
-    //       card.querySelectorAll('.size-variant').forEach(btn => {
-    //         btn.style.width = maxSizeWidth + 'px';
-    //       });
-    //     }
-    //   });
-    // }
-    
-    // // Run the normalization after a small delay to ensure DOM is fully rendered
-    // setTimeout(normalizeVariantButtonSizes, 100);
-    
-    // // Add a click handler to close expanded cards when clicking outside
-    // document.addEventListener('click', function(event) {
-    //   // Only on mobile
-    //   if (window.innerWidth >= 768) return;
-      
-    //   // Get all expanded cards
-    //   const expandedCards = document.querySelectorAll('.mobile-expanded');
-    //   if (expandedCards.length === 0) return;
-      
-    //   // Check if the click was outside of any expanded card
-    //   let clickedOutside = true;
-    //   for (const card of expandedCards) {
-    //     if (card.contains(event.target)) {
-    //       clickedOutside = false;
-    //       break;
-    //     }
-    //   }
-      
-    //   // If clicked outside, collapse all expanded cards
-    //   if (clickedOutside) {
-    //     expandedCards.forEach(card => {
-    //       card.classList.remove('mobile-expanded');
-          
-    //       // Hide the thumbnail toggle
-    //       const productId = card.getAttribute('data-product-card');
-    //       const thumbnailToggle = document.getElementById(`thumbnail-toggle-${productId}`);
-    //       if (thumbnailToggle) {
-    //         thumbnailToggle.classList.add('mobile-hidden');
-    //       }
-          
-    //       // Hide the dropdown
-    //       const dropdown = card.querySelector('.product-dropdown');
-    //       if (dropdown) {
-    //         dropdown.classList.remove('mobile-dropdown-visible');
-    //         dropdown.classList.add('mobile-dropdown-hidden');
-    //       }
-    //     });
-    //   }
-    // });
-
-    // // Modify the selectVariant function to update button styles
-    // const originalSelectVariant = ProductCardObject.selectVariant;
-    // ProductCardObject.selectVariant = function(button, productId, optionPosition, optionValue) {
-    //   // Call the original function first
-    //   originalSelectVariant.call(this, button, productId, optionPosition, optionValue);
-      
-    //   // Get the product card
-    //   const productCardElement = button.closest(`[data-product-card="${productId}"]`);
-    //   if (!productCardElement) return;
-      
-    //   // Get all selected buttons to ensure they keep their styles
-    //   const allSelectedButtons = productCardElement.querySelectorAll('.variant-button.selected');
-    //   allSelectedButtons.forEach(btn => {
-    //     // Make sure selected buttons maintain their style
-    //     btn.style.backgroundColor = 'rgba(217, 217, 217, 0.9)';
-    //     btn.style.color = 'black';
-    //     btn.style.fontWeight = '500';
-    //   });
-      
-    //   // Clear any inline styles from non-selected buttons to allow hover effects
-    //   const allNonSelectedButtons = productCardElement.querySelectorAll('.variant-button:not(.selected)');
-    //   allNonSelectedButtons.forEach(btn => {
-    //     btn.style.backgroundColor = '';
-    //     btn.style.color = '';
-    //     btn.style.fontWeight = '';
-    //   });
-    // };
-
-    // // New click handler for product card color chips
-    // document.addEventListener('click', function(event) {
-    //   const chip = event.target.closest('.color-chip');
-    //   // const productCardElement = event.target.closest('[data-product-card]');
-
-    //   // if (!chip || !productCardElement) {
-    //   //   return;
-    //   // }
-    //   // Only handle if a color chip was clicked
-    //   if (!chip) {
-    //     return; // Not a chip click, ignore
-    //   }
-
-    //   // We are inside a product card and clicked a color chip.
-    //   event.stopPropagation(); // Prevent other click handlers on the card.
-
-    //   // Handle active state
-    //   const allChipContainers = productCardElement.querySelectorAll('.color-chip-container');
-    //   allChipContainers.forEach(container => container.classList.remove('active'));
-    //   chip.closest('.color-chip-container').classList.add('active');
-    // });
-  });
-</script> {% endcomment %}
-
 {% style %}
-  /* Global secondary image handling */
-  img#secondary-image-{{ product.id }} {
-    visibility: visible ;
-    opacity: 0 ;
-    transition: none ;
-    will-change: opacity ;
-  }
-
-  /* Only make secondary images visible on hover (desktop) or when toggled (mobile) */
-  @media (min-width: 768px) {
-    .group:hover img#secondary-image-{{ product.id }} {
-      opacity: 1 !important;
-    }
-    
-    /* Add delay to dropdown appearance */
-    .product-dropdown {
-      transition: opacity 0.3s cubic-bezier(0.33, 0.66, 0.66, 1) 0.15s, 
-                  max-height 0.3s cubic-bezier(0.33, 0.66, 0.66, 1) 0.15s,
-                  visibility 0.3s cubic-bezier(0.33, 0.66, 0.66, 1) 0.15s !important;
-      max-height: 0;
-      opacity: 0;
-      overflow: hidden;
-      visibility: hidden;
-    }
-    
-    .group:hover .product-dropdown {
-      transition-delay: 0.15s !important;
-      visibility: visible;
-      opacity: 1;
-      max-height: 500px;
-    }
-  }
-
   @media (max-width: 767px) {
-    /* Hide card-visible effects */
     .card-visible .product-dropdown,
     .card-visible-delayed .product-dropdown {
       opacity: 0 !important;
@@ -1507,15 +232,12 @@
       overflow: hidden !important;
     }
     
-    /* Override any viewport-based visibility */
     .card-visible,
     .card-visible-delayed {
-      /* Clear any properties that might affect dropdown visibility */
       opacity: 1 !important;
       max-height: none !important;
     }
     
-    /* Mobile behavior for card expanded state */
     .mobile-hidden {
       display: none !important;
     }
@@ -1554,7 +276,6 @@
                   max-height 0.3s cubic-bezier(0.33, 0.66, 0.66, 1) !important;
     }
     
-    /* Special handling for side-by-side layout */
     .side-by-side-column .group {
       height: 100%;
     }
@@ -1563,68 +284,40 @@
       position: relative;
       z-index: 100;
     }
-    
-    .group.images-toggled img#secondary-image-{{ product.id }} {
-      opacity: 1 !important;
+
+    .group.mobile-expanded .product-dropdown-gap.mobile-dropdown-hidden {
+      max-height: 0 !important;
     }
     
-    .product-thumbnail-toggle {
-      width: 80px;
-      height: 80px;
-      border-radius: 0;
-      transition: transform 0.2s cubic-bezier(0.33, 0.66, 0.66, 1);
-      background-color: white;
-      z-index: 20;
-    }
-    
-    .product-thumbnail-toggle:active {
-      transform: scale(0.95);
-    }
-    
-    /* Make sure both images are absolutely positioned for proper stacking */
-    .group a img {
-      position: absolute !important;
-      inset: 0 !important;
-      transition: none !important;
-      width: 100% !important;
-      height: auto !important;
-      object-fit: contain !important;
-      will-change: opacity !important;
-    }
-    
-    /* First image (primary) */
-    .group a img:first-of-type {
-      z-index: 2 ;
-      opacity: 1 ;
-    }
-    
-    /* Second image (secondary) */
-    .group a img:nth-of-type(2) {
-      z-index: 1 ;
-      opacity: 0 ;
-      visibility: visible ;
-    }
-    
-    /* Image toggled state */
-    .group.images-toggled a img:first-of-type {
-      opacity: 0 ;
-      z-index: 1 ;
-    }
-    
-    .group.images-toggled a img:nth-of-type(2) {
-      opacity: 1 ;
-      z-index: 2 ;
+    .group.mobile-expanded .product-dropdown-gap.mobile-dropdown-visible {
+      max-height: 4px !important;
     }
   }
 
-  /* Desktop hover effects */
   @media (min-width: 768px) {
+    .product-dropdown {
+      transition: opacity 0.3s cubic-bezier(0.33, 0.66, 0.66, 1) 0.15s, 
+                  max-height 0.3s cubic-bezier(0.33, 0.66, 0.66, 1) 0.15s,
+                  visibility 0.3s cubic-bezier(0.33, 0.66, 0.66, 1) 0.15s !important;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      visibility: hidden;
+    }
+    
+    .group:hover .product-dropdown {
+      transition-delay: 0.15s !important;
+      visibility: visible;
+      opacity: 1;
+      max-height: 500px;
+    }
+
     .group:hover .md\:group-hover\:opacity-0 {
-      opacity: 0 ;
+      opacity: 0;
     }
     
     .group:hover .md\:group-hover\:opacity-100 {
-      opacity: 1 ;
+      opacity: 1;
     }
     
     .group:hover .md\:group-hover\:max-h-\[500px\] {
@@ -1635,15 +328,40 @@
                   opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                   visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
-    
-    /* Ensure secondary images are fully transparent but visible by default */
-    .group a img:nth-of-type(2) {
-      opacity: 0 ;
-      visibility: visible ;
+
+    .variant-column {
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: 4px;
     }
     
-    .group:hover a img:nth-of-type(2) {
-      opacity: 1 ;
+    .variant-button {
+      margin: 0;
+      height: 24px;
+      min-height: 24px;
+    }
+    
+    .color-variant {
+      padding: 0 8px;
+      min-width: auto;
+      white-space: nowrap;
+    }
+    
+    .size-variant {
+      width: 24px;
+      min-width: 24px;
+      padding: 0;
+      justify-content: center;
+    }
+    
+    .add-to-cart-button {
+      height: 24px;
+      min-height: 24px;
+      white-space: nowrap;
+      width: auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
   }
 
@@ -1684,12 +402,10 @@
     position: relative;
   }
 
-  /* Color variant specific styles */
   .color-variant {
     justify-content: flex-start;
   }
 
-  /* Size variant specific styles */
   .size-variant {
     justify-content: center;
   }
@@ -1722,18 +438,26 @@
     min-height: 33px;
   }
 
-  /* Active state for add to cart button (when variants are selected) */
   .add-to-cart-button.active {
     background-color: #444444 !important;
     color: white !important;
   }
 
-  /* Out of stock state for add to cart button */
   .add-to-cart-button.out-of-stock {
     background-color: #9C9C9C !important;
     color: white !important;
     cursor: not-allowed;
     opacity: 0.8 !important;
+  }
+
+  .add-to-cart-button.success {
+    background-color: #4CAF50 !important;
+    color: white !important;
+  }
+
+  .add-to-cart-button.error {
+    background-color: #F44336 !important;
+    color: white !important;
   }
 
   /* Inventory indicator styling */
@@ -1745,73 +469,11 @@
     font-weight: 500;
   }
 
-  /* Stock status styling in product info bar */
+  /* Stock status styling */
   .stock-status {
     font-size: 0.75rem;
     font-weight: 500;
     color: black;
-  }
-
-  .stock-status.in-stock {
-    color: black;
-  }
-
-  .stock-status.out-of-stock {
-    color: black;
-  }
-
-  /* Success state (already defined but included for consistency) */
-  .add-to-cart-button.success {
-    background-color: #4CAF50 !important;
-    color: white !important;
-  }
-
-  /* Error state (already defined but included for consistency) */
-  .add-to-cart-button.error {
-    background-color: #F44336 !important;
-    color: white !important;
-  }
-
-  /* Desktop-specific styles for horizontal layout */
-  @media (min-width: 768px) {
-    .variant-column {
-      flex-wrap: wrap;
-      justify-content: flex-start;
-      gap: 4px;
-    }
-    
-    /* Adjust variant button sizes for desktop */
-    .variant-button {
-      margin: 0;
-      height: 24px;
-      min-height: 24px;
-    }
-    
-    /* Color variant buttons */
-    .color-variant {
-      padding: 0 8px;
-      min-width: auto;
-      white-space: nowrap;
-    }
-    
-    /* Size variant buttons */
-    .size-variant {
-      width: 24px;
-      min-width: 24px;
-      padding: 0;
-      justify-content: center;
-    }
-    
-    /* Add to cart button */
-    .add-to-cart-button {
-      height: 24px;
-      min-height: 24px;
-      white-space: nowrap;
-      width: auto;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
   }
 
   /* Product dropdown gap styling */
@@ -1820,17 +482,7 @@
     overflow: hidden;
   }
 
-  @media (max-width: 767px) {
-    .group.mobile-expanded .product-dropdown-gap.mobile-dropdown-hidden {
-      max-height: 0 !important;
-    }
-    
-    .group.mobile-expanded .product-dropdown-gap.mobile-dropdown-visible {
-      max-height: 4px !important;
-    }
-  }
-
-  /* TODO: color chips style */
+  /* Color chip styles */
   .color-chip {
     width: 16px;
     height: 10px;
@@ -1841,11 +493,6 @@
     opacity: 1;
   }
 
-  /* .color-chip[disabled],
-  .color-chip[aria-disabled="true"] {
-    pointer-events: none !important;
-  } */
-
   .color-chip-container {
     display: inline-block;
     padding-bottom: 4px;
@@ -1855,7 +502,7 @@
 
   .color-chip-container:hover,
   .color-chip-container.active {
-    border-bottom-color: #000; /* Show black underline on hover */
+    border-bottom-color: #000;
   }
 
   .color-chip-container.disabled:hover {
@@ -1867,11 +514,9 @@
     cursor: default;
   }
 
-  /* fallback for disabled color chips */
   .color-chip[disabled],
   .color-chip[aria-disabled="true"] {
     pointer-events: none !important;
-    /* opacity: 0.5 !important; */
   }
 
   /* Product card gallery */
@@ -1885,7 +530,6 @@
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
-    /* Hide native scrollbar */
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -1915,8 +559,9 @@
   .product-card-scrollbar-track {
     position: absolute;
     bottom: 6px;
-    left: 10%;
-    width: 80%;
+    /* now handled by updateScrollbar */
+    /* left: 10%;
+    width: 80%; */
     height: 3px;
     background: #e0e0e0;
     opacity: 0;
@@ -1927,5 +572,40 @@
     height: 100%;
     background: #666666;
     border-radius: 0;
+  }
+
+  /* Gallery arrow buttons */
+  .product-card-arrow {
+    display: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.25);
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: #444444;
+    line-height: 0;
+  }
+
+  .product-card-arrow-left {
+    left: 4px;
+  }
+
+  .product-card-arrow-right {
+    right: 4px;
+  }
+
+  .product-card-arrow-left.hidden,
+  .product-card-arrow-right.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (min-width: 768px) {
+    .product-card-arrow {
+      display: block;
+    }
   }
 {% endstyle %}
