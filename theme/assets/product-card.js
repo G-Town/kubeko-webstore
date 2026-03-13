@@ -44,8 +44,15 @@ window.ProductCardObject = window.ProductCardObject || {
   },
 
   buildSlide: function(imageUrl, altText, index, productId, sizes) {
+    // const gallery = document.getElementById(`gallery-${productId}`);
+
     const slide = document.createElement('div');
     slide.className = 'product-card-slide';
+
+    // Force exact integer pixel width to prevent sub-pixel alignment issues
+    // if (gallery) {
+    //   slide.style.width = `${Math.round(gallery.clientWidth)}px`;
+    // }
 
     const img = document.createElement('img');
     img.id = `gallery-image-${index}-${productId}`;
@@ -100,29 +107,15 @@ window.ProductCardObject = window.ProductCardObject || {
     this.updateScrollbar(productId);
   },
 
-  updateScrollbar: function(productId) {
-    const gallery = document.getElementById(`gallery-${productId}`);
-    const productCardLink = gallery && gallery.closest('.product-card-link');
-    const track = productCardLink && productCardLink.querySelector('.product-card-scrollbar-track');
-    const thumb = document.getElementById(`scrollbar-thumb-${productId}`);
+  updatePriceDisplay: function(productCardElement, isAvailable) {
+    const priceEl = productCardElement.querySelector('.product-card-price');
+    const soldOutEl = productCardElement.querySelector('.stock-status-block');
+    if (!priceEl || !soldOutEl) return;
 
-    if (!gallery || !track || !thumb) return;
-
-    const totalSlides = gallery.querySelectorAll('.product-card-slide').length;
-
-    if (totalSlides <= 1) {
-      track.style.opacity = '0';
-      return;
-    }
-
-    const thumbWidthPct = (1 / totalSlides) * 100;
-    thumb.style.width = `${thumbWidthPct}%`;
-
-    const scrollProgress = gallery.scrollLeft / (gallery.scrollWidth - gallery.clientWidth);
-    const maxTranslate = 100 * (totalSlides - 1);
-    thumb.style.transform = `translateX(${scrollProgress * maxTranslate}%)`;
-
-    track.style.opacity = '1';
+    priceEl.style.display = isAvailable ? '' : 'none';
+    soldOutEl.style.display = isAvailable ? 'none' : '';
+    // priceEl.style.visibility = isAvailable ? '' : 'hidden';
+    // soldOutEl.style.visibility = isAvailable ? 'hidden' : '';
   },
 
   scrollGallery: function(event, productId, direction) {
@@ -182,7 +175,7 @@ window.ProductCardObject = window.ProductCardObject || {
     if (arrowRight) {
       arrowRight.classList.toggle('hidden', gallery.scrollLeft >= gallery.scrollWidth - gallery.clientWidth - 1);
     }
-  },
+  }, 
 
   getProductData: function(productId, element) {
     if (this.productDataCache[productId]) {
@@ -212,6 +205,7 @@ window.ProductCardObject = window.ProductCardObject || {
   },
 
   selectVariant: function(button, productId, optionPosition, optionValue) {
+    console.log("test")
     const productCardElement = button.closest(`[data-product-card="${productId}"]`);
     if (!productCardElement) return;
 
@@ -254,6 +248,9 @@ window.ProductCardObject = window.ProductCardObject || {
         const variantImages = this.getImagesForVariant(colorVariant, productData.images, productData.variants);
         this.updateCardImages(productId, variantImages);
       }
+
+      const anyAvailable = productData.variants.some(v => v.option1 === optionValue && v.available);
+      this.updatePriceDisplay(productCardElement, anyAvailable);
     }
 
     // Find matching variant
@@ -301,7 +298,7 @@ window.ProductCardObject = window.ProductCardObject || {
           addButton.disabled = true;
           addButton.classList.remove('active');
           addButton.classList.add('out-of-stock');
-          addButton.textContent = 'OUT OF STOCK';
+          addButton.textContent = 'SOLD OUT';
           const inventoryIndicator = productCardElement.querySelector('.inventory-indicator');
           if (inventoryIndicator) inventoryIndicator.remove();
         }
@@ -313,7 +310,7 @@ window.ProductCardObject = window.ProductCardObject || {
           btn.classList.remove('active');
           if (Object.keys(selections).length === totalOptions) {
             btn.classList.add('out-of-stock');
-            btn.textContent = 'OUT OF STOCK';
+            btn.textContent = 'SOLD OUT';
           } else {
             btn.classList.remove('out-of-stock');
             btn.textContent = 'ADD TO CART';
@@ -322,6 +319,7 @@ window.ProductCardObject = window.ProductCardObject || {
           if (inventoryIndicator) inventoryIndicator.remove();
         }
       });
+
     }
   },
 
@@ -440,6 +438,19 @@ window.ProductCardObject = window.ProductCardObject || {
     const firstImg = gallery ? gallery.querySelector('.product-card-slide img') : null;
     const sizes = firstImg ? firstImg.sizes : '';
 
+    // Fix first slide width to exact integer pixels
+    if (gallery) {
+      const resizeObserver = new ResizeObserver(() => {
+        const containerWidth = Math.round(gallery.clientWidth);
+        if (containerWidth === 0) return;
+        gallery.querySelectorAll('.product-card-slide').forEach(slide => {
+          slide.style.width = `${containerWidth}px`;
+        });
+        ProductCardObject.updateScrollbar(productId);
+      });
+      resizeObserver.observe(gallery);
+    }
+
     const defaultVariant = productData.variants.find(v => v.available) || productData.variants[0];
     if (defaultVariant) {
       const variantImages = this.getImagesForVariant(defaultVariant, productData.images, productData.variants);
@@ -486,8 +497,22 @@ window.ProductCardObject = window.ProductCardObject || {
 };
 
 window.handleProductCardClick = ProductCardObject.handleProductCardClick.bind(ProductCardObject);
-window.selectVariant = ProductCardObject.selectVariant.bind(ProductCardObject);
 window.addToCart = ProductCardObject.addToCart.bind(ProductCardObject);
+// window.selectVariant = ProductCardObject.selectVariant.bind(ProductCardObject);
+
+// Only expose selectVariant globally if we're NOT on a PDP
+// (detected by absence of window.variantSelector or presence of a product-card element)
+window.selectVariant = function(buttonOrElement, productIdOrPosition, optionPositionOrValue, optionValue) {
+  // If called with 4 args, it's the product-card signature: (button, productId, optionPosition, optionValue)
+  if (optionValue !== undefined) {
+    ProductCardObject.selectVariant.call(ProductCardObject, buttonOrElement, productIdOrPosition, optionPositionOrValue, optionValue);
+  } else {
+    // Called with 3 args — PDP signature: (element, optionPosition, optionValue)
+    if (window.variantSelector) {
+      window.variantSelector.selectOption(buttonOrElement, productIdOrPosition, optionPositionOrValue);
+    }
+  }
+};
 
 document.addEventListener('DOMContentLoaded', function() {
   ProductCardObject.initPage();
@@ -572,6 +597,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     productCardElement.querySelectorAll('.color-chip-container').forEach(c => c.classList.remove('active'));
     chip.closest('.color-chip-container').classList.add('active');
+  });
+
+  window.addEventListener('resize', function() {
+    document.querySelectorAll('[data-product-card]').forEach(card => {
+      const productId = card.getAttribute('data-product-card');
+      const gallery = document.getElementById(`gallery-${productId}`);
+      if (!gallery) return;
+
+      const containerWidth = Math.round(gallery.clientWidth);
+      gallery.querySelectorAll('.product-card-slide').forEach(slide => {
+        slide.style.width = `${containerWidth}px`;
+      });
+
+      ProductCardObject.updateScrollbar(productId);
+    });
   });
 
 });

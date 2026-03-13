@@ -63,6 +63,37 @@
           nextEl: '[data-section-id="{{ section.id }}"] .swiper-button-next',
           prevEl: '[data-section-id="{{ section.id }}"] .swiper-button-prev',
         },
+        on: {
+          slideChangeTransitionEnd: function(swiper) {
+            const slides = swiper.slides;
+            slides.forEach((slide, index) => {
+              const gallery = slide.querySelector('.product-card-gallery');
+              if (!gallery) return;
+              if (index === swiper.activeIndex) {
+                gallery.style.pointerEvents = 'auto';
+                gallery.style.touchAction = 'pan-x';
+              } else {
+                gallery.style.pointerEvents = 'none';
+                gallery.style.touchAction = 'none';
+              }
+            });
+          },
+          touchStart: function(swiper, event) {
+            const touch = event.touches ? event.touches[0] : event;
+            const target = document.elementFromPoint(touch.clientX, touch.clientY);
+            const gallery = target && target.closest('.product-card-gallery');
+            if (gallery) {
+              const activeSlide = swiper.slides[swiper.activeIndex];
+              if (activeSlide && activeSlide.contains(gallery)) {
+                swiper.allowTouchMove = false;
+              } else {
+                swiper.allowTouchMove = true;
+              }
+            } else {
+              swiper.allowTouchMove = true;
+            }
+          }
+        },
         breakpoints: {
           // Tablet screens (768px and up)
           768: {
@@ -89,6 +120,19 @@
             spaceBetween: 10,
             centeredSlides: false,
           }
+        }
+      });
+      // Set initial state
+      const initialSlides = swiper.slides;
+      initialSlides.forEach((slide, index) => {
+        const gallery = slide.querySelector('.product-card-gallery');
+        if (!gallery) return;
+        if (index === swiper.activeIndex) {
+          gallery.style.pointerEvents = 'auto';
+          gallery.style.touchAction = 'pan-x';
+        } else {
+          gallery.style.pointerEvents = 'none';
+          gallery.style.touchAction = 'none';
         }
       });
     }

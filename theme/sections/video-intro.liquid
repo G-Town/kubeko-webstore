@@ -23,88 +23,106 @@
 {% endschema %}
 
 {% if settings.intro_video_desktop != blank or settings.intro_video_mobile != blank %}
-<div id="intro-video-container" class="fixed inset-0 z-[9999] w-screen h-screen bg-black flex items-center justify-center opacity-100 transition-opacity" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;">
+{% comment %} <div id="intro-video-container"
+    class="fixed inset-0 z-[9999] w-screen h-screen bg-black flex items-center justify-center opacity-100 transition-opacity"
+      style=" position: fixed; top: 0; left: 0; right: 0; bottom: 0;">
   <div class="relative w-full h-full">
     {% if settings.intro_video_desktop != blank %}
     <div class="desktop-video-container w-full h-full hidden md:block">
-      {{ settings.intro_video_desktop | video_tag: class: 'w-full h-full object-cover', controls: false, autoplay: true, muted: true, playsinline: true, id: 'intro-video-desktop' }}
+      {{ settings.intro_video_desktop | video_tag: class: 'w-full h-full object-cover',
+                                        controls: false, autoplay: true, muted: true, playsinline: true, id: 'intro-video-desktop' }}
     </div>
     {% endif %}
     
     {% if settings.intro_video_mobile != blank %}
     <div class="mobile-video-container w-full h-full block md:hidden">
-      {{ settings.intro_video_mobile | video_tag: class: 'w-full h-full object-cover', controls: false, autoplay: true, muted: true, playsinline: true, id: 'intro-video-mobile' }}
+      {{ settings.intro_video_mobile | video_tag: class: 'w-full h-full object-cover',
+                                        controls: false, autoplay: true, muted: true, playsinline: true, id: 'intro-video-mobile' }}
     </div>
     {% endif %}
+  </div>
+</div> {% endcomment %}
+
+{% assign desktop_video = settings.intro_video_desktop.sources | where: "format", "mp4" | last %}
+{% assign mobile_video = settings.intro_video_mobile.sources | where: "format", "mp4" | last %}
+<div id="intro-video-container"
+    class="fixed inset-0 z-[9999] w-screen h-screen bg-black flex items-center justify-center opacity-100">
+
+  <div class="relative w-full h-full">
+
+    <!-- Desktop video -->
+    <video
+      id="intro-video-desktop"
+      class="w-full h-full object-cover hidden md:block"
+      muted
+      autoplay
+      playsinline
+      preload="metadata"
+      poster="{{ settings.intro_video_desktop.preview_image | image_url: width: 1200 }}"
+      data-src="{{ desktop_video.url }}"
+    ></video>
+
+    <!-- Mobile video -->
+    <video
+      id="intro-video-mobile"
+      class="w-full h-full object-cover block md:hidden"
+      muted
+      autoplay
+      playsinline
+      preload="metadata"
+      poster="{{ settings.intro_video_mobile.preview_image | image_url: width: 800 }}"
+      data-src="{{ mobile_video.url }}"
+    ></video>
+
   </div>
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const introContainer = document.getElementById('intro-video-container');
-    const desktopVideo = document.getElementById('intro-video-desktop');
-    const mobileVideo = document.getElementById('intro-video-mobile');
-    const fadeDuration = {{ section.settings.fade_duration | default: 1.5 }} * 500; // Halved for twice the speed
-    const hasSeenIntro = localStorage.getItem('hasSeenIntroVideo');
+  (function() {
     
-    // Determine active video based on screen size
-    const isMobile = window.innerWidth < 768;
-    const activeVideo = isMobile ? mobileVideo : desktopVideo;
-    
-    if (!hasSeenIntro && activeVideo) {
-      // Show the intro video on first visit only
-      introContainer.style.display = 'flex';
-      document.body.style.overflow = 'hidden'; // Prevent scrolling
-      
-      // Start the fade out before video completely ends
-      if (activeVideo) {
-        activeVideo.addEventListener('timeupdate', function() {
-          if (activeVideo.duration > 0 && (activeVideo.duration - activeVideo.currentTime) <= {{ section.settings.fade_duration | default: 1.5 }}) {
-            // If we're within the fade duration of the end, start fading
-            if (introContainer.style.opacity === '1' || introContainer.style.opacity === '') {
-              fadeOutIntro();
-            }
-          }
-        });
-      }
-      
-      // Backup: hide after video completes
-      activeVideo.addEventListener('ended', function() {
-        if (introContainer.style.opacity === '1' || introContainer.style.opacity === '') {
-          fadeOutIntro();
-        }
-      });
-      
-      // Also add a timeout in case video doesn't fire events properly
-      setTimeout(function() {
-        if (activeVideo && !activeVideo.paused) {
-          fadeOutIntro();
-        }
-      }, (activeVideo ? activeVideo.duration * 1000 : 5000) + 1000); // Video duration plus 1 second buffer or 6 seconds fallback
-      
-      // Set localStorage to remember the user has seen the intro
-      localStorage.setItem('hasSeenIntroVideo', 'true');
+    if (localStorage.getItem('introSeen')) {
+      document.getElementById('intro-video-container')?.remove();
+      return;
     }
+
+    const container = document.getElementById('intro-video-container');
+    const desktop = document.getElementById('intro-video-desktop');
+    const mobile = document.getElementById('intro-video-mobile');
+
+    const video = window.matchMedia('(max-width: 767px)').matches
+      ? mobile
+      : desktop;
     
-    // Handle screen resize (though unlikely during video playback)
-    window.addEventListener('resize', function() {
-      if (introContainer.style.display === 'flex') {
-        const newIsMobile = window.innerWidth < 768;
-        if (newIsMobile !== isMobile) {
-          // Screen size category changed, reload page to show proper video
-          window.location.reload();
-        }
-      }
+    if (!video || !container) return;
+
+    const src = video.dataset.src;
+
+    if (src && !video.querySelector('source')) {
+      const source = document.createElement('source');
+      source.src = src;
+      source.type = 'video/mp4';
+      video.appendChild(source);
+      video.load();
+    }
+    // document.body.style.overflow = 'hidden';
+
+    // Safari autoplay safeguard
+    video.play().catch(() => {});
+
+    video.addEventListener('ended', () => {
+      console.log("intro video ended");
+      localStorage.setItem('introSeen', 'true');
+      container.style.transition = 'opacity .8s';
+      container.style.opacity = '0';
+      // always load video
+      // localStorage.removeItem('introSeen');
+
+      setTimeout(() => {
+        container.remove();
+        document.body.style.overflow = '';
+      }, 800);
     });
-    
-    function fadeOutIntro() {
-      introContainer.style.opacity = '0';
-      setTimeout(function() {
-        introContainer.style.display = 'none';
-        document.body.style.overflow = ''; // Restore scrolling
-      }, fadeDuration);
-    }
-  });
+  })();
 </script>
 
 <style>

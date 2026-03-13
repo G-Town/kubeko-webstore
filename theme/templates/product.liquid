@@ -8,7 +8,7 @@
   <meta property="og:image" content="{{ product.images[0] | img_url: "1200x" | replace_first: "//", "https://" }}">
   <meta property="product:price:amount" content="{{ product.price | money_without_currency | strip_html }}">
   <meta property="product:price:currency" content="{{ shop.currency }}">
-  <meta property="product:availability" content="{% if product.available %}in stock{% else %}out of stock{% endif %}">
+  <meta property="product:availability" content="{% if product.available %}in stock{% else %}SOLD OUT{% endif %}">
   
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
@@ -69,7 +69,6 @@
 
   {% comment %} <script>
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('Header hover init');
 
       const productInfoContainer = document.querySelector('.product-info-container');
       const headerOverlay = document.querySelector('#header-overlay');
@@ -814,7 +813,7 @@
                     {% if first_variant.available %}
                       <button type="submit" class="uppercase text-[13px] text-[#444444] add-to-cart-btn" disabled>ADD TO CART</button>
                     {% else %}
-                      <button type="submit" class="uppercase text-[13px] text-[#444444] add-to-cart-btn out-of-stock" disabled>OUT OF STOCK</button>
+                      <button type="submit" class="uppercase text-[13px] text-[#444444] add-to-cart-btn out-of-stock" disabled>SOLD OUT</button>
                     {% endif %}
                     
                     <div id="desktop-inventory-status" class="inventory-status text-xs mt-1" style="display: none;"></div>
@@ -1268,12 +1267,12 @@
         if (initialVariant.option1) {
           this.selections['option1'] = initialVariant.option1;
         }
-        if (initialVariant.option2) {
-          this.selections['option2'] = initialVariant.option2;
-        }
+        // if (initialVariant.option2) {
+        //   this.selections['option2'] = initialVariant.option2;
+        // }
         
         // Update size availability for initial color
-        if (initialVariant.option1) {
+        if (initialVariant.option1 && this.totalOptions > 1) {
           this._updateSizeAvailability(initialVariant.option1);
         }
 
@@ -1291,6 +1290,16 @@
         // if (typeof window.updateVariantPrice === 'function') {
         //   window.updateVariantPrice(initialVariant);
         // }
+
+        // console.log('init selections after _updateSizeAvailability:', JSON.stringify(this.selections));
+        // console.log('init totalOptions:', this.totalOptions);
+
+        console.log('init totalOptions:', this.totalOptions);
+        console.log('init selections:', JSON.stringify(this.selections));
+        const matchingVariant = this._findMatchingVariant();
+        console.log('init matchingVariant:', matchingVariant);
+
+        this._updateFormAndButtons(matchingVariant);
       }
 
       // Main entry point (called from onclick handlers)
@@ -1363,7 +1372,9 @@
         }
 
         // Update size availability for this color
-        this._updateSizeAvailability(colorValue);
+        if (this.totalOptions > 1) {
+          this._updateSizeAvailability(colorValue);
+        }
       }
 
       _updateSizeAvailability(colorValue) {
@@ -1371,8 +1382,13 @@
           .filter(v => v.option1 === colorValue && v.available)
           .map(v => v.option2);
 
+          // Reset out-of-stock state before evaluating new color
+          document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+            button.classList.remove('out-of-stock');
+          });
+
         const sizeButtons = document.querySelectorAll('.variant-button[data-option-position="2"]');
-        
+
         sizeButtons.forEach(btn => {
           const sizeValue = btn.getAttribute("data-value");
           if (!availableSizes.includes(sizeValue)) {
@@ -1387,12 +1403,41 @@
         // Disable add-to-cart if no sizes available
         if (availableSizes.length === 0) {
           updateAddToCartButtons(false, null, true);
+        } else if (availableSizes.length === 1) { // TODO: fix auto select for one size available
+          const matchingSizeBtns = [...sizeButtons].filter(
+            btn => btn.getAttribute("data-value") === availableSizes[0]
+          );
+          
+          // Clear all first, once
+          [...sizeButtons].forEach(btn => {
+            btn.removeAttribute('data-selected');
+            btn.classList.remove('bg-[#D9D9D9]');
+          });
+          
+          // Then highlight all matches
+          matchingSizeBtns.forEach(btn => {
+            btn.setAttribute('data-selected', 'true');
+            btn.classList.add('bg-[#D9D9D9]');
+          });
+          
+          this._updateSelections("2", availableSizes[0]);
+          // console.log("Selections:", this.selections);
+
+          const matchingVariant = this._findMatchingVariant();
+          this._updateFormAndButtons(matchingVariant);
+          // console.log("Matching variant:", matchingVariant);
+        } else {
+          console.log("test")
+          updateAddToCartButtons(false);
         }
       }
 
       _updateFormAndButtons(matchingVariant) {
         const allSelected = Object.keys(this.selections).length === this.totalOptions;
         const isUnavailableCombination = allSelected && !matchingVariant;
+
+        // console.log('_updateFormAndButtons matchingVariant:', matchingVariant);
+        // console.log('_updateFormAndButtons allSelected:', allSelected);
 
         // Update hidden variant ID inputs
         if (matchingVariant) {
@@ -1404,6 +1449,7 @@
 
         // Update add-to-cart buttons
         if (matchingVariant) {
+          // console.log("updateFormAndButtons: matching variant true")
           updateAddToCartButtons(true, matchingVariant);
         } else if (isUnavailableCombination) {
           updateAddToCartButtons(false, null, true);
@@ -1442,6 +1488,11 @@
       if (firstVariant) {
         productImageManager.loadVariant(firstVariant);
         variantSelector.init(firstVariant);
+        // variantSelector._updateSizeAvailability(firstVariant.option1);
+
+        // TODO: update this hot fix of add to cart button, should be done in variant selector
+        // const matchingVariant = variantSelector._findMatchingVariant();
+        // variantSelector._updateFormAndButtons(matchingVariant);
 
         // UI: Mark selected color chip
         const colorBtn = document.querySelector(`.color-chip[data-value="${firstVariant.option1}"]`);
@@ -1468,7 +1519,7 @@
 
       // Initialize all UI components
       initColorChips();
-      initAddToCartButtons();
+      // initAddToCartButtons();
       initCartFormSubmission();
       initProductInfoHover();
       cleanupMaterialsContent();
@@ -1684,6 +1735,7 @@
 
     function initCartFormSubmission() {
       const buttons = document.querySelectorAll('form .add-to-cart-btn');
+      // console.log(buttons)
       const addToCartForms = [];
       
       buttons.forEach(btn => {
@@ -1935,13 +1987,12 @@
     //         }
     //       }
     //     } else {
-    //       console.log("test")
-    //       // Variant is out of stock
+    //       // Variant is sold out
     //       addToCartButtons.forEach(button => {
     //         button.disabled = true;
     //         button.classList.remove('variants-selected');
     //         button.classList.add('out-of-stock');
-    //         button.textContent = 'OUT OF STOCK';
+    //         button.textContent = 'SOLD OUT';
     //       });
     //     }
     //   } else if (isUnavailableCombination) {
@@ -1950,7 +2001,7 @@
     //       button.disabled = true;
     //       button.classList.remove('variants-selected');
     //       button.classList.add('out-of-stock');
-    //       button.textContent = 'OUT OF STOCK';
+    //       button.textContent = 'SOLD OUT';
     //     });
     //   } else {
     //     // Not all variants selected yet
@@ -1964,7 +2015,9 @@
     // }
     
     function updateAddToCartButtons(allSelected, selectedVariant, isUnavailableCombination) {
+      // console.log('updateAddToCartButtons called:', allSelected, selectedVariant?.available, isUnavailableCombination);
       const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+      // console.log('updateAddToCartButtons buttons found:', addToCartButtons.length);
       
       // Get inventory containers
       const desktopInventoryContainer = document.getElementById('desktop-inventory-status');
@@ -1984,35 +2037,37 @@
       if (allSelected && selectedVariant) {
         // Check if the variant is available
         if (selectedVariant.available) {
+          // console.log("updateAddToCartButtons: variant available true")
           // Variant is in stock
           addToCartButtons.forEach(button => {
             button.disabled = false;
             button.classList.add('variants-selected');
             button.classList.remove('out-of-stock');
             button.textContent = 'ADD TO CART';
+            // console.log("updateAddToCartButtons: button", button)
           });
           
           // Display inventory level if tracking is enabled and quantity is low
-          if (selectedVariant.inventory_quantity !== null && selectedVariant.inventory_quantity <= 10 && selectedVariant.inventory_quantity > 0) {
-            const inventoryMessage = `Only ${selectedVariant.inventory_quantity} left`;
+          // if (selectedVariant.inventory_quantity !== null && selectedVariant.inventory_quantity <= 10 && selectedVariant.inventory_quantity > 0) {
+          //   const inventoryMessage = `Only ${selectedVariant.inventory_quantity} left`;
             
-            if (desktopInventoryContainer) {
-              desktopInventoryContainer.innerHTML = inventoryMessage;
-              desktopInventoryContainer.style.display = 'block';
-            }
+          //   if (desktopInventoryContainer) {
+          //     desktopInventoryContainer.innerHTML = inventoryMessage;
+          //     desktopInventoryContainer.style.display = 'block';
+          //   }
             
-            if (mobileInventoryContainer) {
-              mobileInventoryContainer.innerHTML = inventoryMessage;
-              mobileInventoryContainer.style.display = 'block';
-            }
-          }
+          //   if (mobileInventoryContainer) {
+          //     mobileInventoryContainer.innerHTML = inventoryMessage;
+          //     mobileInventoryContainer.style.display = 'block';
+          //   }
+          // }
         } else {
-          // Variant is out of stock
+          // Variant is sold out
           addToCartButtons.forEach(button => {
             button.disabled = true;
             button.classList.remove('variants-selected');
             button.classList.add('out-of-stock');
-            button.textContent = 'OUT OF STOCK';
+            button.textContent = 'SOLD OUT';
           });
         }
       } else if (isUnavailableCombination) {
@@ -2021,27 +2076,41 @@
           button.disabled = true;
           button.classList.remove('variants-selected');
           button.classList.add('out-of-stock');
-          button.textContent = 'OUT OF STOCK';
+          button.textContent = 'SOLD OUT';
         });
       } else {
-        // Not all variants selected yet
-        // NEW: Check if button already has out-of-stock state from Liquid
+        // Not all variants selected yet — reset to neutral state
         addToCartButtons.forEach(button => {
           const wasOutOfStock = button.classList.contains('out-of-stock');
-          
+
           button.disabled = true;
           button.classList.remove('variants-selected');
-          
+
           if (wasOutOfStock) {
-            // Preserve OUT OF STOCK state
-            button.textContent = 'OUT OF STOCK';
-            // Keep the class
+            // Preserve SOLD OUT state
+            button.textContent = 'SOLD OUT';
           } else {
-            // Normal "not selected" state
             button.classList.remove('out-of-stock');
             button.textContent = 'ADD TO CART';
           }
         });
+        // NEW: Check if button already has out-of-stock state from Liquid
+        // addToCartButtons.forEach(button => {
+        //   const wasOutOfStock = button.classList.contains('out-of-stock');
+          
+        //   button.disabled = true;
+        //   button.classList.remove('variants-selected');
+          
+        //   if (wasOutOfStock) {
+        //     // Preserve SOLD OUT state
+        //     button.textContent = 'SOLD OUT';
+        //     // Keep the class
+        //   } else {
+        //     // Normal "not selected" state
+        //     button.classList.remove('out-of-stock');
+        //     button.textContent = 'ADD TO CART';
+        //   }
+        // });
       }
     }
 

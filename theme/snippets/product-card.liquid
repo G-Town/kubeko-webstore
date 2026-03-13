@@ -3,8 +3,8 @@
 
 {%- assign card_sizes = image_sizes | default: "(max-width: 767px) 50vw, (max-width: 1536px) 20vw, 300px" -%}
 
-{%- assign unique_id = product.id -%}
-
+{% comment %} {%- assign unique_id = product.id -%} {% endcomment %}
+{%- assign unique_id = product.id | append: '-' | append: section.id -%}
 
 <div class="group relative flex flex-col text-black
             {% if custom_aspect_ratio %}h-full{% endif %} overflow-visible "
@@ -30,7 +30,7 @@
 
     <!-- Scrollable gallery container -->
     <div
-      id="gallery-{{ product.id }}"
+      id="gallery-{{ unique_id }}"
       class="product-card-gallery"
     >
       <!-- First slide: server-rendered by Liquid -->
@@ -55,7 +55,7 @@
     <!-- Custom scrollbar (overlaid at bottom edge) -->
     <div class="product-card-scrollbar-track">
       <div
-        id="scrollbar-thumb-{{ product.id }}"
+        id="scrollbar-thumb-{{ unique_id }}"
         class="product-card-scrollbar-thumb"
       ></div>
     </div>
@@ -63,16 +63,16 @@
     <!-- Gallery arrow buttons (desktop only) -->
     <button
       class="product-card-arrow product-card-arrow-left"
-      id="arrow-left-{{ product.id }}"
-      onclick="ProductCardObject.scrollGallery(event, '{{ product.id }}', -1)"
+      id="arrow-left-{{ unique_id }}"
+      onclick="ProductCardObject.scrollGallery(event, '{{ unique_id }}', -1)"
       aria-label="Previous image"
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 18l-6-6l6-6"/></svg>
     </button>
     <button
       class="product-card-arrow product-card-arrow-right"
-      id="arrow-right-{{ product.id }}"
-      onclick="ProductCardObject.scrollGallery(event, '{{ product.id }}', 1)"
+      id="arrow-right-{{ unique_id }}"
+      onclick="ProductCardObject.scrollGallery(event, '{{ unique_id }}', 1)"
       aria-label="Next image"
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 18l6-6l-6-6"/></svg>
@@ -149,14 +149,16 @@
       <div class="flex justify-between items-center mb-1">
         <a href="{{ product.url }}" class="uppercase text-xs text-black tracking-wide">{{ product.title }}</a>
         <div class="text-xs text-black">
-          {% if product.available %}
+          {% comment %} TODO: implement slashed price here like in PDP {% endcomment %}
+          <span class="product-card-price" {% unless first_variant.available %}style="display:none"{% endunless %}>
             {{ product.price | money_without_trailing_zeros }}
             {% comment %} {% if product.inventory_quantity <= 10 and product.inventory_quantity > 0 and product.inventory_management == 'shopify' %}
               <span class="stock-status in-stock text-sm ml-2">({{ product.inventory_quantity }} left)</span>
             {% endif %} {% endcomment %}
-          {% else %}
-            <span class="stock-status out-of-stock">Sold Out</span>
-          {% endif %}
+          </span>
+          <div class="stock-status-block" {% if first_variant.available %}style="display:none"{% endif %}>
+            <span class="stock-status out-of-stock text-xs">SOLD OUT</span>
+          </div>
         </div>
       </div>
       <!-- Row 2: Color Chips -->
@@ -205,7 +207,7 @@
                     data-option-position="1" 
                     data-value="{{ value }}"
                     {% if has_image  %}
-                      onclick="ProductCardObject.selectVariant(this, '{{ product.id }}', 1, '{{ value }}')"
+                      onclick="ProductCardObject.selectVariant(this, '{{ unique_id }}', 1, '{{ value }}')"
                       aria-disabled="false"
                     {% else %}
                       disabled aria-disabled="true"
@@ -469,9 +471,15 @@
     font-weight: 500;
   }
 
+  .stock-status-block {
+    background: #f4f4f4;
+    text-align: center;
+    padding: 2px 2px;
+  }
+
   /* Stock status styling */
   .stock-status {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 500;
     color: black;
   }
@@ -545,6 +553,9 @@
     height: 100%;
     scroll-snap-align: center;
     scroll-snap-stop: always;
+    padding: 0 2px;
+    box-sizing: border-box;
+    background-color: #f4f4f4;
   }
 
   .product-card-slide img {
