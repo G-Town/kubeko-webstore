@@ -38,7 +38,7 @@
         <img
           id="gallery-image-0-{{ product.id }}"
           alt="{{ product.title }}"
-          src="{{ first_image | image_url: width: 400 }}"
+          src="{{ first_image | image_url: width: 600 }}"
           srcset="
             {{ first_image | image_url: width: 400 }} 400w,
             {{ first_image | image_url: width: 600 }} 600w,
@@ -189,29 +189,24 @@
                   {% assign swatch_img = pattern_image | image_url: width: 30 %}
                 {% endif %}
 
-                <div class="color-chip-container{% if is_selected %} active{% endif %}{% unless has_image %} disabled{% endunless %}">
+                <div class="color-chip-container{% if is_selected %} active{% endif %}">
                   <button
                     type="button"
                     class="color-chip"
-                    {% comment %} style="background-color: {{ value.swatch.color }};{% unless has_image %}opacity: 0.5;{% endunless %}" {% endcomment %}
                     style="
-                                      {% if pattern_image %}
-                                        background-image: url('{{ swatch_img | image_url: '30x30' }}');
-                                        background-size: cover;
-                                        background-position: center;
-                                      {% else %}
-                                        background-color: {{ value.swatch.color }};
-                                      {% endif %}
-                                    "
+                            {% if pattern_image %}
+                              background-image: url('{{ swatch_img | image_url: '30x30' }}');
+                              background-size: cover;
+                              background-position: center;
+                            {% else %}
+                              background-color: {{ value.swatch.color }};
+                            {% endif %}
+                          "
                     data-color-name="{{ value | escape }}"
                     data-option-position="1" 
                     data-value="{{ value }}"
-                    {% if has_image  %}
-                      onclick="ProductCardObject.selectVariant(this, '{{ unique_id }}', 1, '{{ value }}')"
-                      aria-disabled="false"
-                    {% else %}
-                      disabled aria-disabled="true"
-                    {% endif %}
+                    data-product-id="{{ unique_id }}"
+                    data-action="select-variant-card"
                     aria-label="Select color {{ value | escape }}"
                   ></button>
                 </div>

@@ -132,11 +132,11 @@
   {% endif %}
 
   <script>
-    // TODO: update this to avoid Security Error in development
     // Store all product images in a global variable for client-side filtering
     window.allProductImages = {{ product.images | json }};
-    window.productOptions = {{ product.options_with_values | json }};
     window.productVariants = {{ product.variants | json }};
+    window.productTotalOptions = {{ product.options | size }};
+    window.productDefaultVariant = {{ product.selected_or_first_available_variant | json }};
   </script>
 
   <!-- Product Layout -->
@@ -153,9 +153,9 @@
       {% comment %} TODO: consider forward and back buttons {% endcomment %}
 
       <!-- Left Side - Main Product Image (Full width on mobile) -->
-      <div class="w-full md:w-1/2 md:h-full relative pb-12 md:pb-0">
+      <div class="w-full md:w-1/2 relative pb-12 md:pb-0">
         <!-- Main Image for Desktop -->
-        <div class="hidden md:block w-full h-full">
+        <div class="hidden md:block w-full aspect-[4/5]">
           <img
             id="left-hero"
             class="w-full h-full object-contain"
@@ -166,6 +166,8 @@
               {{ first_image | image_url: width: 1800 }} 1800w
             "
             sizes="35vw"
+            width="{{ first_image.width }}"
+            height="{{ first_image.height }}"
             loading="eager"
           >
         </div>
@@ -176,13 +178,16 @@
           <div class="w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative">
             <img
               id="mobile-hero"
-              class="w-full h-full object-contain"
+              class="w-full h-full object-containers"
               alt="{{ product.title }}"
               src="{{ first_image | image_url: width: 800 }}"
               srcset="
                 {{ first_image | image_url: width: 800 }} 800w,
+                {{ first_image | image_url: width: 1200 }} 1200w,
                 {{ first_image | image_url: width: 1600 }} 1600w
               "
+              width="{{ first_image.width }}"
+              height="{{ first_image.height }}"
               sizes="100vw"
               loading="eager"
             >
@@ -197,22 +202,28 @@
       </div>
 
       <!-- Right Side - Second Image (Hidden on mobile) -->
-      <div class="hidden md:block md:w-1/2 h-full relative">
+      <div class="hidden md:block md:w-1/2">
         <!-- Right Main Image replaced with scrollable gallery -->
-        <div id="image-scroll-container" class="w-full h-full overflow-y-auto custom-scrollbar scroll-snap-container">
-          <img
-            id="right-hero"
-            class="w-full h-full object-contain snap-center"
-            alt="{{ product.title }}"
-            src="{{ second_image | image_url: width: 1200 }}"
-            srcset="
-              {{ second_image | image_url: width: 1200 }} 1200w,
-              {{ second_image | image_url: width: 1800 }} 1800w
-            "
-            sizes="35vw"
-            loading="eager"
-          />
-          <div id="right-gallery-rest"></div>
+        <div class="w-full aspect-[4/5]">
+          <div id="image-scroll-container" class="w-full h-full overflow-y-auto custom-scrollbar scroll-snap-container">
+            
+            <img
+              id="right-hero"
+              class="w-full h-full object-contain snap-center"
+              alt="{{ product.title }}"
+              src="{{ second_image | image_url: width: 1200 }}"
+              srcset="
+                {{ second_image | image_url: width: 1200 }} 1200w,
+                {{ second_image | image_url: width: 1800 }} 1800w
+              "
+              sizes="35vw"
+              width="{{ second_image.width }}"
+              height="{{ second_image.height }}"
+              loading="eager"
+            />
+
+            <div id="right-gallery-rest"></div>
+          </div>
         </div>
 
         <!-- Preload link for first variant images (optional performance boost) -->
@@ -325,7 +336,7 @@
                               data-color-name="{{ value | escape }}"
                               data-option-position="{{ color_option.position }}"
                               data-value="{{ value | escape }}"
-                              onclick="{% if has_image %}selectVariant(this, '{{ color_option.position }}', '{{ value | escape }}'){% endif %}"
+                              data-action="select-variant-pdp"
                               aria-label="Select color {{ value | escape }}"
                               {% unless has_image %}disabled{% endunless %}
                             ></button>
@@ -353,7 +364,7 @@
                         class="variant-button text-right uppercase text-[13px] text-[#444444] {% if forloop.first %}font-medium{% endif %}" 
                         data-option-position="{{ size_option.position }}" 
                         data-value="{{ value | escape }}"
-                        onclick="selectVariant(this, '{{ size_option.position }}', '{{ value | escape }}')"
+                        data-action="select-variant-pdp"
                       >
                         {{ value }}
                       </button>
@@ -404,7 +415,8 @@
             
             <!-- Info Links -->
             <div class="flex flex-col space-y-2">
-              <button onclick="openPopup('materials-popup-mobile')" class="flex justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+              <button data-action="open-popup" data-popup-id="materials-popup"
+                  class="flex justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
                 <span class="uppercase text-[13px] text-[#444444]">MATERIALS</span>
                 <span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
@@ -413,7 +425,8 @@
                 </span>
               </button>
               
-              <button onclick="openPopup('size-guide-popup-mobile')" class="flex text-black justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+              <button data-action="open-popup" data-popup-id="size-guide-popup"
+                  class="flex text-black justify-between items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
                 <span class="uppercase text-[13px] text-[#444444]">SIZE GUIDE</span>
                 <span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
@@ -422,7 +435,8 @@
                 </span>
               </button>
               
-              <button onclick="openPopup('shipping-popup-mobile')" class="flex justify-between text-black items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
+              <button data-action="open-popup" data-popup-id="shipping-popup"
+                  class="flex justify-between text-black items-center w-full px-[5px] py-[2px] text-left hover:bg-[#D9D9D9] transition-colors">
                 <span class="uppercase text-[13px] text-[#444444]">SHIPPING</span>
                 <span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
@@ -435,62 +449,12 @@
         </div>
       </div>
 
-      <div id="shipping-popup-mobile" class="hidden popup-container">
-        <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-4 popup-content transition-colors ">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="uppercase text-sm font-medium">SHIPPING</h2>
-            <button onclick="closePopup('shipping-popup-mobile')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
-              CLOSE
-            </button>
-          </div>
-          <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content">
-            {% if settings.default_shipping_info != blank %}
-              {{ settings.default_shipping_info | newline_to_br }}
-            {% elsif product.metafields.custom.shipping %}
-              {{ product.metafields.custom.shipping | newline_to_br }}
-            {% else %}
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For ready-to-ship items, please allow 2-3 days for the item to dispatch.</p>
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For made-to-order items, please allow 3-4 weeks for the item to dispatch.</p>
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">You will receive an email notification to confirm your order has been dispatched.</p>
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">If you require any additional information please contact <span class="underline">info@kubeko.co</span></p>
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">We offer complimentary shipping for orders above $350 within the USA and South Korea.</p>
-              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">Please note that customers outside the USA and South Korea will be responsible for all import duties and tax charges that may be applied by their local customs office on delivery to country of destination.</p>
-              <p class="text-[13px] leading-relaxed text-[#444444]">For return requests, please contact <span class="underline">info@kubeko.co</span> within 14 days of the order's delivery date. After confirming the condition of the returning item(s), we will email you with return instructions. Items must be returned new, unused, unworn, unwashed, unaltered, and undamaged condition, with its original tags attached.</p>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-
-      <div id="size-guide-popup-mobile" class="hidden popup-container">
-        <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-5 popup-content transition-colors duration-300">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="uppercase text-sm font-medium">SIZE GUIDE</h2>
-            <button onclick="closePopup('size-guide-popup-mobile')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
-              CLOSE
-            </button>
-          </div>
-          <div class="popup-formatted-content text-center">
-            {% if product.metafields.custom.size_guide %}
-              <!-- Using the recommended metafield_tag filter from Shopify docs -->
-              <div class="w-full md:w-3/4 ">
-                {{ product.metafields.custom.size_guide | metafield_tag }}
-              </div>
-            {% else %}
-              <!-- No size guide available message -->
-              <div class="w-full md:w-1/2 mx-auto">
-                <p class="text-[13px] text-black leading-relaxed">No size guide available for this product.</p>
-              </div>
-            {% endif %}
-            <p class="text-[13px] text-gray-600 mt-4">For any specific sizing questions, please contact us at <span class="underline">info@kubeko.co</span></p>
-          </div>
-        </div>
-      </div>
-
       <div id="materials-popup-mobile" class="hidden popup-container">
         <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] px-5 py-6 popup-content transition-colors duration-300">
           <div class="flex justify-between items-center mb-4">
             <h2 class="uppercase text-sm font-medium">MATERIALS</h2>
-            <button onclick="closePopup('materials-popup-mobile')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
+            <button data-action="close-popup" data-popup-id="materials-popup"
+                class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
               CLOSE
             </button>
           </div>
@@ -529,67 +493,70 @@
           </div>
         </div>
       </div>
+
+      <div id="size-guide-popup-mobile" class="hidden popup-container">
+        <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-5 popup-content transition-colors duration-300">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="uppercase text-sm font-medium">SIZE GUIDE</h2>
+            <button data-action="close-popup" data-popup-id="size-guide-popup"
+                class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
+              CLOSE
+            </button>
+          </div>
+          <div class="popup-formatted-content text-center">
+            {% if product.metafields.custom.size_guide %}
+              <!-- Using the recommended metafield_tag filter from Shopify docs -->
+              <div class="w-full md:w-3/4 ">
+                {{ product.metafields.custom.size_guide | metafield_tag }}
+              </div>
+            {% else %}
+              <!-- No size guide available message -->
+              <div class="w-full md:w-1/2 mx-auto">
+                <p class="text-[13px] text-black leading-relaxed">No size guide available for this product.</p>
+              </div>
+            {% endif %}
+            <p class="text-[13px] text-gray-600 mt-4">For any specific sizing questions, please contact us at <span class="underline">info@kubeko.co</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div id="shipping-popup-mobile" class="hidden popup-container">
+        <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-4 popup-content transition-colors ">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="uppercase text-sm font-medium">SHIPPING</h2>
+            <button data-action="close-popup" data-popup-id="shipping-popup"
+                class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
+              CLOSE
+            </button>
+          </div>
+          <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content">
+            {% if settings.default_shipping_info != blank %}
+              {{ settings.default_shipping_info | newline_to_br }}
+            {% elsif product.metafields.custom.shipping %}
+              {{ product.metafields.custom.shipping | newline_to_br }}
+            {% else %}
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For ready-to-ship items, please allow 2-3 days for the item to dispatch.</p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For made-to-order items, please allow 3-4 weeks for the item to dispatch.</p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">You will receive an email notification to confirm your order has been dispatched.</p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">If you require any additional information please contact <span class="underline">info@kubeko.co</span></p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">We offer complimentary shipping for orders above $350 within the USA and South Korea.</p>
+              <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">Please note that customers outside the USA and South Korea will be responsible for all import duties and tax charges that may be applied by their local customs office on delivery to country of destination.</p>
+              <p class="text-[13px] leading-relaxed text-[#444444]">For return requests, please contact <span class="underline">info@kubeko.co</span> within 14 days of the order's delivery date. After confirming the condition of the returning item(s), we will email you with return instructions. Items must be returned new, unused, unworn, unwashed, unaltered, and undamaged condition, with its original tags attached.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
       
       <!-- Product Info Overlay - Desktop only -->
       <div id="popup-overlay" class="hidden fixed inset-0 bg-transparent z-[54]"></div>
       {% comment %} min-w-[475px] {% endcomment %}
       <div class="hidden md:block absolute bottom-0 left-1/2 -translate-x-1/2  w-[60%] product-info-container">
-        <div id="shipping-popup" class="hidden popup-container">
-          <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-4 popup-content transition-colors ">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="uppercase text-sm font-medium">SHIPPING</h2>
-              <button onclick="closePopup('shipping-popup')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
-                CLOSE
-              </button>
-            </div>
-            <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content">
-              {% if settings.default_shipping_info != blank %}
-                {{ settings.default_shipping_info | newline_to_br }}
-              {% elsif product.metafields.custom.shipping %}
-                {{ product.metafields.custom.shipping | newline_to_br }}
-              {% else %}
-                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For ready-to-ship items, please allow 2-3 days for the item to dispatch.</p>
-                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For made-to-order items, please allow 3-4 weeks for the item to dispatch.</p>
-                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">You will receive an email notification to confirm your order has been dispatched.</p>
-                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">If you require any additional information please contact <span class="underline">info@kubeko.co</span></p>
-                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">We offer complimentary shipping for orders above $350 within the USA and South Korea.</p>
-                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">Please note that customers outside the USA and South Korea will be responsible for all import duties and tax charges that may be applied by their local customs office on delivery to country of destination.</p>
-                <p class="text-[13px] leading-relaxed text-[#444444]">For return requests, please contact <span class="underline">info@kubeko.co</span> within 14 days of the order's delivery date. After confirming the condition of the returning item(s), we will email you with return instructions. Items must be returned new, unused, unworn, unwashed, unaltered, and undamaged condition, with its original tags attached.</p>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div id="size-guide-popup" class="hidden popup-container">
-          <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-5 popup-content transition-colors duration-300">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="uppercase text-sm font-medium">SIZE GUIDE</h2>
-              <button onclick="closePopup('size-guide-popup')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
-                CLOSE
-              </button>
-            </div>
-            <div class="popup-formatted-content text-center">
-              {% if product.metafields.custom.size_guide %}
-                <!-- Using the recommended metafield_tag filter from Shopify docs -->
-                <div class="w-full md:w-3/4 ">
-                  {{ product.metafields.custom.size_guide | metafield_tag }}
-                </div>
-              {% else %}
-                <!-- No size guide available message -->
-                <div class="w-full md:w-1/2 mx-auto">
-                  <p class="text-[13px] text-black leading-relaxed">No size guide available for this product.</p>
-                </div>
-              {% endif %}
-              <p class="text-[13px] text-gray-600 mt-4">For any specific sizing questions, please contact us at <span class="underline">info@kubeko.co</span></p>
-            </div>
-          </div>
-        </div>
-
         <div id="materials-popup" class="hidden popup-container">
           <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] px-5 py-6 popup-content transition-colors duration-300">
             <div class="flex justify-between items-center mb-4">
               <h2 class="uppercase text-sm font-medium">MATERIALS</h2>
-              <button onclick="closePopup('materials-popup')" class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
+              <button data-action="close-popup" data-popup-id="materials-popup"
+                  class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
                 CLOSE
               </button>
             </div>
@@ -624,6 +591,59 @@
                 </style>
               {% else %}
                 <p class="text-[13px] leading-relaxed">Materials information not available for this product.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div id="size-guide-popup" class="hidden popup-container">
+          <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-5 popup-content transition-colors duration-300">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="uppercase text-sm font-medium">SIZE GUIDE</h2>
+              <button data-action="close-popup" data-popup-id="size-guide-popup"
+                  class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
+                CLOSE
+              </button>
+            </div>
+            <div class="popup-formatted-content text-center">
+              {% if product.metafields.custom.size_guide %}
+                <!-- Using the recommended metafield_tag filter from Shopify docs -->
+                <div class="w-full md:w-3/4 ">
+                  {{ product.metafields.custom.size_guide | metafield_tag }}
+                </div>
+              {% else %}
+                <!-- No size guide available message -->
+                <div class="w-full md:w-1/2 mx-auto">
+                  <p class="text-[13px] text-black leading-relaxed">No size guide available for this product.</p>
+                </div>
+              {% endif %}
+              <p class="text-[13px] text-gray-600 mt-4">For any specific sizing questions, please contact us at <span class="underline">info@kubeko.co</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div id="shipping-popup" class="hidden popup-container">
+          <div class="bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] rounded-[1px] py-3 px-4 popup-content transition-colors ">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="uppercase text-sm font-medium">SHIPPING</h2>
+              <button data-action="close-popup" data-popup-id="shipping-popup"
+                  class="text-[#444444] hover:bg-[#D9D9D9] transition-colors uppercase text-[13px] px-[5px] py-[5px]">
+                CLOSE
+              </button>
+            </div>
+            <div class="prose prose-sm text-[13px] max-w-none md:w-1/2 w-full popup-formatted-content">
+              {% if settings.default_shipping_info != blank %}
+                {{ settings.default_shipping_info | newline_to_br }}
+              {% elsif product.metafields.custom.shipping %}
+                {{ product.metafields.custom.shipping | newline_to_br }}
+              {% else %}
+                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For ready-to-ship items, please allow 2-3 days for the item to dispatch.</p>
+                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">For made-to-order items, please allow 3-4 weeks for the item to dispatch.</p>
+                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">You will receive an email notification to confirm your order has been dispatched.</p>
+                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">If you require any additional information please contact <span class="underline">info@kubeko.co</span></p>
+                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">We offer complimentary shipping for orders above $350 within the USA and South Korea.</p>
+                <p class="text-[13px] leading-relaxed mb-[8px] text-[#444444]">Please note that customers outside the USA and South Korea will be responsible for all import duties and tax charges that may be applied by their local customs office on delivery to country of destination.</p>
+                <p class="text-[13px] leading-relaxed text-[#444444]">For return requests, please contact <span class="underline">info@kubeko.co</span> within 14 days of the order's delivery date. After confirming the condition of the returning item(s), we will email you with return instructions. Items must be returned new, unused, unworn, unwashed, unaltered, and undamaged condition, with its original tags attached.</p>
               {% endif %}
             </div>
           </div>
@@ -740,12 +760,8 @@
                                     data-color-name="{{ value | escape }}"
                                     data-option-position="1"
                                     data-value="{{ value | escape }}"
-                                    {% if has_image  %}
-                                      onclick="selectVariant(this, '{{ option.position }}', '{{ value | escape }}')"
-                                      aria-disabled="false"
-                                    {% else %}
-                                      disabled aria-disabled="true"
-                                    {% endif %}
+                                    data-action="select-variant-pdp"
+                                    aria-disabled="false"
                                     aria-label="Select color {{ value | escape }}"
                                   ></button>
                                 </div>
@@ -768,7 +784,7 @@
                             class="variant-button text-center uppercase text-[13px] text-[#444444] w-full"
                             data-option-position="{{ options[1].position }}"
                             data-value="{{ value | escape }}"
-                            onclick="selectVariant(this, '{{ options[1].position }}', '{{ value | escape }}')"
+                            data-action="select-variant-pdp"
                           >
                             {{ value }}
                           </button>
@@ -842,7 +858,8 @@
             
             <!-- Info Links -->
             <div class="px-2 py-3 flex flex-col space-y-2 flex-1">
-              <button onclick="openPopup('materials-popup')" class="justify-between px-[5px] py-[2px] hover:bg-[#D9D9D9] transition-colors">
+              <button data-action="open-popup" data-popup-id="materials-popup"
+                  class="justify-between px-[5px] py-[2px] hover:bg-[#D9D9D9] transition-colors">
                 <span class="uppercase text-[13px] text-[#444444]">MATERIALS</span>
                 <span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
@@ -851,7 +868,8 @@
                 </span>
               </button>
               
-              <button onclick="openPopup('size-guide-popup')" class="justify-between px-[5px] py-[2px] hover:bg-[#D9D9D9] transition-colors">
+              <button data-action="open-popup" data-popup-id="size-guide-popup"
+                  class="justify-between px-[5px] py-[2px] hover:bg-[#D9D9D9] transition-colors">
                 <span class="uppercase text-[13px] text-[#444444]">SIZE GUIDE</span>
                 <span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
@@ -860,7 +878,8 @@
                 </span>
               </button>
               
-              <button onclick="openPopup('shipping-popup')" class="justify-between px-[5px] py-[2px] hover:bg-[#D9D9D9] transition-colors">
+              <button data-action="open-popup" data-popup-id="shipping-popup"
+                  class="justify-between px-[5px] py-[2px] hover:bg-[#D9D9D9] transition-colors">
                 <span class="uppercase text-[13px] text-[#444444]">SHIPPING</span>
                 <span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="7" height="7" viewBox="0 0 7 7" fill="none">
@@ -874,1666 +893,6 @@
       </div>
     </div>
   </div>
-  
-  <script>
-    // Modified function to open popups - closes any other open popups first
-    function openPopup(popupId) {
-      // First close all popups
-      const popups = document.querySelectorAll('#shipping-popup, #size-guide-popup, #materials-popup, #shipping-popup-mobile, #size-guide-popup-mobile, #materials-popup-mobile');
-      popups.forEach(popup => {
-        popup.classList.add('hidden');
-      });
-      
-      const overlay = document.getElementById('popup-overlay');
-      overlay.classList.remove('hidden');
-      
-      const popup = document.getElementById(popupId);
-      if (!popup) return;
-
-      popup.classList.remove('hidden');
-      document.body.classList.add('popup-active');
-      
-      // On mobile devices, scroll to popup position for visibility
-      if (window.innerWidth < 768) {
-        // Store the current scroll position before opening popup
-        window.lastScrollPosition = window.pageYOffset;
-        
-        // Small delay to ensure the popup is rendered before calculating position
-        setTimeout(() => {
-          // Get the popup's position
-          const popupRect = popup.getBoundingClientRect();
-          
-          // Calculate the optimal scroll position - account for top navigation and 48px offset
-          // const headerHeight = 12; // Adjusted to account for the 48px offset
-          const headerHeight = 45;
-          const scrollToY = Math.max(0, window.pageYOffset + popupRect.top - headerHeight);
-          
-          // Use smooth scrolling
-          window.scrollTo({
-            top: scrollToY,
-            behavior: 'smooth'
-          });
-        }, 50);
-      }
-    }
-    
-    // Modified function to close popups
-    function closePopup(popupId) {
-      const popup = document.getElementById(popupId);
-      if (popup) {
-        popup.classList.add('hidden');
-        
-        // Hide the overlay
-        const overlay = document.getElementById('popup-overlay');
-        overlay.classList.add('hidden');
-        
-        // Remove the active popup class from the body
-        document.body.classList.remove('popup-active');
-        
-        // On mobile, restore previous scroll position if it exists
-        if (window.innerWidth < 768 && typeof window.lastScrollPosition !== 'undefined') {
-          setTimeout(() => {
-            window.scrollTo({
-              top: window.lastScrollPosition,
-              behavior: 'smooth'
-            });
-          }, 50);
-        }
-      }
-    }
-    
-    function closeAllPopups() {
-      const popups = document.querySelectorAll('#shipping-popup, #size-guide-popup, #materials-popup, #shipping-popup-mobile, #size-guide-popup-mobile, #materials-popup-mobile');
-      popups.forEach(popup => {
-        const popupId = popup.id;
-        if (!popup.classList.contains('hidden')) {
-          closePopup(popupId);
-        }
-      });
-    }
-    
-    // Add click handler to overlay
-    document.getElementById('popup-overlay').addEventListener('click', function() {
-      closeAllPopups();
-    });
-
-    // Add click handlers for header elements on mobile
-    const mobileHeaderElements = ['site-header', 'header-overlay'].map(id => 
-      document.querySelector('#' + id)
-    ).filter(Boolean);
-    
-    mobileHeaderElements.forEach(element => {
-      element.addEventListener('click', function() {
-        if (window.innerWidth < 768) {
-          closeAllPopups();
-        }
-      });
-    });
-
-    /* ============================================
-      MOBILE GALLERY UTILITIES (Global Functions)
-      GLOBAL UTILITIES
-    ============================================ */
-
-    function updateActiveMobileThumbnail(activeIndex) {
-      const currentThumbnails = document.querySelectorAll('.mobile-thumbnail');
-      currentThumbnails.forEach((thumb, index) => {
-        if (index === activeIndex) {
-          thumb.classList.remove('opacity-30');
-          thumb.classList.add('opacity-100');
-        } else {
-          thumb.classList.remove('opacity-100');
-          thumb.classList.add('opacity-30');
-        }
-      });
-    }
-
-    function scrollToMobileImage(index) {
-      const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
-      const currentSlides = document.querySelectorAll('.mobile-gallery-slide');
-      
-      if (!mobileGalleryContainer || index < 0 || index >= currentSlides.length) return;
-      
-      const containerWidth = mobileGalleryContainer.offsetWidth;
-      const scrollPosition = index * containerWidth;
-
-      mobileGalleryContainer.scrollTo({
-        left: scrollPosition,
-        behavior: 'smooth'
-      });
-
-      updateActiveMobileThumbnail(index);
-    }
-
-    // Expose globally
-    window.updateActiveMobileThumbnail = updateActiveMobileThumbnail;
-    window.scrollToMobileImage = scrollToMobileImage;
-
-    /* ===========================
-      PRODUCT IMAGE MANAGER CLASS
-    =========================== */
-    class ProductImageManager {
-      constructor({ variants = window.productVariants || [], allImages = window.allProductImages || [] } = {}) {
-        this.variants = variants;
-        this.allImages = allImages;
-        this.currentVariant = null;
-        // this.init();
-
-        // Constants
-        this.DESKTOP_WIDTHS = [1200, 1800];
-        this.MOBILE_WIDTHS = [800, 1600];
-        this.THUMBNAIL_WIDTH = 150;
-        this.DESKTOP_SIZES = '35vw';
-        this.MOBILE_SIZES = '100vw';
-      }
-
-      // Return an array of image URLs for a variant, preserving order (main first)
-      getImagesForVariant(variant) {
-        if (!variant) return [];
-        // variant.featured_image may be an object with .src or a string depending on serialization
-        const featuredSrc = (variant.featured_image && (variant.featured_image.src || variant.featured_image)) || null;
-        if (!featuredSrc) return [];
-
-        // Normalize helper
-        // const normalize = s => (s || '').replace(/^https?:/, '');
-        // const normFeatured = normalize(featuredSrc);
-
-        // If allImages entries are objects or strings, try to extract URL
-        const extractUrl = (img) => {
-          if (!img) return '';
-          if (typeof img === 'string') return img;
-          if (img.src) return img.src;
-          if (img.url) return img.url;
-          return '';
-        };
-
-        // const urls = this.allImages.map(extractUrl).map(normalize);
-        const urls = this.allImages.map(extractUrl);
-        const startIndex = urls.findIndex(u => u && u.includes(featuredSrc.replace(/^\/\//, '')));
-        if (startIndex === -1) {
-          // fallback: return featuredSrc alone
-          return [featuredSrc];
-        }
-
-        // collect images until we hit another variant's featured image (to keep variant group)
-        const result = [];
-        for (let i = startIndex; i < urls.length; i++) {
-          const u = urls[i];
-          if (!u) continue;
-          // stop if this url matches another variant's featured image (and it's not the same as this variant)
-          const isAnotherFeatured = this.variants.some(other => {
-            if (!other.featured_image) return false;
-            const otherSrc = (other.featured_image.src || other.featured_image);
-            if (!otherSrc) return false;
-            // return normalize(otherSrc) === u && (otherSrc !== featuredSrc);
-            return otherSrc === u && (otherSrc !== featuredSrc);
-          });
-          if (i > startIndex && isAnotherFeatured) break;
-          result.push(extractUrl(this.allImages[i]));
-        }
-
-        return result.length ? result : [featuredSrc];
-      }
-
-      _buildSizedUrl(url, width) {
-        return `${url.split('?')[0]}?width=${width}`;
-      }
-
-      _buildSrcset(url, widths = [1200, 1800]) {
-        if (!url) return '';
-        return widths
-          .map(w => `${this._buildSizedUrl(url, w)} ${w}w`)
-          .join(', ');
-      }
-
-      // Public: load a variant's images into the DOM
-      // If force===true, re-load even if currently loaded.
-      loadVariant(variant, { force = false } = {}) {
-        if (!variant) return;
-        if (!force && this.currentVariant && this.currentVariant.id === variant.id) return;
-
-        const images = this.getImagesForVariant(variant);
-        if (!images?.length) return;
-
-        this._updateDesktop(images);
-        this._updateMobile(images);
-
-        this.currentVariant = variant;
-      }
-
-      // SIMPLIFIED: Desktop update (no preloading, no DOM recreation)
-      _updateDesktop(images) {
-        const leftHero = document.getElementById('left-hero');
-        const rightHero = document.getElementById('right-hero');
-        const galleryContainer = document.getElementById('right-gallery-rest');
-        
-        if (!leftHero) return;
-
-        // Update left hero
-        this._setImage(leftHero, images[0], this.DESKTOP_WIDTHS, this.DESKTOP_SIZES);
-
-        // Update right hero
-        if (rightHero && images[1]) {
-          this._setImage(rightHero, images[1], this.DESKTOP_WIDTHS, this.DESKTOP_SIZES);
-        }
-
-        // Update or create right gallery images
-        if (galleryContainer) {
-          const galleryUrls = images.slice(2);
-          const existingImgs = galleryContainer.querySelectorAll('img');
-          
-          // Update existing
-          existingImgs.forEach((img, i) => {
-            if (galleryUrls[i]) {
-              this._setImage(img, galleryUrls[i], this.DESKTOP_WIDTHS, this.DESKTOP_SIZES);
-            } else {
-              img.remove(); // Remove if no corresponding URL
-            }
-          });
-          
-          // Add new if needed
-          for (let i = existingImgs.length; i < galleryUrls.length; i++) {
-            const img = this._createImage(galleryUrls[i], this.DESKTOP_WIDTHS, this.DESKTOP_SIZES);
-            galleryContainer.appendChild(img);
-          }
-        }
-      }
-
-      // SIMPLIFIED: Mobile update
-      _updateMobile(images) {
-        const mobileHero = document.getElementById('mobile-hero');
-        const mobileContainer = document.getElementById('mobile-gallery-container');
-        
-        if (!mobileHero) return;
-
-        // Capture current scroll position BEFORE updating
-        let currentScrollIndex = 0;
-        if (mobileContainer) {
-          const containerWidth = mobileContainer.offsetWidth;
-          const scrollPosition = mobileContainer.scrollLeft;
-          currentScrollIndex = Math.round(scrollPosition / containerWidth);
-        }
-
-        // Update mobile hero
-        this._setImage(mobileHero, images[0], this.MOBILE_WIDTHS, this.MOBILE_SIZES);
-
-        // Update mobile gallery slides
-        if (mobileContainer) {
-          const existingSlides = Array.from(mobileContainer.querySelectorAll('.mobile-gallery-slide'));
-          
-          // First slide already exists in HTML (mobile-hero), skip it
-          // Update additional slides
-          existingSlides.slice(1).forEach((slide, i) => {
-            const img = slide.querySelector('img');
-            const urlIndex = i + 1; // Offset because first slide is index 0
-            if (images[urlIndex] && img) {
-              this._setImage(img, images[urlIndex], this.MOBILE_WIDTHS, this.MOBILE_SIZES);
-            } else if (!images[urlIndex]) {
-              slide.remove();
-            }
-          });
-          
-          // Add new slides if needed
-          for (let i = existingSlides.length; i < images.length; i++) {
-            const slide = this._createMobileSlide(images[i]);
-            mobileContainer.appendChild(slide);
-          }
-        }
-        
-        // Update thumbnails
-        this._updateMobileThumbnails(images);
-
-        // Set active thumbnail based on current scroll position (not always 0)
-        const maxIndex = images.length - 1;
-        const targetIndex = Math.min(currentScrollIndex, maxIndex); // Cap if fewer images
-        
-        if (typeof window.updateActiveMobileThumbnail === 'function') {
-          window.updateActiveMobileThumbnail(targetIndex);
-        }
-      }
-
-      _updateMobileThumbnails(images) {
-        const wrapper = document.querySelector('.mobile-thumbnail-wrapper .mobile-gallery');
-        if (!wrapper) return;
-
-        wrapper.innerHTML = ''; // Clear and rebuild
-        
-        images.forEach((url, idx) => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'flex-shrink-0 h-[70px] w-[45.5px] mr-3 mobile-thumbnail bg-transparent border-0 p-0';
-          btn.dataset.index = idx;
-          btn.onclick = () => {
-            if (window.scrollToMobileImage) window.scrollToMobileImage(idx);
-          };
-
-          const thumb = this._buildSizedUrl(url, 150);
-          btn.innerHTML = `<img src="${thumb}" class="w-full h-full object-cover" loading="lazy" decoding="async">`;
-          
-          wrapper.appendChild(btn);
-        });
-        
-        // Update active thumbnail
-        if (typeof window.updateActiveMobileThumbnail === 'function') {
-          window.updateActiveMobileThumbnail(0);
-        }
-      }
-
-      _setImage(imgElement, url, widths, sizes) {
-        imgElement.src = this._buildSizedUrl(url, widths[0]);
-        imgElement.srcset = this._buildSrcset(url, widths);
-        imgElement.sizes = sizes;
-      }
-
-      _createImage(url, widths, sizes) {
-        const img = document.createElement('img');
-        img.className = 'w-full h-full object-contain snap-center';
-        img.loading = 'lazy';
-        img.decoding = 'async';
-        this._setImage(img, url, widths, sizes);
-        return img;
-      }
-
-      _createMobileSlide(url) {
-        const slide = document.createElement('div');
-        slide.className = 'w-full h-full flex-shrink-0 snap-center mobile-gallery-slide relative';
-        
-        const img = document.createElement('img');
-        img.className = 'w-full h-full object-contain';
-        img.loading = 'lazy';
-        img.decoding = 'async';
-        this._setImage(img, url, this.MOBILE_WIDTHS, this.MOBILE_SIZES);
-        
-        slide.appendChild(img);
-        return slide;
-      }
-    }
-
-    /* =============================================
-      VARIANT SELECTOR CLASS
-    ============================================= */
-    class VariantSelector {
-      constructor(productImageManager, variants) {
-        this.imageManager = productImageManager;
-        this.variants = variants;
-        this.selections = {}; // Current option selections
-        this.totalOptions = {{ product.options | size }};
-      }
-
-      init(initialVariant) {
-        if (!initialVariant) return;
-        
-        // Set initial selection in the selections map
-        if (initialVariant.option1) {
-          this.selections['option1'] = initialVariant.option1;
-        }
-        // if (initialVariant.option2) {
-        //   this.selections['option2'] = initialVariant.option2;
-        // }
-        
-        // Update size availability for initial color
-        if (initialVariant.option1 && this.totalOptions > 1) {
-          this._updateSizeAvailability(initialVariant.option1);
-        }
-
-        // // Update buttons to reflect initial variant state
-        // if (Object.keys(this.selections).length === this.totalOptions) {
-        //   // All options are selected (e.g., color + size both set)
-        //   updateAddToCartButtons(true, initialVariant);
-        // } else {
-        //   // Only partial selection (e.g., only color, no size yet)
-        //   updateAddToCartButtons(false);
-        // }
-        
-        // Update price display
-        // TODO: add updateVariantPrice function to specify variant prices instead of first variant price
-        // if (typeof window.updateVariantPrice === 'function') {
-        //   window.updateVariantPrice(initialVariant);
-        // }
-
-        // console.log('init selections after _updateSizeAvailability:', JSON.stringify(this.selections));
-        // console.log('init totalOptions:', this.totalOptions);
-
-        console.log('init totalOptions:', this.totalOptions);
-        console.log('init selections:', JSON.stringify(this.selections));
-        const matchingVariant = this._findMatchingVariant();
-        console.log('init matchingVariant:', matchingVariant);
-
-        this._updateFormAndButtons(matchingVariant);
-      }
-
-      // Main entry point (called from onclick handlers)
-      selectOption(element, optionPosition, optionValue) {
-        if (!this._isSelectable(element)) return;
-        
-        this._updateUI(element, optionPosition, optionValue);
-        this._updateSelections(optionPosition, optionValue);
-        
-        const matchingVariant = this._findMatchingVariant();
-        
-        // Handle color change (load images immediately)
-        if (optionPosition === "1") {
-          this._handleColorChange(optionValue);
-        }
-        
-        // Update form and buttons based on selection state
-        this._updateFormAndButtons(matchingVariant);
-      }
-
-      _isSelectable(element) {
-        return !element.disabled && 
-              element.getAttribute('aria-disabled') !== 'true' &&
-              !element.closest('.color-chip-container')?.classList.contains('active');
-      }
-
-      _updateUI(element, optionPosition, optionValue) {
-        // Clear previous selections for this option
-        const selectableItems = document.querySelectorAll(
-          `.variant-button[data-option-position="${optionPosition}"], 
-          .color-chip[data-option-position="${optionPosition}"]`
-        );
-        selectableItems.forEach(item => {
-          item.removeAttribute('data-selected');
-          item.classList.remove('bg-[#D9D9D9]');
-        });
-
-        // Mark new selection
-        element.setAttribute('data-selected', 'true');
-        if (element.classList.contains('variant-button') && !element.classList.contains('color-chip')) {
-          element.classList.add('bg-[#D9D9D9]');
-        }
-      }
-
-      _updateSelections(optionPosition, optionValue) {
-        this.selections[`option${optionPosition}`] = optionValue;
-      }
-
-      _findMatchingVariant() {
-        const allSelected = Object.keys(this.selections).length === this.totalOptions;
-        
-        if (!allSelected) return null;
-        
-        return this.variants.find(variant => {
-          return Object.keys(this.selections).every(option => {
-            const position = parseInt(option.replace('option', ''), 10);
-            return variant[`option${position}`] === this.selections[`option${position}`];
-          });
-        });
-      }
-
-      _handleColorChange(colorValue) {
-        // Find first variant with this color that has images
-        const colorVariant = this.variants.find(v => v.option1 === colorValue && v.featured_image && v.available) ||
-                            this.variants.find(v => v.option1 === colorValue && v.featured_image) ||
-                            this.variants.find(v => v.option1 === colorValue);
-
-        if (colorVariant && this.imageManager) {
-          this.imageManager.loadVariant(colorVariant);
-        }
-
-        // Update size availability for this color
-        if (this.totalOptions > 1) {
-          this._updateSizeAvailability(colorValue);
-        }
-      }
-
-      _updateSizeAvailability(colorValue) {
-        const availableSizes = this.variants
-          .filter(v => v.option1 === colorValue && v.available)
-          .map(v => v.option2);
-
-          // Reset out-of-stock state before evaluating new color
-          document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-            button.classList.remove('out-of-stock');
-          });
-
-        const sizeButtons = document.querySelectorAll('.variant-button[data-option-position="2"]');
-
-        sizeButtons.forEach(btn => {
-          const sizeValue = btn.getAttribute("data-value");
-          if (!availableSizes.includes(sizeValue)) {
-            btn.disabled = true;
-            btn.classList.add("opacity-50");
-          } else {
-            btn.disabled = false;
-            btn.classList.remove("opacity-50");
-          }
-        });
-
-        // Disable add-to-cart if no sizes available
-        if (availableSizes.length === 0) {
-          updateAddToCartButtons(false, null, true);
-        } else if (availableSizes.length === 1) { // TODO: fix auto select for one size available
-          const matchingSizeBtns = [...sizeButtons].filter(
-            btn => btn.getAttribute("data-value") === availableSizes[0]
-          );
-          
-          // Clear all first, once
-          [...sizeButtons].forEach(btn => {
-            btn.removeAttribute('data-selected');
-            btn.classList.remove('bg-[#D9D9D9]');
-          });
-          
-          // Then highlight all matches
-          matchingSizeBtns.forEach(btn => {
-            btn.setAttribute('data-selected', 'true');
-            btn.classList.add('bg-[#D9D9D9]');
-          });
-          
-          this._updateSelections("2", availableSizes[0]);
-          // console.log("Selections:", this.selections);
-
-          const matchingVariant = this._findMatchingVariant();
-          this._updateFormAndButtons(matchingVariant);
-          // console.log("Matching variant:", matchingVariant);
-        } else {
-          console.log("test")
-          updateAddToCartButtons(false);
-        }
-      }
-
-      _updateFormAndButtons(matchingVariant) {
-        const allSelected = Object.keys(this.selections).length === this.totalOptions;
-        const isUnavailableCombination = allSelected && !matchingVariant;
-
-        // console.log('_updateFormAndButtons matchingVariant:', matchingVariant);
-        // console.log('_updateFormAndButtons allSelected:', allSelected);
-
-        // Update hidden variant ID inputs
-        if (matchingVariant) {
-          const desktopId = document.getElementById('variant-id');
-          const mobileId = document.getElementById('variant-id-mobile');
-          if (desktopId) desktopId.value = matchingVariant.id;
-          if (mobileId) mobileId.value = matchingVariant.id;
-        }
-
-        // Update add-to-cart buttons
-        if (matchingVariant) {
-          // console.log("updateFormAndButtons: matching variant true")
-          updateAddToCartButtons(true, matchingVariant);
-        } else if (isUnavailableCombination) {
-          updateAddToCartButtons(false, null, true);
-        } else {
-          updateAddToCartButtons(false);
-        }
-      }
-    }
-
-    /* ===========================
-      MAIN INITIALIZATION
-    =========================== */
-
-    let productImageManager;
-    let variantSelector;
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const data = {
-          variants: window.productVariants || [],
-          allImages: window.allProductImages || []
-      };
-
-      productImageManager = new ProductImageManager(data);
-      window.productImageManager = productImageManager;
-
-      // Initialize VariantSelector (depends on productImageManager)
-      variantSelector = new VariantSelector(
-        productImageManager,
-        window.productVariants || []
-      );
-      window.variantSelector = variantSelector;
-
-      // Load initial variant
-      const firstVariant = data.variants.find(v => v.available) || data.variants[0];
-
-      if (firstVariant) {
-        productImageManager.loadVariant(firstVariant);
-        variantSelector.init(firstVariant);
-        // variantSelector._updateSizeAvailability(firstVariant.option1);
-
-        // TODO: update this hot fix of add to cart button, should be done in variant selector
-        // const matchingVariant = variantSelector._findMatchingVariant();
-        // variantSelector._updateFormAndButtons(matchingVariant);
-
-        // UI: Mark selected color chip
-        const colorBtn = document.querySelector(`.color-chip[data-value="${firstVariant.option1}"]`);
-        if (colorBtn) {
-          colorBtn.setAttribute("data-selected", "true");
-          colorBtn.closest(".color-chip-container")?.classList.add("active");
-        }
-      }
-
-      // mobile gallery scroll listener
-      const mobileGalleryContainer = document.getElementById('mobile-gallery-container');
-      if (mobileGalleryContainer) {
-        let scrollTimeout;
-        mobileGalleryContainer.addEventListener('scroll', function() {
-          clearTimeout(scrollTimeout);
-          scrollTimeout = setTimeout(() => {
-            const containerWidth = mobileGalleryContainer.offsetWidth;
-            const scrollPosition = mobileGalleryContainer.scrollLeft;
-            const activeIndex = Math.round(scrollPosition / containerWidth);
-            updateActiveMobileThumbnail(activeIndex);
-          }, 50);
-        }, { passive: true });
-      }
-
-      // Initialize all UI components
-      initColorChips();
-      // initAddToCartButtons();
-      initCartFormSubmission();
-      initProductInfoHover();
-      cleanupMaterialsContent();
-    });
-
-    // document.addEventListener('DOMContentLoaded', function() {
-    //   const colorChipsContainer = document.getElementById('color-chips-container');
-    //   const selectedColorName = document.getElementById('selected-color-name');
-    //   let selectedColor = '';
-
-    //   if (colorChipsContainer && selectedColorName) {
-    //     const setInitialState = () => {
-    //         const activeChip = colorChipsContainer.querySelector('.color-chip-container.active .color-chip');
-    //         if (activeChip) {
-    //             selectedColor = activeChip.dataset.colorName;
-    //             selectedColorName.textContent = selectedColor;
-    //         } else {
-    //             const firstChip = colorChipsContainer.querySelector('.color-chip');
-    //             if (firstChip) {
-    //                 selectedColor = firstChip.dataset.colorName;
-    //                 selectedColorName.textContent = selectedColor;
-    //             }
-    //         }
-    //     };
-
-    //     // Set initial state on load
-    //     setInitialState();
-
-    //     // Handle hover events
-    //     colorChipsContainer.addEventListener('mouseover', (event) => {
-    //       const chip = event.target.closest('.color-chip');
-    //       if (chip) {
-    //         selectedColorName.textContent = chip.dataset.colorName;
-    //       }
-    //     });
-
-    //     // Handle mouse leaving the container
-    //     colorChipsContainer.addEventListener('mouseleave', () => {
-    //       // Revert to the last clicked color's name
-    //       selectedColorName.textContent = selectedColor;
-    //     });
-
-    //     // Handle click events
-    //     colorChipsContainer.addEventListener('click', (event) => {
-    //       const chip = event.target.closest('.color-chip');
-    //       if (chip) {
-    //         // Update the officially selected color
-    //         selectedColor = chip.dataset.colorName;
-    //         selectedColorName.textContent = selectedColor;
-
-    //         // Update the 'active' class on the container
-    //         const allChipContainers = colorChipsContainer.querySelectorAll('.color-chip-container');
-    //         allChipContainers.forEach(container => container.classList.remove('active'));
-    //         chip.closest('.color-chip-container').classList.add('active');
-
-    //         // The existing onclick="selectVariant(...)" will handle the form update
-    //       }
-    //     });
-    //   }
-
-    //   const mobileColorChipsContainer = document.getElementById('mobile-color-chips-container');
-    //   const mobileSelectedColorName = document.getElementById('mobile-selected-color-name');
-
-    //   if (mobileColorChipsContainer && mobileSelectedColorName) {
-    //     const setMobileInitialState = () => {
-    //       const activeChip = mobileColorChipsContainer.querySelector('.color-chip-container.active .color-chip');
-    //       if (activeChip) {
-    //         mobileSelectedColorName.textContent = activeChip.dataset.colorName;
-    //       } else {
-    //         const firstChip = mobileColorChipsContainer.querySelector('.color-chip');
-    //         if (firstChip) {
-    //           mobileSelectedColorName.textContent = firstChip.dataset.colorName;
-    //         }
-    //       }
-    //     };
-
-    //     setMobileInitialState();
-
-    //     mobileColorChipsContainer.addEventListener('click', (event) => {
-    //       const chip = event.target.closest('.color-chip');
-    //       if (chip) {
-    //         // Update selected color name
-    //         mobileSelectedColorName.textContent = chip.dataset.colorName;
-
-    //         // Update active class
-    //         const allChipContainers = mobileColorChipsContainer.querySelectorAll('.color-chip-container');
-    //         allChipContainers.forEach(container => container.classList.remove('active'));
-    //         chip.closest('.color-chip-container').classList.add('active');
-    //       }
-    //     });
-    //   }
-    // });
-    function initColorChips() {
-      // Desktop color chips
-      const colorChipsContainer = document.getElementById('color-chips-container');
-      const selectedColorName = document.getElementById('selected-color-name');
-      let selectedColor = '';
-
-      if (colorChipsContainer && selectedColorName) {
-        const setInitialState = () => {
-          const activeChip = colorChipsContainer.querySelector('.color-chip-container.active .color-chip');
-          if (activeChip) {
-            selectedColor = activeChip.dataset.colorName;
-            selectedColorName.textContent = selectedColor;
-          } else {
-            const firstChip = colorChipsContainer.querySelector('.color-chip');
-            if (firstChip) {
-              selectedColor = firstChip.dataset.colorName;
-              selectedColorName.textContent = selectedColor;
-            }
-          }
-        };
-
-        setInitialState();
-
-        colorChipsContainer.addEventListener('mouseover', (event) => {
-          const chip = event.target.closest('.color-chip');
-          if (chip) {
-            selectedColorName.textContent = chip.dataset.colorName;
-          }
-        });
-
-        colorChipsContainer.addEventListener('mouseleave', () => {
-          selectedColorName.textContent = selectedColor;
-        });
-
-        colorChipsContainer.addEventListener('click', (event) => {
-          const chip = event.target.closest('.color-chip');
-          if (chip) {
-            selectedColor = chip.dataset.colorName;
-            selectedColorName.textContent = selectedColor;
-
-            const allChipContainers = colorChipsContainer.querySelectorAll('.color-chip-container');
-            allChipContainers.forEach(container => container.classList.remove('active'));
-            chip.closest('.color-chip-container').classList.add('active');
-          }
-        });
-      }
-
-      // Mobile color chips
-      const mobileColorChipsContainer = document.getElementById('mobile-color-chips-container');
-      const mobileSelectedColorName = document.getElementById('mobile-selected-color-name');
-
-      if (mobileColorChipsContainer && mobileSelectedColorName) {
-        const setMobileInitialState = () => {
-          const activeChip = mobileColorChipsContainer.querySelector('.color-chip-container.active .color-chip');
-          if (activeChip) {
-            mobileSelectedColorName.textContent = activeChip.dataset.colorName;
-          } else {
-            const firstChip = mobileColorChipsContainer.querySelector('.color-chip');
-            if (firstChip) {
-              mobileSelectedColorName.textContent = firstChip.dataset.colorName;
-            }
-          }
-        };
-
-        setMobileInitialState();
-
-        mobileColorChipsContainer.addEventListener('click', (event) => {
-          const chip = event.target.closest('.color-chip');
-          if (chip) {
-            mobileSelectedColorName.textContent = chip.dataset.colorName;
-
-            const allChipContainers = mobileColorChipsContainer.querySelectorAll('.color-chip-container');
-            allChipContainers.forEach(container => container.classList.remove('active'));
-            chip.closest('.color-chip-container').classList.add('active');
-          }
-        });
-      }
-    }
-
-    function initAddToCartButtons() {
-      if ({{ product.options | size }} > 1) {
-        const totalOptionTypes = {{ product.options | size }};
-        const selections = {};
-        
-        document.querySelectorAll('.variant-button[data-selected="true"]').forEach(selectedBtn => {
-          const position = selectedBtn.getAttribute('data-option-position');
-          const value = selectedBtn.getAttribute('data-value');
-          selections[`option${position}`] = value;
-        });
-
-        const allOptionsSelected = Object.keys(selections).length === totalOptionTypes;
-
-        if (allOptionsSelected) {
-          const variants = {{ product.variants | json }};
-          const matchingVariant = variants.find(variant =>
-            Object.keys(selections).every(option => {
-              const position = parseInt(option.replace('option', ''));
-              return variant[`option${position}`] === selections[`option${position}`];
-            })
-          );
-
-          if (matchingVariant) {
-            updateAddToCartButtons(true, matchingVariant);
-          } else {
-            updateAddToCartButtons(false, null, true);
-          }
-        } else {
-          updateAddToCartButtons(false);
-        }
-      } else {
-        const defaultVariant = {{ product.selected_or_first_available_variant | json }};
-        updateAddToCartButtons(true, defaultVariant);
-        // if (defaultVariant) {
-        //   updateAddToCartButtons(true, defaultVariant);
-        // } else {
-        //   // No variants available at all
-        //   updateAddToCartButtons(false, null, true);
-        // }
-      }
-    }
-
-    function initCartFormSubmission() {
-      const buttons = document.querySelectorAll('form .add-to-cart-btn');
-      // console.log(buttons)
-      const addToCartForms = [];
-      
-      buttons.forEach(btn => {
-        const form = btn.closest('form');
-        if (form && !addToCartForms.includes(form)) {
-          addToCartForms.push(form);
-        }
-      });
-      
-      addToCartForms.forEach(form => {
-        form.addEventListener('submit', async function(e) {
-          e.preventDefault();
-          
-          const submitButton = form.querySelector('button[type="submit"]');
-          const originalText = submitButton.textContent;
-          
-          try {
-            const formData = new FormData(form);
-            const response = await fetch('/cart/add.js', {
-              method: 'POST',
-              body: formData
-            });
-            
-            if (!response.ok) throw new Error('Add to cart failed');
-            
-            const result = await response.json();
-            
-            const cartResponse = await fetch('/cart.js');
-            const cart = await cartResponse.json();
-            
-            updateCartCountDisplay(cart.item_count);
-            
-            document.dispatchEvent(new CustomEvent('cart:updated', {
-              detail: { item_count: cart.item_count }
-            }));
-            
-            const wasVariantsSelected = submitButton.classList.contains('variants-selected');
-            
-            submitButton.textContent = 'Added';
-            submitButton.classList.remove('variants-selected');
-            submitButton.classList.remove('container-hovered');
-            submitButton.classList.add('success');
-            
-            setTimeout(() => {
-              submitButton.textContent = originalText;
-              submitButton.classList.remove('success');
-              if (wasVariantsSelected) {
-                submitButton.classList.add('variants-selected');
-              }
-              if (document.querySelector('.product-info-container.container-hover')) {
-                submitButton.classList.add('container-hovered');
-              }
-            }, 2000);
-            
-          } catch (error) {
-            console.error('Error adding to cart:', error);
-            submitButton.textContent = 'Error';
-            submitButton.classList.add('error');
-            setTimeout(() => {
-              submitButton.textContent = originalText;
-              submitButton.classList.remove('error');
-            }, 2000);
-          }
-        });
-      });
-    }
-
-    function updateCartCountDisplay(count) {
-      const cartCount = document.querySelector('.cart-count');
-      if (cartCount) {
-        cartCount.textContent = count;
-        cartCount.style.display = count > 0 ? 'block' : 'none';
-      }
-    }
-
-    function initProductInfoHover() {
-      // Only on desktop
-      if (window.innerWidth < 768) return;
-
-      const productInfoContainer = document.querySelector('.product-info-container');
-      const productInfoItems = document.querySelectorAll('.product-info-item');
-      const navContainer = document.querySelector('.nav-container');
-      
-      if (!productInfoContainer) return;
-
-      function handleMouseEnter() {
-        document.querySelectorAll('.variant-button[data-selected="true"]').forEach(button => {
-          button.classList.add('bg-[#D9D9D9]');
-        });
-        
-        productInfoContainer.classList.add('container-hover');
-        
-        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-          button.classList.add('container-hovered');
-        });
-        
-        // Expand details container
-        const detailsContainer = productInfoContainer.querySelector('.product-details-container');
-        if (detailsContainer) {
-          detailsContainer.style.maxHeight = '1000px';
-        }
-      }
-
-      function handleMouseLeave() {
-        productInfoItems.forEach(item => {
-          item.style.backgroundColor = 'rgba(254,254,254,0.60)';
-        });
-        
-        document.querySelectorAll('.variant-button[data-selected="true"]').forEach(button => {
-          button.classList.remove('bg-[#D9D9D9]');
-        });
-        
-        productInfoContainer.classList.remove('container-hover');
-        
-        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-          button.classList.remove('container-hovered');
-        });
-
-        if (navContainer) {
-          navContainer.style.backgroundColor = 'rgba(254,254,254,0.60)';
-        }
-        
-        // Collapse details container
-        const detailsContainer = productInfoContainer.querySelector('.product-details-container');
-        if (detailsContainer) {
-          detailsContainer.style.maxHeight = '0';
-        }
-      }
-      
-      productInfoContainer.addEventListener('mouseenter', handleMouseEnter);
-      productInfoContainer.addEventListener('mouseleave', handleMouseLeave);
-      
-      if (navContainer) {
-        navContainer.addEventListener('mouseenter', handleMouseEnter);
-        navContainer.addEventListener('mouseleave', handleMouseLeave);
-      }
-      
-      // Handle window resize
-      window.addEventListener('resize', function() {
-        if (window.innerWidth < 768) {
-          productInfoItems.forEach(item => {
-            item.style.backgroundColor = 'rgba(254,254,254,0.60)';
-          });
-          
-          if (navContainer) {
-            navContainer.style.backgroundColor = 'rgba(254,254,254,0.60)';
-          }
-        }
-      });
-    }
-
-    function cleanupMaterialsContent() {
-      const materialsContentWrappers = document.querySelectorAll('.materials-content-wrapper');
-      
-      materialsContentWrappers.forEach(materialsContentWrapper => {
-        const text = materialsContentWrapper.textContent.trim();
-        
-        if (text.startsWith('{') && text.includes('"type":"root"')) {
-          try {
-            const data = JSON.parse(text);
-            materialsContentWrapper.innerHTML = '';
-            
-            if (data.type === 'root' && Array.isArray(data.children)) {
-              data.children.forEach((item) => {
-                if (item.type === 'paragraph' && Array.isArray(item.children)) {
-                  const p = document.createElement('p');
-                  p.className = 'text-[13px] leading-relaxed mb-[8px]';
-
-                  item.children.forEach((child) => {
-                    if (child.type === 'text' && typeof child.value === 'string') {
-                      p.textContent += child.value;
-                    }
-                  });
-
-                  if (p.textContent.trim()) {
-                    materialsContentWrapper.appendChild(p);
-                  }
-                }
-              });
-            }
-          } catch (e) {
-            console.error('Error parsing materials JSON:', e);
-            
-            const valueMatches = text.match(/"value":"([^"]+)"/g);
-            if (valueMatches && valueMatches.length) {
-              materialsContentWrapper.innerHTML = '';
-              
-              valueMatches.forEach(match => {
-                const value = match.replace('"value":"', '').replace('"', '');
-                if (value && value.trim()) {
-                  const p = document.createElement('p');
-                  p.className = 'text-[13px] leading-relaxed mb-[8px]';
-                  p.textContent = value.trim();
-                  materialsContentWrapper.appendChild(p);
-                }
-              });
-            }
-          }
-        }
-      });
-    }
-
-    /* =============================================
-      SHARED UTILITY FUNCTIONS
-    ============================================= */
-    // function updateAddToCartButtons(allSelected, selectedVariant, isUnavailableCombination) {
-    //   const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
-      
-    //   // Get inventory containers
-    //   const desktopInventoryContainer = document.getElementById('desktop-inventory-status');
-    //   const mobileInventoryContainer = document.getElementById('mobile-inventory-status');
-      
-    //   // Clear any existing inventory indicators
-    //   if (desktopInventoryContainer) {
-    //     desktopInventoryContainer.innerHTML = '';
-    //     desktopInventoryContainer.style.display = 'none';
-    //   }
-      
-    //   if (mobileInventoryContainer) {
-    //     mobileInventoryContainer.innerHTML = '';
-    //     mobileInventoryContainer.style.display = 'none';
-    //   }
-      
-    //   if (allSelected && selectedVariant) {
-    //     // Check if the variant is available
-    //     if (selectedVariant.available) {
-    //       // Variant is in stock
-    //       addToCartButtons.forEach(button => {
-    //         button.disabled = false;
-    //         button.classList.add('variants-selected');
-    //         button.classList.remove('out-of-stock');
-    //         button.textContent = 'ADD TO CART';
-    //       });
-          
-    //       // Display inventory level if tracking is enabled and quantity is low
-    //       if (selectedVariant.inventory_quantity !== null && selectedVariant.inventory_quantity <= 10 && selectedVariant.inventory_quantity > 0) {
-    //         const inventoryMessage = `Only ${selectedVariant.inventory_quantity} left`;
-            
-    //         // Update desktop inventory status
-    //         if (desktopInventoryContainer) {
-    //           desktopInventoryContainer.innerHTML = inventoryMessage;
-    //           desktopInventoryContainer.style.display = 'block';
-    //         }
-            
-    //         // Update mobile inventory status
-    //         if (mobileInventoryContainer) {
-    //           mobileInventoryContainer.innerHTML = inventoryMessage;
-    //           mobileInventoryContainer.style.display = 'block';
-    //         }
-    //       }
-    //     } else {
-    //       // Variant is sold out
-    //       addToCartButtons.forEach(button => {
-    //         button.disabled = true;
-    //         button.classList.remove('variants-selected');
-    //         button.classList.add('out-of-stock');
-    //         button.textContent = 'SOLD OUT';
-    //       });
-    //     }
-    //   } else if (isUnavailableCombination) {
-    //     // All options selected but no matching variant (unavailable combination)
-    //     addToCartButtons.forEach(button => {
-    //       button.disabled = true;
-    //       button.classList.remove('variants-selected');
-    //       button.classList.add('out-of-stock');
-    //       button.textContent = 'SOLD OUT';
-    //     });
-    //   } else {
-    //     // Not all variants selected yet
-    //     addToCartButtons.forEach(button => {
-    //       button.disabled = true;
-    //       button.classList.remove('variants-selected');
-    //       button.classList.remove('out-of-stock');
-    //       button.textContent = 'ADD TO CART';
-    //     });
-    //   }
-    // }
-    
-    function updateAddToCartButtons(allSelected, selectedVariant, isUnavailableCombination) {
-      // console.log('updateAddToCartButtons called:', allSelected, selectedVariant?.available, isUnavailableCombination);
-      const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
-      // console.log('updateAddToCartButtons buttons found:', addToCartButtons.length);
-      
-      // Get inventory containers
-      const desktopInventoryContainer = document.getElementById('desktop-inventory-status');
-      const mobileInventoryContainer = document.getElementById('mobile-inventory-status');
-      
-      // Clear any existing inventory indicators
-      if (desktopInventoryContainer) {
-        desktopInventoryContainer.innerHTML = '';
-        desktopInventoryContainer.style.display = 'none';
-      }
-      
-      if (mobileInventoryContainer) {
-        mobileInventoryContainer.innerHTML = '';
-        mobileInventoryContainer.style.display = 'none';
-      }
-      
-      if (allSelected && selectedVariant) {
-        // Check if the variant is available
-        if (selectedVariant.available) {
-          // console.log("updateAddToCartButtons: variant available true")
-          // Variant is in stock
-          addToCartButtons.forEach(button => {
-            button.disabled = false;
-            button.classList.add('variants-selected');
-            button.classList.remove('out-of-stock');
-            button.textContent = 'ADD TO CART';
-            // console.log("updateAddToCartButtons: button", button)
-          });
-          
-          // Display inventory level if tracking is enabled and quantity is low
-          // if (selectedVariant.inventory_quantity !== null && selectedVariant.inventory_quantity <= 10 && selectedVariant.inventory_quantity > 0) {
-          //   const inventoryMessage = `Only ${selectedVariant.inventory_quantity} left`;
-            
-          //   if (desktopInventoryContainer) {
-          //     desktopInventoryContainer.innerHTML = inventoryMessage;
-          //     desktopInventoryContainer.style.display = 'block';
-          //   }
-            
-          //   if (mobileInventoryContainer) {
-          //     mobileInventoryContainer.innerHTML = inventoryMessage;
-          //     mobileInventoryContainer.style.display = 'block';
-          //   }
-          // }
-        } else {
-          // Variant is sold out
-          addToCartButtons.forEach(button => {
-            button.disabled = true;
-            button.classList.remove('variants-selected');
-            button.classList.add('out-of-stock');
-            button.textContent = 'SOLD OUT';
-          });
-        }
-      } else if (isUnavailableCombination) {
-        // All options selected but no matching variant (unavailable combination)
-        addToCartButtons.forEach(button => {
-          button.disabled = true;
-          button.classList.remove('variants-selected');
-          button.classList.add('out-of-stock');
-          button.textContent = 'SOLD OUT';
-        });
-      } else {
-        // Not all variants selected yet — reset to neutral state
-        addToCartButtons.forEach(button => {
-          const wasOutOfStock = button.classList.contains('out-of-stock');
-
-          button.disabled = true;
-          button.classList.remove('variants-selected');
-
-          if (wasOutOfStock) {
-            // Preserve SOLD OUT state
-            button.textContent = 'SOLD OUT';
-          } else {
-            button.classList.remove('out-of-stock');
-            button.textContent = 'ADD TO CART';
-          }
-        });
-        // NEW: Check if button already has out-of-stock state from Liquid
-        // addToCartButtons.forEach(button => {
-        //   const wasOutOfStock = button.classList.contains('out-of-stock');
-          
-        //   button.disabled = true;
-        //   button.classList.remove('variants-selected');
-          
-        //   if (wasOutOfStock) {
-        //     // Preserve SOLD OUT state
-        //     button.textContent = 'SOLD OUT';
-        //     // Keep the class
-        //   } else {
-        //     // Normal "not selected" state
-        //     button.classList.remove('out-of-stock');
-        //     button.textContent = 'ADD TO CART';
-        //   }
-        // });
-      }
-    }
-
-    /* =============================================
-      GLOBAL FUNCTION FOR ONCLICK HANDLERS
-    ============================================= */
-    function selectVariant(element, optionPosition, optionValue) {
-      if (window.variantSelector) {
-        window.variantSelector.selectOption(element, optionPosition, optionValue);
-      }
-    }
-    
-    // document.addEventListener('DOMContentLoaded', function() {
-    //   // Initialize ADD TO CART button based on variant selection state
-    //   if ({{ product.options | size }} > 1) {
-    //     // MULTI-OPTION PRODUCT (requires selecting both)
-    //     const totalOptionTypes = {{ product.options | size }};
-
-    //     const selections = {};
-    //     document.querySelectorAll('.variant-button[data-selected="true"]').forEach(selectedBtn => {
-    //       const position = selectedBtn.getAttribute('data-option-position');
-    //       const value = selectedBtn.getAttribute('data-value');
-    //       selections[`option${position}`] = value;
-    //     });
-
-    //     const allOptionsSelected = Object.keys(selections).length === totalOptionTypes;
-
-    //     if (allOptionsSelected) {
-    //       const variants = {{ product.variants | json }};
-    //       const matchingVariant = variants.find(variant =>
-    //         Object.keys(selections).every(option => {
-    //           const position = parseInt(option.replace('option', ''));
-    //           return variant[`option${position}`] === selections[`option${position}`];
-    //         })
-    //       );
-
-    //       if (matchingVariant) {
-    //         updateAddToCartButtons(true, matchingVariant);
-    //       } else {
-    //         updateAddToCartButtons(false, null, true);
-    //       }
-    //     } else {
-    //       updateAddToCartButtons(false);
-    //     }
-
-    //   } else {
-    //     // SINGLE-OPTION PRODUCT (e.g., Color only)
-    //     const defaultVariant = {{ product.selected_or_first_available_variant | json }};
-    //     updateAddToCartButtons(true, defaultVariant);
-    //   }
-
-      
-    //   // Handle add to cart form submissions
-    //   const buttons = document.querySelectorAll('form .add-to-cart-btn');
-    //   const addToCartForms = [];
-    //   buttons.forEach(btn => {
-    //     const form = btn.closest('form');
-    //     if (form && !addToCartForms.includes(form)) {
-    //       addToCartForms.push(form);
-    //     }
-    //   });
-      
-    //   addToCartForms.forEach(form => {
-    //     form.addEventListener('submit', async function(e) {
-    //       e.preventDefault();
-          
-    //       // No loading state - removed cursor loading
-    //       const submitButton = form.querySelector('button[type="submit"]');
-    //       const originalText = submitButton.textContent;
-          
-    //       try {
-    //         // Submit the form using fetch API
-    //         const formData = new FormData(form);
-    //         const response = await fetch('/cart/add.js', {
-    //           method: 'POST',
-    //           body: formData
-    //         });
-            
-    //         if (!response.ok) throw new Error('Add to cart failed');
-            
-    //         const result = await response.json();
-            
-    //         // Update cart count in header
-    //         const cartResponse = await fetch('/cart.js');
-    //         const cart = await cartResponse.json();
-            
-    //         // Update the cart count display
-    //         updateCartCountDisplay(cart.item_count);
-            
-    //         // Dispatch event for cart update
-    //         document.dispatchEvent(new CustomEvent('cart:updated', {
-    //           detail: { item_count: cart.item_count }
-    //         }));
-            
-    //         // Cart dropdown display removed
-            
-    //         // Store button state before changing
-    //         const wasVariantsSelected = submitButton.classList.contains('variants-selected');
-            
-    //         // Briefly change button text to "Added" then back
-    //         submitButton.textContent = 'Added';
-    //         submitButton.classList.remove('variants-selected'); // Remove potentially conflicting classes
-    //         submitButton.classList.remove('container-hovered');
-    //         submitButton.classList.add('success');
-    //         setTimeout(() => {
-    //           submitButton.textContent = originalText;
-    //           submitButton.classList.remove('success');
-    //           // Re-add relevant classes if needed
-    //           if (wasVariantsSelected) {
-    //             submitButton.classList.add('variants-selected');
-    //           }
-    //           if (document.querySelector('.product-info-container.container-hover')) {
-    //             submitButton.classList.add('container-hovered');
-    //           }
-    //         }, 2000);
-            
-    //       } catch (error) {
-    //         console.error('Error adding to cart:', error);
-    //         submitButton.textContent = 'Error';
-    //         submitButton.classList.add('error');
-    //         setTimeout(() => {
-    //           submitButton.textContent = originalText;
-    //           submitButton.classList.remove('error');
-    //         }, 2000);
-    //       }
-    //     });
-    //   });
-      
-    //   // Function to update cart count display (same as in header.liquid)
-    //   function updateCartCountDisplay(count) {
-    //     const cartCount = document.querySelector('.cart-count');
-    //     if (cartCount) {
-    //       cartCount.textContent = count;
-    //       cartCount.style.display = count > 0 ? 'block' : 'none';
-    //     }
-    //   }
-
-    //   // Only set up hover effects on desktop (screen width >= 768px)
-    //   if (window.innerWidth >= 768) {
-    //     // Get all product info elements
-    //     const productInfoContainer = document.querySelector('.product-info-container');
-    //     const productInfoItems = document.querySelectorAll('.product-info-item');
-    //     const header = document.querySelector('header');
-    //     const headerOverlay = document.querySelector('#header-overlay');
-    //     const navContainer = document.querySelector('.nav-container');
-    //     const popupContainers = document.querySelectorAll('.popup-container');
-        
-    //     // Function to handle mouse enter
-    //     function handleMouseEnter() {
-    //       // Apply white background to all items
-    //       // productInfoItems.forEach(item => {
-    //       //   item.style.backgroundColor = 'white';
-    //       // });
-          
-    //       // Show background for selected variants
-    //       document.querySelectorAll('.variant-button[data-selected="true"]').forEach(button => {
-    //         button.classList.add('bg-[#D9D9D9]');
-    //       });
-          
-    //       // Add container-hover class
-    //       productInfoContainer.classList.add('container-hover');
-          
-    //       // Add container-hovered class to buttons
-    //       document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-    //         button.classList.add('container-hovered');
-    //       });
-
-    //       // Change nav background to white
-    //       // if (navContainer) {
-    //       //   navContainer.style.backgroundColor = 'white';
-    //       // }
-    //     }
-
-    //     // Function to handle mouse leave
-    //     function handleMouseLeave() {
-    //       // Reset all items to original background
-    //       productInfoItems.forEach(item => {
-    //         item.style.backgroundColor = 'rgba(254,254,254,0.60)';
-    //       });
-          
-    //       // Hide background for selected variants
-    //       document.querySelectorAll('.variant-button[data-selected="true"]').forEach(button => {
-    //         button.classList.remove('bg-[#D9D9D9]');
-    //       });
-          
-    //       // Remove container-hover class
-    //       productInfoContainer.classList.remove('container-hover');
-          
-    //       // Remove container-hovered class from buttons
-    //       document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-    //         button.classList.remove('container-hovered');
-    //       });
-
-    //       // Reset nav background
-    //       if (navContainer) {
-    //         navContainer.style.backgroundColor = 'rgba(254,254,254,0.60)';
-    //       }
-    //     }
-        
-    //     // Add mouse enter/leave listeners to both containers
-    //     productInfoContainer.addEventListener('mouseenter', handleMouseEnter);
-    //     productInfoContainer.addEventListener('mouseleave', handleMouseLeave);
-        
-    //     if (navContainer) {
-    //       navContainer.addEventListener('mouseenter', handleMouseEnter);
-    //       navContainer.addEventListener('mouseleave', handleMouseLeave);
-    //     }
-        
-    //     // Handle window resize to disable effects on mobile
-    //     window.addEventListener('resize', function() {
-    //       if (window.innerWidth < 768) {
-    //         // Reset to original background if resized to mobile
-    //         productInfoItems.forEach(item => {
-    //           item.style.backgroundColor = 'rgba(254,254,254,0.60)';
-    //         });
-            
-    //         // Reset nav container and header
-    //         if (navContainer) {
-    //           navContainer.style.backgroundColor = 'rgba(254,254,254,0.60)';
-    //         }
-    //         if (header) {
-    //           header.style.backgroundColor = 'rgba(254,254,254,0.60)';
-    //         }
-            
-    //         // Reset popups
-    //         popupContainers.forEach(container => {
-    //           const content = container.querySelector('.popup-content');
-    //           if (content) {
-    //             content.style.backgroundColor = 'rgba(254,254,254,0.60)';
-    //           }
-    //         });
-    //       }
-    //     });
-    //   }
-      
-    //   // TODO: need this?
-    //   // // Update desktop section toggles to open popups instead
-    //   // const desktopButtons = {
-    //   //   'materials': document.querySelector('button[onclick*="materials"]'),
-    //   //   'size-guide': document.querySelector('button[onclick*="size-guide"]'),
-    //   //   'shipping': document.querySelector('button[onclick*="shipping"]')
-    //   // };
-      
-    //   // if (desktopButtons['materials']) {
-    //   //   desktopButtons['materials'].setAttribute('onclick', 'openPopup("materials-popupContent")');
-    //   // }
-    //   // if (desktopButtons['size-guide']) {
-    //   //   desktopButtons['size-guide'].setAttribute('onclick', 'openPopup("size-guide-popup")');
-    //   // }
-    //   // if (desktopButtons['shipping']) {
-    //   //   desktopButtons['shipping'].setAttribute('onclick', 'openPopup("shipping-popup")');
-    //   // }
-      
-      
-    //   // // Update mobile section toggles to open popups instead - if they exist
-    //   // const mobileButtons = {
-    //   //   'materials-mobile': document.querySelector('button[onclick*="materials-mobile"]'),
-    //   //   'size-guide-mobile': document.querySelector('button[onclick*="size-guide-mobile"]'),
-    //   //   'shipping-mobile': document.querySelector('button[onclick*="shipping-mobile"]')
-    //   // };
-      
-    //   // if (mobileButtons['materials-mobile']) {
-    //   //   mobileButtons['materials-mobile'].setAttribute('onclick', 'openPopup("materials-popup-mobile")');
-    //   // }
-    //   // if (mobileButtons['size-guide-mobile']) {
-    //   //   mobileButtons['size-guide-mobile'].setAttribute('onclick', 'openPopup("size-guide-popup-mobile")');
-    //   // }
-    //   // if (mobileButtons['shipping-mobile']) {
-    //   //   mobileButtons['shipping-mobile'].setAttribute('onclick', 'openPopup("shipping-popup-mobile")');
-    //   // }
-      
-    //   // Setup click outside to close popups
-    //   // document.addEventListener('click', function(event) {
-    //   //   // Check if any popup is open
-    //   //   const openPopups = document.querySelectorAll('#shipping-popup:not(.hidden), #size-guide-popup:not(.hidden), #materials-popup:not(.hidden),');
-        
-    //   //   if (openPopups.length === 0) return; // No popups open, nothing to do
-        
-    //   //   // Check if click was on a popup trigger button
-    //   //   const isPopupTrigger = event.target.hasAttribute('onclick') && 
-    //   //                         (event.target.getAttribute('onclick').includes('openPopup') || 
-    //   //                         event.target.getAttribute('onclick').includes('closePopup'));
-        
-    //   //   if (isPopupTrigger) return; // Don't close if clicking a trigger button
-        
-    //   //   // Check if click was inside any popup
-    //   //   let clickedInsidePopup = false;
-    //   //   openPopups.forEach(popup => {
-    //   //     if (popup.contains(event.target)) {
-    //   //       clickedInsidePopup = true;
-    //   //     }
-    //   //   });
-        
-    //   //   // If click was outside all popups, close them
-    //   //   if (!clickedInsidePopup) {
-    //   //     closeAllPopups();
-    //   //   }
-    //   // });
-      
-    //   // // Remove the old click-outside handlers
-    //   // document.removeEventListener('mousedown', handleClickOutside);
-    //   // document.removeEventListener('touchstart', handleClickOutside);
-    // });
-  </script>
-  
-  {% comment %} <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Clean up any raw JSON that might be displayed in the materials section
-      const materialsContentWrappers = document.querySelectorAll('.materials-content-wrapper');
-      materialsContentWrappers.forEach(materialsContentWrapper => {
-
-        if (materialsContentWrapper) {
-          // Check if the content looks like raw JSON
-          const text = materialsContentWrapper.textContent.trim();
-          if (text.startsWith('{') && text.includes('"type":"root"')) {
-            try {
-              // Parse the JSON
-              const data = JSON.parse(text);
-              
-              // Clear the current content
-              materialsContentWrapper.innerHTML = '';
-              
-              // Extract and format the values
-              // if (data.type === 'root' && Array.isArray(data.children)) {
-              //   data.children.forEach(item => {
-              //     if (item.type === 'paragraph' && Array.isArray(item.children)) {
-              //       const p = document.createElement('p');
-              //       p.className = 'text-[13px] leading-relaxed mb-[8px]';
-                    
-              //       item.children.forEach(child => {
-              //         if (child.type === 'text' && typeof child.value === 'string') {
-              //           p.textContent += child.value;
-              //         }
-              //       });
-                    
-              //       if (p.textContent.trim()) {
-              //         materialsContentWrapper.appendChild(p);
-              //       }
-              //     }
-              //   });
-              // }
-              if (data.type === 'root' && Array.isArray(data.children)) {
-                data.children.forEach((item, idx) => {
-
-                  if (item.type === 'paragraph' && Array.isArray(item.children)) {
-                    const p = document.createElement('p');
-                    p.className = 'text-[13px] leading-relaxed mb-[8px]';
-
-                    item.children.forEach((child, cIdx) => {
-                      if (child.type === 'text' && typeof child.value === 'string') {
-                        p.textContent += child.value;
-                      }
-                    });
-
-                    if (p.textContent.trim()) {
-                      materialsContentWrapper.appendChild(p);
-                    }
-                  }
-                });
-              }
-            } catch (e) {
-              console.error('Error parsing materials JSON:', e);
-              
-              // Fallback: try to extract values using regex
-              const valueMatches = text.match(/"value":"([^"]+)"/g);
-              if (valueMatches && valueMatches.length) {
-                materialsContentWrapper.innerHTML = '';
-                
-                valueMatches.forEach(match => {
-                  const value = match.replace('"value":"', '').replace('"', '');
-                  if (value && value.trim()) {
-                    const p = document.createElement('p');
-                    p.className = 'text-[13px] leading-relaxed mb-[8px]';
-                    p.textContent = value.trim();
-                    materialsContentWrapper.appendChild(p);
-                  }
-                });
-              }
-            }
-          }
-        }
-      });
-    });
-
-    document.addEventListener('DOMContentLoaded', function () {
-      const wrapper = document.getElementById('materials-content-wrapper');
-      if (!wrapper) return;
-
-      let raw = wrapper.textContent.trim();
-
-      // Detect JSON-looking content
-      if (raw.startsWith('{') && raw.includes('"type":"root"')) {
-        try {
-          const data = JSON.parse(raw);
-          wrapper.innerHTML = '';
-
-          if (data.type === 'root' && Array.isArray(data.children)) {
-            data.children.forEach(item => {
-              if (item.type === 'paragraph' && Array.isArray(item.children)) {
-                const p = document.createElement('p');
-                p.className = 'text-[13px] leading-relaxed mb-[8px]';
-
-                item.children.forEach(child => {
-                  if (child.type === 'text' && typeof child.value === 'string') {
-                    p.textContent += child.value;
-                  }
-                });
-
-                if (p.textContent.trim()) {
-                  wrapper.appendChild(p);
-                }
-              }
-            });
-          }
-        } catch (e) {
-          console.error('Error parsing materials JSON:', e);
-        }
-      } else {
-        // If not JSON, just leave whatever HTML Shopify rendered
-        // (don't wipe wrapper.innerHTML here)
-      }
-    });
-  </script> {% endcomment %}
 {% endif %}
 
 <style>
@@ -3190,8 +1549,8 @@
   }
   
   .popup-content button,
-  button[onclick*="openPopup"],
-  button[onclick*="closePopup"] {
+  button[data-action="open-popup"],
+  button[data-action="close-popup"] {
     height: 24px;
     display: flex;
     align-items: center;
@@ -3345,100 +1704,3 @@
     margin-bottom: 4px;
   }
 </style>
-
-{% comment %} <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Add hover effect for product info container
-    const productInfoContainer = document.querySelector('.product-info-container');
-    if (productInfoContainer) {
-      productInfoContainer.addEventListener('mouseenter', function() {
-        this.classList.add('container-hover');
-        const detailsContainer = this.querySelector('.product-details-container');
-        if (detailsContainer) {
-          detailsContainer.style.maxHeight = '1000px';
-          // detailsContainer.style.paddingTop = '4px';
-        }
-      });
-
-      productInfoContainer.addEventListener('mouseleave', function() {
-        this.classList.remove('container-hover');
-        const detailsContainer = this.querySelector('.product-details-container');
-        if (detailsContainer) {
-          detailsContainer.style.maxHeight = '0';
-          // detailsContainer.style.paddingTop = '0';
-        }
-      });
-    }
-  });
-</script> {% endcomment %}
-
-{% comment %} <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // ... existing code ...
-
-    // Add hover effect for product info container
-    const productInfoContainer = document.querySelector('.product-info-container');
-    if (productInfoContainer) {
-      productInfoContainer.addEventListener('mouseenter', function() {
-        this.classList.add('container-hover');
-        const detailsContainer = this.querySelector('.product-details-container');
-        if (detailsContainer) {
-          detailsContainer.style.maxHeight = '1000px';
-          // detailsContainer.style.paddingTop = '4px';
-        }
-      });
-
-      productInfoContainer.addEventListener('mouseleave', function() {
-        this.classList.remove('container-hover');
-        const detailsContainer = this.querySelector('.product-details-container');
-        if (detailsContainer) {
-          detailsContainer.style.maxHeight = '0';
-          // detailsContainer.style.paddingTop = '0';
-        }
-      });
-    }
-  });
-</script> {% endcomment %}
-
-{% comment %} <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // ... existing code ...
-
-    // Add hover effect for product info container
-    const productInfoContainer = document.querySelector('.product-info-container');
-    const header = document.querySelector('#site-header');
-    const headerOverlay = document.querySelector('#header-overlay');
-    
-      if (productInfoContainer && header && headerOverlay) {
-    productInfoContainer.addEventListener('mouseenter', function() {
-      this.classList.add('container-hover');
-      const detailsContainer = this.querySelector('.product-details-container');
-      if (detailsContainer) {
-        requestAnimationFrame(() => {
-          detailsContainer.style.maxHeight = '1000px';
-          // detailsContainer.style.paddingTop = '4px';
-        });
-      }
-    });
-
-    productInfoContainer.addEventListener('mouseleave', function() {
-      this.classList.remove('container-hover');
-      const detailsContainer = this.querySelector('.product-details-container');
-      if (detailsContainer) {
-        requestAnimationFrame(() => {
-          detailsContainer.style.maxHeight = '0';
-          // detailsContainer.style.paddingTop = '0';
-        });
-      }
-      
-      // Reset header background
-      requestAnimationFrame(() => {
-        headerOverlay.style.backgroundColor = 'rgba(254,254,254,0.60)';
-        document.querySelector('.nav-container').style.backgroundColor = 'rgba(254,254,254,0.60)';
-      });
-    });
-    }
-    
-    // ... rest of existing code ...
-  });
-</script> {% endcomment %}

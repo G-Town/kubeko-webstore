@@ -47,8 +47,25 @@
     {{ 'swiper-bundle.min.css' | asset_url | stylesheet_tag }}
     <script src="{{ 'swiper-bundle.min.js' | asset_url }}" defer></script>
 
-    {% comment %} script for product-card {% endcomment %}
+    {% comment %} scripts for PDP and product-card {% endcomment %}
+    <script src="{{ 'product-utils.js' | asset_url }}" defer></script>
     <script src="{{ 'product-card.js' | asset_url }}" defer></script>
+    <script src="{{ 'product.js' | asset_url }}" defer></script>
+
+    {% comment %} preload gallery images for product cards on shopping page {% endcomment %}
+    <!-- DEBUG: {{ request.host }} -->
+    {% if template.name == 'collection' and collection.metafields.custom.isdrop != true %}
+      {% for product in collection.products limit: 8 %}
+        {% assign first_variant = product.first_available_variant | default: product.variants.first %}
+        {% unless request.host contains '127.0.0.1' %}
+          {% render 'product-card-preloads',
+            product: product,
+            first_variant: first_variant,
+            card_sizes: "(max-width: 767px) 50vw, (max-width: 1536px) 20vw"
+          %}
+        {% endunless %}
+      {% endfor %}
+    {% endif %}
     
     {% comment %} Progressive image loading support {% endcomment %}
     {% render 'progressive-image-loader' %}

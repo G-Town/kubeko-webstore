@@ -46,26 +46,57 @@
 <script>
   // Global progressive image loading function
   window.loadHighResImage = function(img) {
-    // Skip if already processed
-    if (img.dataset.highResLoaded) return;
+    if (img.dataset.highResLoaded) {
+      return;
+    }
     
-    // Create a new image element to preload the high-res version
     const highResImage = new Image();
     
     // Set up onload before setting src to ensure it catches
+    // highResImage.onload = function() {
+    //   // Only change the src attribute (keep srcset as is for responsive images)
+    //   // img.src = img.dataset.src;
+
+    //   // swap srcset if available, otherwise fall back to src swap
+    //   if (img.dataset.srcset) {
+    //     img.srcset = img.dataset.srcset;
+    //     img.src = img.dataset.src;
+    //   } else {
+    //     img.src = img.dataset.src;
+    //   }
+      
+    //   // img.classList.remove('blur-sm');
+    //   // img.classList.add('blur-none');
+    //   // Mark as processed
+    //   img.dataset.highResLoaded = true;
+    //   // Optional: dispatch event for other components that might need to know
+    //   // img.dispatchEvent(new CustomEvent('highResLoaded'));
+
+    //   requestAnimationFrame(() => {
+    //     img.classList.remove('blur-sm');
+    //     img.classList.add('blur-none');
+    //     img.dispatchEvent(new CustomEvent('highResLoaded'));
+    //   });
+    // };
     highResImage.onload = function() {
-      // Only change the src attribute (keep srcset as is for responsive images)
-      img.src = img.dataset.src;
-      
-      // Remove blur effect with transition
-      img.classList.remove('blur-sm');
-      img.classList.add('blur-none');
-      
-      // Mark as processed
-      img.dataset.highResLoaded = true;
-      
-      // Optional: dispatch event for other components that might need to know
-      img.dispatchEvent(new CustomEvent('highResLoaded'));
+      // listen for the actual img element to finish rendering
+      img.addEventListener('load', function onImgLoad() {
+        img.removeEventListener('load', onImgLoad);
+        requestAnimationFrame(() => {
+          img.classList.remove('blur-sm');
+          img.classList.add('blur-none');
+          img.dataset.highResLoaded = 'true';
+          img.dispatchEvent(new CustomEvent('highResLoaded'));
+        });
+      });
+
+      // now swap in the new image
+      if (img.dataset.srcset) {
+        img.srcset = img.dataset.srcset;
+        img.src = img.dataset.src;
+      } else {
+        img.src = img.dataset.src;
+      }
     };
     
     // Set src after onload handler to ensure event fires
@@ -97,22 +128,43 @@
       threshold: 0.01
     });
     
+    // blurUpImages.forEach(img => {
+    //   // For images that are already loaded when this script runs
+    //   if (img.complete && img.dataset.loaded && !img.dataset.highResLoaded) {
+    //     // If image has loading="eager", load immediately
+    //     if (img.getAttribute('loading') === 'eager') {
+    //       img.classList.add('blur-sm');
+    //       window.loadHighResImage(img);
+    //     } else {
+    //       // Otherwise, use IntersectionObserver
+    //       imageObserver.observe(img);
+    //     }
+    //   } else {
+    //     // For images not yet loaded
+    //     img.addEventListener('load', function() {
+    //       this.dataset.loaded = true;
+          
+    //       if (!this.dataset.highResLoaded) {
+    //         if (this.getAttribute('loading') === 'eager') {
+    //           this.classList.add('blur-sm');
+    //           window.loadHighResImage(this);
+    //         } else {
+    //           imageObserver.observe(this);
+    //         }
+    //       }
+    //     });
+    //   }
+    // });
     blurUpImages.forEach(img => {
-      // For images that are already loaded when this script runs
-      if (img.complete && img.dataset.loaded && !img.dataset.highResLoaded) {
-        // If image has loading="eager", load immediately
+      if (img.complete && !img.dataset.highResLoaded) {
         if (img.getAttribute('loading') === 'eager') {
           img.classList.add('blur-sm');
           window.loadHighResImage(img);
         } else {
-          // Otherwise, use IntersectionObserver
           imageObserver.observe(img);
         }
       } else {
-        // For images not yet loaded
         img.addEventListener('load', function() {
-          this.dataset.loaded = true;
-          
           if (!this.dataset.highResLoaded) {
             if (this.getAttribute('loading') === 'eager') {
               this.classList.add('blur-sm');

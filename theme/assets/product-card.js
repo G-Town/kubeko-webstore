@@ -3,47 +3,18 @@ window.ProductCardObject = window.ProductCardObject || {
   productDataCache: {},
 
   buildImageUrl: function(baseUrl, width) {
-    if (!baseUrl) return '';
-    let url = baseUrl.replace(/_\d+x\d*\./, '.');
-    url = url.replace(/(\.(jpg|jpeg|png|gif|webp))(\?|$)/i, `_${width}x$1$3`);
-    return url;
+    return ProductUtils.buildImageUrl(baseUrl, width);
   },
 
   buildSrcset: function(baseUrl) {
-    const widths = [400, 600, 900, 1200];
-    return widths.map(w =>
-      `${this.buildImageUrl(baseUrl, w)} ${w}w`
-    ).join(', ');
+    return ProductUtils.buildSrcset(baseUrl, [400, 600, 900, 1200]);
   },
 
   getImagesForVariant: function(variant, allImages, allVariants) {
-    if (!variant.featured_image) return allImages;
-    if (!allImages.length) return [];
-
-    const stripVersion = url => url ? url.split('?')[0] : '';
-    const featuredSrcClean = stripVersion(variant.featured_image.src);
-    const startIndex = allImages.findIndex(imgUrl =>
-      stripVersion(imgUrl).includes(featuredSrcClean)
-    );
-
-    if (startIndex === -1) return [];
-
-    const otherVariantFeaturedSrcs = new Set(
-      (allVariants || [])
-        .filter(v => v.featured_image && v.featured_image.src !== variant.featured_image.src)
-        .map(v => stripVersion(v.featured_image.src))
-    );
-
-    const result = [];
-    for (let i = startIndex; i < allImages.length; i++) {
-      if (i !== startIndex && otherVariantFeaturedSrcs.has(stripVersion(allImages[i]))) break;
-      result.push(allImages[i]);
-    }
-
-    return result;
+    return ProductUtils.getImagesForVariant(variant, allImages, allVariants);
   },
 
-  buildSlide: function(imageUrl, altText, index, productId, sizes) {
+  buildSlide: function(imageUrl, altText, index, productId, sizes, progressive = false) {
     // const gallery = document.getElementById(`gallery-${productId}`);
 
     const slide = document.createElement('div');
@@ -59,8 +30,18 @@ window.ProductCardObject = window.ProductCardObject || {
     img.alt = altText;
     img.sizes = sizes;
     img.loading = index === 0 ? 'eager' : 'lazy';
-    img.srcset = this.buildSrcset(imageUrl);
-    img.src = this.buildImageUrl(imageUrl, 400);
+    // img.srcset = this.buildSrcset(imageUrl);
+    // img.src = this.buildImageUrl(imageUrl, 400);
+
+    if (progressive) {
+      img.src = ProductUtils.buildImageUrl(imageUrl, 40);
+      img.dataset.src = ProductUtils.buildImageUrl(imageUrl, 400);
+      img.dataset.srcset = ProductUtils.buildSrcset(imageUrl, [400, 600, 900, 1200]);
+      img.classList.add('blur-up');
+    } else {
+      img.srcset = ProductUtils.buildSrcset(imageUrl, [400, 600, 900, 1200]);
+      img.src = ProductUtils.buildImageUrl(imageUrl, 400);
+    }
 
     slide.appendChild(img);
     return slide;
@@ -82,7 +63,6 @@ window.ProductCardObject = window.ProductCardObject || {
   },
 
   updateCardImages: function(productId, images) {
-    console.log('updateCardImages called for', productId, new Error().stack);
     const gallery = document.getElementById(`gallery-${productId}`);
     if (!gallery) return;
 
@@ -97,13 +77,36 @@ window.ProductCardObject = window.ProductCardObject || {
     gallery.innerHTML = '';
 
     for (let i = 0; i < images.length; i++) {
-      const slide = this.buildSlide(images[i], altText, i, productId, sizes);
+      const slide = this.buildSlide(images[i], altText, i, productId, sizes, false);
       gallery.appendChild(slide);
+    }
+
+    // handle first slide progressive loading
+    const firstSlideImg = gallery.querySelector('.product-card-slide img');
+    if (firstSlideImg) {
+      const highResUrl = ProductUtils.buildImageUrl(images[0], 400);
+      const testImg = new Image();
+      testImg.src = highResUrl;
+
+      if (testImg.complete) {
+        // already cached, load directly
+        firstSlideImg.src = highResUrl;
+        firstSlideImg.srcset = ProductUtils.buildSrcset(images[0], [400, 600, 900, 1200]);
+      } else {
+        // not cached, use progressive loading
+        firstSlideImg.src = ProductUtils.buildImageUrl(images[0], 20);
+        firstSlideImg.dataset.src = highResUrl;
+        firstSlideImg.dataset.srcset = ProductUtils.buildSrcset(images[0], [400, 600, 900, 1200]);
+        firstSlideImg.classList.add('blur-up', 'blur-sm');
+        firstSlideImg.addEventListener('load', function onPlaceholderLoad() {
+          firstSlideImg.removeEventListener('load', onPlaceholderLoad);
+          window.loadHighResImage(firstSlideImg);
+        });
+      }
     }
 
     gallery.scrollLeft = 0;
     gallery.dataset.initialized = 'true';
-
     this.updateScrollbar(productId);
   },
 
@@ -205,7 +208,6 @@ window.ProductCardObject = window.ProductCardObject || {
   },
 
   selectVariant: function(button, productId, optionPosition, optionValue) {
-    console.log("test")
     const productCardElement = button.closest(`[data-product-card="${productId}"]`);
     if (!productCardElement) return;
 
@@ -219,7 +221,7 @@ window.ProductCardObject = window.ProductCardObject || {
 
     button.classList.add('selected');
 
-    // Update inline styles for all buttons in this card
+    // Update inline styles for all variant buttons in this card
     productCardElement.querySelectorAll('.variant-button.selected').forEach(btn => {
       btn.style.backgroundColor = 'rgba(217, 217, 217, 0.9)';
       btn.style.color = 'black';
@@ -242,7 +244,7 @@ window.ProductCardObject = window.ProductCardObject || {
     const allSelected = Object.keys(selections).length === totalOptions;
 
     // Update images when color is selected
-    if (optionPosition === 1 && optionValue) {
+    if (optionPosition === '1' && optionValue) {
       const colorVariant = productData.variants.find(v => v.option1 === optionValue);
       if (colorVariant) {
         const variantImages = this.getImagesForVariant(colorVariant, productData.images, productData.variants);
@@ -271,6 +273,7 @@ window.ProductCardObject = window.ProductCardObject || {
         variantInput.dispatchEvent(new Event('change', { bubbles: true }));
       }
 
+      // handling appearance of ADD TO CART
       const addButton = productCardElement.querySelector('.add-to-cart-button');
       if (addButton) {
         const isAvailable = matchingVariant.available;
@@ -323,100 +326,52 @@ window.ProductCardObject = window.ProductCardObject || {
     }
   },
 
-  addToCart: function(button, productId) {
-    const form = button.closest('form[action="/cart/add"]');
-    if (!form) return false;
-
-    const variantInput = form.querySelector('input[name="id"]');
-    if (!variantInput || !variantInput.value) return false;
-
-    const originalText = button.textContent;
-    const wasActive = button.classList.contains('active');
-    const formData = new FormData(form);
-
-    fetch('/cart/add.js', { method: 'POST', body: formData })
-      .then(response => {
-        if (!response.ok) throw new Error('Add to cart failed');
-        return response.json();
-      })
-      .then(() => fetch('/cart.js'))
-      .then(response => response.json())
-      .then(cart => {
-        const cartCount = document.querySelector('.cart-count');
-        if (cartCount) {
-          cartCount.textContent = cart.item_count;
-          cartCount.style.display = cart.item_count > 0 ? 'block' : 'none';
-        }
-        button.textContent = 'Added';
-        button.classList.remove('active');
-        button.classList.add('success');
-        setTimeout(() => {
-          button.textContent = originalText;
-          button.classList.remove('success');
-          if (wasActive) button.classList.add('active');
-        }, 2000);
-      })
-      .catch(error => {
-        console.error('Error adding to cart:', error);
-        button.textContent = 'Error';
-        button.classList.remove('active');
-        button.classList.add('error');
-        setTimeout(() => {
-          button.textContent = originalText;
-          button.classList.remove('error');
-          if (wasActive) button.classList.add('active');
-        }, 2000);
-      });
-
-    return false;
-  },
-
   handleProductCardClick: function(event, productId) {
     if (!event) return;
 
     const productLink = event.target.closest('.product-card-link');
     if (!productLink) return;
-    const productCard = productLink.closest('.group');
-    if (!productCard) return;
+    // const productCard = productLink.closest('.group');
+    // if (!productCard) return;
 
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    // const isMobile = window.matchMedia('(max-width: 767px)').matches;
 
-    if (!isMobile) return;
+    // if (!isMobile) return;
 
-    const isExpanded = productCard.classList.contains('mobile-expanded');
+    // const isExpanded = productCard.classList.contains('mobile-expanded');
 
-    if (!isExpanded) {
-      event.preventDefault();
+    // if (!isExpanded) {
+    //   event.preventDefault();
 
-      document.querySelectorAll('.mobile-expanded').forEach(card => {
-        if (card !== productCard) {
-          card.classList.remove('mobile-expanded');
-          const cardId = card.getAttribute('data-product-card');
-          const thumbToggle = document.getElementById(`thumbnail-toggle-${cardId}`);
-          if (thumbToggle) thumbToggle.classList.add('mobile-hidden');
-        }
-      });
+    //   document.querySelectorAll('.mobile-expanded').forEach(card => {
+    //     if (card !== productCard) {
+    //       card.classList.remove('mobile-expanded');
+    //       const cardId = card.getAttribute('data-product-card');
+    //       const thumbToggle = document.getElementById(`thumbnail-toggle-${cardId}`);
+    //       if (thumbToggle) thumbToggle.classList.add('mobile-hidden');
+    //     }
+    //   });
 
-      productCard.classList.add('mobile-expanded');
+    //   productCard.classList.add('mobile-expanded');
 
-      const thumbnailToggle = productCard.querySelector('.product-thumbnail-toggle');
-      if (thumbnailToggle) thumbnailToggle.classList.remove('mobile-hidden');
+    //   const thumbnailToggle = productCard.querySelector('.product-thumbnail-toggle');
+    //   if (thumbnailToggle) thumbnailToggle.classList.remove('mobile-hidden');
 
-      const thumbContainer = document.getElementById(`thumb-container-${productId}`);
-      if (thumbContainer && thumbnailToggle && !thumbContainer.querySelector('img')) {
-        const secondaryImageUrl = thumbnailToggle.dataset.secondaryImage;
-        if (secondaryImageUrl) {
-          const img = document.createElement('img');
-          img.className = 'w-full h-full object-contain block';
-          img.loading = 'lazy';
-          img.alt = 'Alternate view';
-          img.src = secondaryImageUrl;
-          thumbContainer.appendChild(img);
-        }
-      }
+    //   const thumbContainer = document.getElementById(`thumb-container-${productId}`);
+    //   if (thumbContainer && thumbnailToggle && !thumbContainer.querySelector('img')) {
+    //     const secondaryImageUrl = thumbnailToggle.dataset.secondaryImage;
+    //     if (secondaryImageUrl) {
+    //       const img = document.createElement('img');
+    //       img.className = 'w-full h-full object-contain block';
+    //       img.loading = 'lazy';
+    //       img.alt = 'Alternate view';
+    //       img.src = secondaryImageUrl;
+    //       thumbContainer.appendChild(img);
+    //     }
+    //   }
 
-      return;
-    }
+    //   return;
+    // }
 
     if (productLink) {
       window.location.href = productLink.href;
@@ -452,9 +407,22 @@ window.ProductCardObject = window.ProductCardObject || {
     }
 
     const defaultVariant = productData.variants.find(v => v.available) || productData.variants[0];
-    if (defaultVariant) {
+
+    if (defaultVariant && gallery) {
       const variantImages = this.getImagesForVariant(defaultVariant, productData.images, productData.variants);
-      this.appendRemainingSlides(productId, variantImages, productData.title, sizes);
+
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            this.appendRemainingSlides(productId, variantImages, productData.title, sizes);
+            obs.unobserve(entry.target);
+          }
+        });
+      }, {
+        rootMargin: '300px'
+      });
+
+      observer.observe(card);
     }
 
     if (gallery) {
@@ -496,66 +464,54 @@ window.ProductCardObject = window.ProductCardObject || {
 
 };
 
-window.handleProductCardClick = ProductCardObject.handleProductCardClick.bind(ProductCardObject);
-window.addToCart = ProductCardObject.addToCart.bind(ProductCardObject);
-// window.selectVariant = ProductCardObject.selectVariant.bind(ProductCardObject);
+ProductUtils.registerAction('select-variant-card', (btn) => {
+  ProductCardObject.selectVariant(btn, btn.dataset.productId, btn.dataset.optionPosition, btn.dataset.value);
+});
 
-// Only expose selectVariant globally if we're NOT on a PDP
-// (detected by absence of window.variantSelector or presence of a product-card element)
-window.selectVariant = function(buttonOrElement, productIdOrPosition, optionPositionOrValue, optionValue) {
-  // If called with 4 args, it's the product-card signature: (button, productId, optionPosition, optionValue)
-  if (optionValue !== undefined) {
-    ProductCardObject.selectVariant.call(ProductCardObject, buttonOrElement, productIdOrPosition, optionPositionOrValue, optionValue);
-  } else {
-    // Called with 3 args — PDP signature: (element, optionPosition, optionValue)
-    if (window.variantSelector) {
-      window.variantSelector.selectOption(buttonOrElement, productIdOrPosition, optionPositionOrValue);
-    }
-  }
-};
+window.handleProductCardClick = ProductCardObject.handleProductCardClick.bind(ProductCardObject);
 
 document.addEventListener('DOMContentLoaded', function() {
   ProductCardObject.initPage();
 
-  document.querySelectorAll('.group').forEach(card => {
-    card.classList.remove('card-visible');
-    card.classList.remove('card-visible-delayed');
-  });
+  // document.querySelectorAll('.group').forEach(card => {
+  //   card.classList.remove('card-visible');
+  //   card.classList.remove('card-visible-delayed');
+  // });
 
-  function normalizeVariantButtonSizes() {
-    document.querySelectorAll('[data-product-card]').forEach(card => {
-      let maxColorWidth = 0;
-      card.querySelectorAll('.color-variant').forEach(btn => {
-        const originalStyles = btn.getAttribute('style');
-        btn.removeAttribute('style');
-        const width = btn.offsetWidth;
-        if (width > maxColorWidth) maxColorWidth = width;
-        if (originalStyles) btn.setAttribute('style', originalStyles);
-      });
+  // function normalizeVariantButtonSizes() {
+  //   document.querySelectorAll('[data-product-card]').forEach(card => {
+  //     let maxColorWidth = 0;
+  //     card.querySelectorAll('.color-variant').forEach(btn => {
+  //       const originalStyles = btn.getAttribute('style');
+  //       btn.removeAttribute('style');
+  //       const width = btn.offsetWidth;
+  //       if (width > maxColorWidth) maxColorWidth = width;
+  //       if (originalStyles) btn.setAttribute('style', originalStyles);
+  //     });
 
-      let maxSizeWidth = 0;
-      card.querySelectorAll('.size-variant').forEach(btn => {
-        const originalStyles = btn.getAttribute('style');
-        btn.removeAttribute('style');
-        const width = btn.offsetWidth;
-        if (width > maxSizeWidth) maxSizeWidth = width;
-        if (originalStyles) btn.setAttribute('style', originalStyles);
-      });
+  //     let maxSizeWidth = 0;
+  //     card.querySelectorAll('.size-variant').forEach(btn => {
+  //       const originalStyles = btn.getAttribute('style');
+  //       btn.removeAttribute('style');
+  //       const width = btn.offsetWidth;
+  //       if (width > maxSizeWidth) maxSizeWidth = width;
+  //       if (originalStyles) btn.setAttribute('style', originalStyles);
+  //     });
 
-      if (maxColorWidth > 0) {
-        card.querySelectorAll('.color-variant').forEach(btn => {
-          btn.style.width = maxColorWidth + 'px';
-        });
-      }
-      if (maxSizeWidth > 0) {
-        card.querySelectorAll('.size-variant').forEach(btn => {
-          btn.style.width = maxSizeWidth + 'px';
-        });
-      }
-    });
-  }
+  //     if (maxColorWidth > 0) {
+  //       card.querySelectorAll('.color-variant').forEach(btn => {
+  //         btn.style.width = maxColorWidth + 'px';
+  //       });
+  //     }
+  //     if (maxSizeWidth > 0) {
+  //       card.querySelectorAll('.size-variant').forEach(btn => {
+  //         btn.style.width = maxSizeWidth + 'px';
+  //       });
+  //     }
+  //   });
+  // }
 
-  setTimeout(normalizeVariantButtonSizes, 100);
+  // setTimeout(normalizeVariantButtonSizes, 100);
 
   document.addEventListener('click', function(event) {
     if (window.innerWidth >= 767) return;
@@ -584,19 +540,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
     }
-  });
-
-  document.addEventListener('click', function(event) {
-    const chip = event.target.closest('.color-chip');
-    if (!chip) return;
-
-    event.stopPropagation();
-
-    const productCardElement = chip.closest('[data-product-card]');
-    if (!productCardElement) return;
-
-    productCardElement.querySelectorAll('.color-chip-container').forEach(c => c.classList.remove('active'));
-    chip.closest('.color-chip-container').classList.add('active');
   });
 
   window.addEventListener('resize', function() {

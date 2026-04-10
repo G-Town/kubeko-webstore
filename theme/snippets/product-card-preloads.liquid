@@ -1,0 +1,72 @@
+{% assign first_variant = product.first_available_variant | default: product.variants.first %}
+{% assign first_image = first_variant.featured_image | default: product.featured_image %}
+
+{% comment %} Collect all other variants' featured image IDs {% endcomment %}
+{% assign other_featured_ids = '' %}
+{% for variant in product.variants %}
+  {% if variant.featured_image and variant.featured_image.id != first_image.id %}
+    {% assign other_featured_ids = other_featured_ids | append: variant.featured_image.id | append: ',' %}
+  {% endif %}
+{% endfor %}
+
+{% assign found_first = false %}
+{% assign preload_count = 0 %}
+
+{% for image in product.images %}
+  {% if preload_count >= 2 %}{% break %}{% endif %}
+
+  {% if found_first %}
+    {% comment %} Stop if this image is another variant's featured image {% endcomment %}
+    {% assign image_id_str = image.id | append: ',' %}
+    {% if other_featured_ids contains image_id_str %}{% break %}{% endif %}
+
+    <!-- DEBUG image: {{ image }} -->
+    {% comment %} eg. output: files/1.2_b73b3b96-4b96-4019-a725-5fe0d3784066.png {% endcomment %}
+    <!-- DEBUG image.src: {{ image.src }} -->
+    {% comment %}  eg. output: files/1.2_b73b3b96-4b96-4019-a725-5fe0d3784066.png {% endcomment %}
+    <!-- DEBUG shop.permanent_domain: {{ shop.permanent_domain }} -->
+    {% comment %} output: kubeko-dev.myshopify.com {% endcomment %}
+
+    {% assign base_url = image.src %}
+
+    <!-- DEBUG constructed: {{ base_url }}?width=400&format=webp -->
+    {% comment %} eg. output /cdn/shop/files/1.2_b73b3b96-4b96-4019-a725-5fe0d3784066.png?width=400&format=webp {% endcomment %}
+
+    <!-- DEBUG shop.primary_domain.host: {{ shop.primary_domain.host }} -->
+
+    {% assign base_400 = image | image_url: width: 400, format: 'webp' |  remove: 'https:' %}
+    {% comment %} {% assign base_400 = base_400 | replace: request.host, shop.primary_domain.host | prepend: 'https://' %} {% endcomment %}
+    {% assign base_600 = image | image_url: width: 600, format: 'webp' |  remove: 'https:' %}
+    {% comment %} {% assign base_600 = base_600 | replace: request.host, shop.primary_domain.host | prepend: 'https://' %} {% endcomment %}
+    {% assign base_900 = image | image_url: width: 900, format: 'webp' |  remove: 'https:' %}
+    {% comment %} {% assign base_900 = base_900 | replace: request.host, shop.primary_domain.host | prepend: 'https://' %} {% endcomment %}
+    {% assign base_1200 = image | image_url: width: 1200, format: 'webp' |  remove: 'https:' %}
+    {% comment %} {% assign base_1200 = base_1200 | replace: request.host, shop.primary_domain.host | prepend: 'https://' %} {% endcomment %}
+
+    {% comment %} <link rel="preload" as="image"
+      href="{{ base_url }}?width=400&format=webp"
+      imagesrcset="
+        {{ base_url }}?width=400&format=webp 400w,
+        {{ base_url }}?width=600&format=webp 600w,
+        {{ base_url }}?width=900&format=webp 900w,
+        {{ base_url }}?width=1200&format=webp 1200w
+      "
+      imagesizes="{{ card_sizes }}"
+    > {% endcomment %}
+    <link rel="preload" as="image"
+      href="{{ base_400 }}"
+      imagesrcset="
+        {{ base_400 }} 400w,
+        {{ base_600 }} 600w,
+        {{ base_900 }} 900w,
+        {{ base_1200 }} 1200w
+      "
+      imagesizes="{{ card_sizes }}"
+    >
+    {% assign preload_count = preload_count | plus: 1 %}
+  {% endif %}
+
+  {% if image.id == first_image.id %}
+    {% assign found_first = true %}
+  {% endif %}
+{% endfor %}
