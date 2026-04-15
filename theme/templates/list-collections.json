@@ -1,1 +1,40 @@
-{"sections":{"hero":{"type":"hero-image","settings":{}},"collections-list":{"type":"collections-list","settings":{}}},"order":["hero","collections-list"]}
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "hero-image",
+      "settings": {
+        "hero_height": "h-screen",
+        "title": "",
+        "description": ""
+      }
+    },
+    "collections-list": {
+      "type": "collections-list",
+      "blocks": {
+        "collection_item_Bj3e8e": {
+          "type": "collection_item",
+          "settings": {
+            "collection": "crying-boy-collection"
+          }
+        }
+      },
+      "block_order": [
+        "collection_item_Bj3e8e"
+      ],
+      "settings": {}
+    }
+  },
+  "order": [
+    "hero",
+    "collections-list"
+  ]
+}

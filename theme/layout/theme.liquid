@@ -73,44 +73,9 @@
 
   <body class="">
     <script>
-      // only fetch intro videos on first visit
-      // document.addEventListener('DOMContentLoaded', function() {
-      //   if (!localStorage.getItem('hasSeenIntroVideo')) {
-      //     console.log('first visit detected');
-
-      //     fetch('/?section_id=video-intro')
-      //       .then(response => response.text())
-      //       .then(html => {
-      //         console.log('section html received', html);
-
-      //         const tempDiv = document.createElement('div');
-      //         tempDiv.innerHTML = html;
-
-      //         const intro = tempDiv.querySelector('#intro-video-container');
-
-      //         console.log('intro element found:', intro);
-
-      //         if (intro) {
-      //           document.body.prepend(intro);
-      //           console.log('intro injected');
-      //         }
-      //       })
-      //       .catch(err => console.error('Failed to load intro section:', err));
-      //   }
-      // });
-      // document.addEventListener('DOMContentLoaded', function () {
-      //   if (!window.showIntroVideo) return;
-
-      //   fetch('{{ routes.root_url }}?section_id=video-intro')
-      //     .then(r => r.text())
-      //     .then(html => {
-      //       const wrapper = document.createElement('div');
-      //       wrapper.innerHTML = html;
-      //       document.body.prepend(wrapper.firstElementChild);
-      //     });
-      // });
     </script>
-    {% section 'video-intro' %}
+    {% comment %} TODO: intro video {% endcomment %}
+    {% comment %} {% section 'video-intro' %} {% endcomment %}
     {% section 'header' %}
     {% comment %} TODO: min height removed? was min-h-screen {% endcomment %}
     {% comment %} <div class="min-h- {% if canonical_url != 'https://kubeko-dev.myshopify.com/'  %} pt-10 md:pt-12 {% endif %}"> {% endcomment %}
