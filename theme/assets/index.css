@@ -2435,6 +2435,10 @@ shopify-payment-terms{
     padding-bottom: 0px;
   }
 
+  .md\:p-0{
+    padding: 0;
+  }
+
   .md\:text-base{
     font-size: 0.75rem;
     line-height: 1rem;

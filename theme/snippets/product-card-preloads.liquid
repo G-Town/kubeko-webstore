@@ -34,13 +34,13 @@
 
     <!-- DEBUG shop.primary_domain.host: {{ shop.primary_domain.host }} -->
 
-    {% assign base_400 = image | image_url: width: 400, format: 'webp' |  remove: 'https:' %}
+    {% assign base_300 = image | image_url: width: 500, format: 'webp' |  remove: 'https:' %}
     {% comment %} {% assign base_400 = base_400 | replace: request.host, shop.primary_domain.host | prepend: 'https://' %} {% endcomment %}
-    {% assign base_600 = image | image_url: width: 600, format: 'webp' |  remove: 'https:' %}
+    {% assign base_500 = image | image_url: width: 500, format: 'webp' |  remove: 'https:' %}
     {% comment %} {% assign base_600 = base_600 | replace: request.host, shop.primary_domain.host | prepend: 'https://' %} {% endcomment %}
-    {% assign base_900 = image | image_url: width: 900, format: 'webp' |  remove: 'https:' %}
+    {% assign base_700 = image | image_url: width: 900, format: 'webp' |  remove: 'https:' %}
     {% comment %} {% assign base_900 = base_900 | replace: request.host, shop.primary_domain.host | prepend: 'https://' %} {% endcomment %}
-    {% assign base_1200 = image | image_url: width: 1200, format: 'webp' |  remove: 'https:' %}
+    {% comment %} {% assign base_1200 = image | image_url: width: 1200, format: 'webp' |  remove: 'https:' %} {% endcomment %}
     {% comment %} {% assign base_1200 = base_1200 | replace: request.host, shop.primary_domain.host | prepend: 'https://' %} {% endcomment %}
 
     {% comment %} <link rel="preload" as="image"
@@ -54,12 +54,11 @@
       imagesizes="{{ card_sizes }}"
     > {% endcomment %}
     <link rel="preload" as="image"
-      href="{{ base_400 }}"
+      href="{{ base_300 }}"
       imagesrcset="
-        {{ base_400 }} 400w,
-        {{ base_600 }} 600w,
-        {{ base_900 }} 900w,
-        {{ base_1200 }} 1200w
+        {{ base_500 }} 500w,
+        {{ base_700 }} 700w,
+        {{ base_900 }} 900w
       "
       imagesizes="{{ card_sizes }}"
     >

@@ -7,30 +7,34 @@
 {% endcomment %}
 
 {% comment %} bg-[#f4f4f4] {% endcomment %}
-<div class="side-by-side-assets flex flex-col md:flex-row w-full mx-auto  md:my-36">
+<div class="side-by-side-assets flex flex-col md:flex-row w-full mx-auto  md:my-36 ">
   {%- comment -%} Left Column {%- endcomment -%}
   <div class="side-by-side-column w-full md:w-1/2  relative">
     {% assign product_1 = all_products[section.settings.product_1] %}
     {% assign image_1 = section.settings.image_1 %}
     
     {% if image_1 %}
+
+      {%- assign img1_url_700 = image_1 | image_url: width: 700 -%}
+      {%- assign img1_url_900 = image_1 | image_url: width: 900 -%}
+      {%- assign img1_url_1200 = image_1 | image_url: width: 1200 -%}
+      {%- assign img1_url_1600 = image_1 | image_url: width: 1600 -%}
+
       {% comment %} TODO: update to "image_url" {% endcomment %}
       <img
         class="h-full object-cover"
         alt="{{ product_1.title | default: section.settings.image_1_alt | default: 'Left column image' }}"
-        src="{{ image_1 | image_url: 100 }}"
-        data-src="{{ image_1 | image_url }}"
+        src="{{ image_1 | image_url: 1000 }}"
+        {% comment %} data-src="{{ image_1 | image_url }}" {% endcomment %}
         width="{{ image_1.width }}"
         height="{{ image_1.height }}"
         loading="lazy"
-        srcset="{{ image_1 | img_url: '400x' }} 400w,
-                {{ image_1 | img_url: '600x' }} 600w,
-                {{ image_1 | img_url: '800x' }} 800w,
-                {{ image_1 | img_url: '1200x' }} 1200w,
-                {{ image_1 | img_url: '1600x' }} 1600w,
-                {{ image_1 | img_url: 'master' }} {{ image_1.width }}w"
+        srcset="{{ img1_url_700 }} 700w,
+                {{ img1_url_900 }} 900w,
+                {{ img1_url_1200 }} 1200w,
+                {{ img1_url_1600 }} 1600w,"
         sizes="(max-width: 767px) 100vw, 50vw"
-        onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) {  window.loadHighResImage(this); }"
+        {% comment %} onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) {  window.loadHighResImage(this); }" {% endcomment %}
       >
       {% comment %} blur-up - this.classList.add('blur-sm'); {% endcomment %}
     {% elsif product_1 %}
@@ -45,28 +49,32 @@
   </div>
   
   {%- comment -%} Right Column {%- endcomment -%}
-  <div class="side-by-side-column w-full md:w-1/2 relative">
+  <div class="side-by-side-column w-full md:w-1/2 relative ">
     {% assign product_2 = all_products[section.settings.product_2] %}
     {% assign image_2 = section.settings.image_2 %}
     
     {% if image_2 %}
+
+      {%- assign img2_url_700 = image_2 | image_url: width: 700 -%}
+      {%- assign img2_url_900 = image_2 | image_url: width: 900 -%}
+      {%- assign img2_url_1200 = image_2 | image_url: width: 1200 -%}
+      {%- assign img2_url_1600 = image_2 | image_url: width: 1600 -%}
+
       {% comment %} TODO: update to "image_url" {% endcomment %}
       <img
-        class="w-full h-full object-cover "
+        class="w-full h-full object-cover {% if section.settings.add_padding %}p-8 md:p-0{% endif %}"
         alt="{{ product_2.title | default: section.settings.image_2_alt | default: 'Right column image' }}"
-        src="{{ image_2 | img_url: '100x' }}"
-        data-src="{{ image_2 | image_url }}"
+        src="{{ image_2 | image_url: 1000 }}"
+        {% comment %} data-src="{{ image_2 | image_url }}" {% endcomment %}
         width="{{ image_2.width }}"
         height="{{ image_2.height }}"
         loading="lazy"
-        srcset="{{ image_2 | img_url: '400x' }} 400w,
-                {{ image_2 | img_url: '600x' }} 600w,
-                {{ image_2 | img_url: '800x' }} 800w,
-                {{ image_2 | img_url: '1200x' }} 1200w,
-                {{ image_2 | img_url: '1600x' }} 1600w,
-                {{ image_2 | img_url: 'master' }} {{ image_2.width }}w"
-        sizes="(max-width: 767px) 100vw, 50vw"
-        onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) {  window.loadHighResImage(this); }"
+        srcset="{{ img2_url_700 }} 700w,
+                {{ img2_url_900 }} 900w,
+                {{ img2_url_1200 }} 1200w,
+                {{ img2_url_1600 }} 1600w,"
+        sizes="(max-width: 767px) 100vw, 500vw"
+        {% comment %} onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) {  window.loadHighResImage(this); }" {% endcomment %}
       >
       {% comment %} blur-up - this.classList.add('blur-sm'); {% endcomment %}
     {% elsif product_2 %}
@@ -212,6 +220,12 @@
       "id": "image_2_alt",
       "label": "Image alt text",
       "info": "Optional alt text for the image (for accessibility)"
+    },
+    {
+      "type": "checkbox",
+      "id": "add_padding",
+      "label": "Add padding to second image",
+      "default": false
     }
   ],
   "presets": [

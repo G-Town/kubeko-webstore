@@ -7,7 +7,7 @@ window.ProductCardObject = window.ProductCardObject || {
   },
 
   buildSrcset: function(baseUrl) {
-    return ProductUtils.buildSrcset(baseUrl, [400, 600, 900, 1200]);
+    return ProductUtils.buildSrcset(baseUrl, [300, 500, 700]);
   },
 
   getImagesForVariant: function(variant, allImages, allVariants) {
@@ -36,10 +36,10 @@ window.ProductCardObject = window.ProductCardObject || {
     if (progressive) {
       img.src = ProductUtils.buildImageUrl(imageUrl, 40);
       img.dataset.src = ProductUtils.buildImageUrl(imageUrl, 400);
-      img.dataset.srcset = ProductUtils.buildSrcset(imageUrl, [400, 600, 900, 1200]);
+      img.dataset.srcset = ProductUtils.buildSrcset(imageUrl, [500, 700, 900]);
       img.classList.add('blur-up');
     } else {
-      img.srcset = ProductUtils.buildSrcset(imageUrl, [400, 600, 900, 1200]);
+      img.srcset = ProductUtils.buildSrcset(imageUrl, [500, 700, 900]);
       img.src = ProductUtils.buildImageUrl(imageUrl, 400);
     }
 
@@ -331,47 +331,6 @@ window.ProductCardObject = window.ProductCardObject || {
 
     const productLink = event.target.closest('.product-card-link');
     if (!productLink) return;
-    // const productCard = productLink.closest('.group');
-    // if (!productCard) return;
-
-    // const isMobile = window.matchMedia('(max-width: 767px)').matches;
-
-    // if (!isMobile) return;
-
-    // const isExpanded = productCard.classList.contains('mobile-expanded');
-
-    // if (!isExpanded) {
-    //   event.preventDefault();
-
-    //   document.querySelectorAll('.mobile-expanded').forEach(card => {
-    //     if (card !== productCard) {
-    //       card.classList.remove('mobile-expanded');
-    //       const cardId = card.getAttribute('data-product-card');
-    //       const thumbToggle = document.getElementById(`thumbnail-toggle-${cardId}`);
-    //       if (thumbToggle) thumbToggle.classList.add('mobile-hidden');
-    //     }
-    //   });
-
-    //   productCard.classList.add('mobile-expanded');
-
-    //   const thumbnailToggle = productCard.querySelector('.product-thumbnail-toggle');
-    //   if (thumbnailToggle) thumbnailToggle.classList.remove('mobile-hidden');
-
-    //   const thumbContainer = document.getElementById(`thumb-container-${productId}`);
-    //   if (thumbContainer && thumbnailToggle && !thumbContainer.querySelector('img')) {
-    //     const secondaryImageUrl = thumbnailToggle.dataset.secondaryImage;
-    //     if (secondaryImageUrl) {
-    //       const img = document.createElement('img');
-    //       img.className = 'w-full h-full object-contain block';
-    //       img.loading = 'lazy';
-    //       img.alt = 'Alternate view';
-    //       img.src = secondaryImageUrl;
-    //       thumbContainer.appendChild(img);
-    //     }
-    //   }
-
-    //   return;
-    // }
 
     if (productLink) {
       window.location.href = productLink.href;
@@ -472,46 +431,6 @@ window.handleProductCardClick = ProductCardObject.handleProductCardClick.bind(Pr
 
 document.addEventListener('DOMContentLoaded', function() {
   ProductCardObject.initPage();
-
-  // document.querySelectorAll('.group').forEach(card => {
-  //   card.classList.remove('card-visible');
-  //   card.classList.remove('card-visible-delayed');
-  // });
-
-  // function normalizeVariantButtonSizes() {
-  //   document.querySelectorAll('[data-product-card]').forEach(card => {
-  //     let maxColorWidth = 0;
-  //     card.querySelectorAll('.color-variant').forEach(btn => {
-  //       const originalStyles = btn.getAttribute('style');
-  //       btn.removeAttribute('style');
-  //       const width = btn.offsetWidth;
-  //       if (width > maxColorWidth) maxColorWidth = width;
-  //       if (originalStyles) btn.setAttribute('style', originalStyles);
-  //     });
-
-  //     let maxSizeWidth = 0;
-  //     card.querySelectorAll('.size-variant').forEach(btn => {
-  //       const originalStyles = btn.getAttribute('style');
-  //       btn.removeAttribute('style');
-  //       const width = btn.offsetWidth;
-  //       if (width > maxSizeWidth) maxSizeWidth = width;
-  //       if (originalStyles) btn.setAttribute('style', originalStyles);
-  //     });
-
-  //     if (maxColorWidth > 0) {
-  //       card.querySelectorAll('.color-variant').forEach(btn => {
-  //         btn.style.width = maxColorWidth + 'px';
-  //       });
-  //     }
-  //     if (maxSizeWidth > 0) {
-  //       card.querySelectorAll('.size-variant').forEach(btn => {
-  //         btn.style.width = maxSizeWidth + 'px';
-  //       });
-  //     }
-  //   });
-  // }
-
-  // setTimeout(normalizeVariantButtonSizes, 100);
 
   document.addEventListener('click', function(event) {
     if (window.innerWidth >= 767) return;

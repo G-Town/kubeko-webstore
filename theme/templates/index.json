@@ -27,9 +27,9 @@
       "type": "side-by-side-assets",
       "settings": {
         "product_1": "",
-        "image_1": "shopify://shop_images/1.jpg",
+        "image_1": "shopify://shop_images/cardi.jpg",
         "image_1_alt": "",
-        "product_2": "bobbie-denim-jacket",
+        "product_2": "tove-cardigan",
         "image_2_alt": ""
       }
     },
@@ -45,18 +45,20 @@
     "side_by_side_assets_fwqBQg": {
       "type": "side-by-side-assets",
       "settings": {
-        "product_1": "bowie-stripe-pants",
+        "product_1": "quin-denim-pants",
         "image_1_alt": "",
         "product_2": "",
-        "image_2": "shopify://shop_images/IMG08034.jpg",
-        "image_2_alt": ""
+        "image_2": "shopify://shop_images/thathat.jpg",
+        "image_2_alt": "",
+        "add_padding": true
       }
     },
     "hero_image_pL9mRj": {
       "type": "hero-image",
       "settings": {
-        "hero_height": "h-screen",
-        "image": "shopify://shop_images/000038610035.jpg",
+        "hero_height": "h-[65vh]",
+        "add_padding": true,
+        "image": "shopify://shop_images/hi-andy.jpg",
         "title": "",
         "description": ""
       }

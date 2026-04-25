@@ -1,7 +1,7 @@
 {% assign first_variant = product.first_available_variant | default: product.variants.first %}
 {% assign first_image = first_variant.featured_image | default: product.featured_image %}
 
-{%- assign card_sizes = image_sizes | default: "(max-width: 767px) 50vw, (max-width: 1536px) 20vw, 300px" -%}
+{%- assign card_sizes = image_sizes | default: "(max-width: 767px) 50vw, (max-width: 1024px) 20vw, (max-width: 1536px) 12vw, 300px" -%}
 
 {% comment %} {%- assign unique_id = product.id -%} {% endcomment %}
 {%- assign unique_id = product.id | append: '-' | append: section.id -%}
@@ -38,15 +38,15 @@
         <img
           id="gallery-image-0-{{ product.id }}"
           alt="{{ product.title }}"
-          src="{{ first_image | image_url: width: 600 }}"
+          src="{{ first_image | image_url: width: 400 }}"
           srcset="
-            {{ first_image | image_url: width: 400 }} 400w,
-            {{ first_image | image_url: width: 600 }} 600w,
-            {{ first_image | image_url: width: 900 }} 900w,
-            {{ first_image | image_url: width: 1200 }} 1200w
+            {{ first_image | image_url: width: 500 }} 500w,
+            {{ first_image | image_url: width: 700 }} 700w,
+            {{ first_image | image_url: width: 900 }} 900w
           "
           sizes="{{ card_sizes }}"
           loading="eager"
+          fetchpriority="high"
         >
       </div>
       <!-- Remaining slides appended by JS -->
@@ -78,65 +78,6 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 18l6-6l-6-6"/></svg>
     </button>
   </a>
-  <!-- Product link (image only) TODO: remove -->
-  {% comment %} <a href="{{ product.url }}"
-      class="block relative w-full overflow-hidden product-card-link
-            {% if custom_aspect_ratio %}flex-grow{% endif %}"
-      style="aspect-ratio: 4 / 5;"
-      id="product-link-{{ product.id }}"
-      onclick="handleProductCardClick(event, '{{ product.id }}')">
-    <img
-      id="primary-image-{{ product.id }}"
-      class="relative h-full w-auto mx-auto object-contain md:group-hover:opacity-0"
-      alt="{{ product.title }}"
-      src="{{ first_image | image_url: width: 400 }}"
-      srcset="
-        {{ first_image | image_url: width: 400 }} 400w,
-        {{ first_image | image_url: width: 600 }} 600w,
-        {{ first_image | image_url: width: 900 }} 900w,
-        {{ first_image | image_url: width: 1200 }} 1200w,
-      "
-      sizes="{{ card_sizes }}"
-      loading="eager"
-    >
-    <img
-      id="secondary-image-{{ product.id }}"
-      class="absolute inset-0 h-full w-auto mx-auto object-contain opacity-0 md:group-hover:opacity-100"
-      alt="{{ product.title }}"
-      src="{{ second_image | image_url: width: 400 }}"
-      srcset="
-        {{ second_image | image_url: width: 400 }} 400w,
-        {{ second_image | image_url: width: 600 }} 600w,
-        {{ second_image | image_url: width: 800 }} 800w,
-        {{ second_image | image_url: width: 1200 }} 1200w,
-      "
-      sizes="{{ card_sizes }}"
-      loading="eager"
-    >
-  </a> {% endcomment %}
-  
-  <!-- Secondary image thumbnail (mobile only) TODO: remove -->
-  {% comment %} <button 
-    class="absolute top-0 right-0 w-auto h-auto z-20 overflow-hidden md:hidden product-thumbnail-toggle mobile-hidden" 
-    onclick="toggleProductImages(this, event, '{{ product.id }}')"
-    data-primary-image="{{ first_image | image_url: width: 120 }}"
-    data-secondary-image="{{ second_image | image_url: width: 120 }}"
-    style="padding: 0; margin: 0; line-height: 0; top: 20px; right: 0; border: none; background: none;"
-    id="thumbnail-toggle-{{ product.id }}">
-    <!-- Container for the active thumbnail image -->
-    <div id="thumb-container-{{ product.id }}">
-      {% comment %} <img 
-        src="{{ second_image | image_url: width: 120 }}"
-        alt="{{ product.title }} (alternate)" 
-        class="w-full h-auto object-contain block"
-        loading="eager"
-        width="{{ second_image.width | default: 120 }}"
-        height="{{ second_image.height | default: 120 }}"
-        id="thumb-active-{{ product.id }}"
-        style="display: block; margin: 0;"
-      > {% endcomment %}
-    </div>
-  </button> {% endcomment %}
 
   {% comment %} TODO: remove all remaining code pertaining to add to cart button, which was removed {% endcomment %}
   <!-- Product info and dropdown container -->
