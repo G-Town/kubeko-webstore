@@ -38,7 +38,7 @@
         <img
           id="gallery-image-0-{{ product.id }}"
           alt="{{ product.title }}"
-          src="{{ first_image | image_url: width: 400 }}"
+          src="{{ first_image | image_url: width: 500 }}"
           srcset="
             {{ first_image | image_url: width: 500 }} 500w,
             {{ first_image | image_url: width: 700 }} 700w,
@@ -489,7 +489,8 @@
     height: 100%;
     scroll-snap-align: center;
     scroll-snap-stop: always;
-    padding: 0 2px;
+    // TODO: try to fit the image in the slide more precisely
+    padding: 0px 1px;
     box-sizing: border-box;
     background-color: #f4f4f4;
   }

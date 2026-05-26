@@ -9,18 +9,23 @@
  */
 {
   "sections": {
-    "main": {
-      "type": "content-limited",
+    "hero": {
+      "type": "hero-image",
       "settings": {
-        "image": "shopify://shop_images/IMG08092.jpg",
-        "title": "Contact Us",
-        "content": "<p>Email us at info@kubeko.co with any questions or inquiries</p>",
-        "button_link": "shopify://collections/all",
-        "button_text": "CONTINUE SHOPPING"
+        "hero_height": "h-[65vh]",
+        "add_padding": false,
+        "image": "shopify://shop_images/hi-andy.jpg",
+        "title": "HI ANDY!",
+        "description": ""
       }
+    },
+    "main": {
+      "type": "collections",
+      "settings": {}
     }
   },
   "order": [
+    "hero",
     "main"
   ]
 }

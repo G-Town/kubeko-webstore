@@ -20,7 +20,7 @@
       {% for photo in look.look_photos.value %}
         <div class="w-full h-full snap-center image-scroll-item">
           <img
-            src="{{ photo | img_url: '100x' }}"
+            src="{{ photo | image_url: width: 900 }}"
             data-src="{{ photo | image_url }}"
             alt="{{ photo.alt | escape }}"
             class="w-full h-full object-cover blur-up"
@@ -28,11 +28,10 @@
             height="{{ photo.height }}"
             loading="lazy"
             srcset="
-              {{ photo | img_url: '400x' }} 400w,
-              {{ photo | img_url: '600x' }} 600w,
-              {{ photo | img_url: '800x' }} 800w,
-              {{ photo | img_url: '1200x' }} 1200w,
-              {{ photo | img_url: 'master' }} {{ photo.width }}w
+              {{ photo | image_url: width: 700 }} 700w,
+              {{ photo | image_url: width: 900 }} 900w,
+              {{ photo | image_url: width: 1200 }} 1200w,
+              {{ photo | image_url: width: 1600 }} 1600w
             "
             sizes="(max-width: 767px) 100vw, 50vw"
             onload="this.classList.remove('blur-up')"

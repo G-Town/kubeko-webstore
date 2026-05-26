@@ -15,24 +15,24 @@
     
     {% if image_1 %}
 
-      {%- assign img1_url_700 = image_1 | image_url: width: 700 -%}
-      {%- assign img1_url_900 = image_1 | image_url: width: 900 -%}
-      {%- assign img1_url_1200 = image_1 | image_url: width: 1200 -%}
-      {%- assign img1_url_1600 = image_1 | image_url: width: 1600 -%}
+      {%- assign img1_700 = image_1 | image_url: width: 700 -%}
+      {%- assign img1_900 = image_1 | image_url: width: 900 -%}
+      {%- assign img1_1200 = image_1 | image_url: width: 1200 -%}
+      {%- assign img1_1600 = image_1 | image_url: width: 1600 -%}
 
       {% comment %} TODO: update to "image_url" {% endcomment %}
       <img
-        class="h-full object-cover"
+        class="h-full object-cover p-8 md:p-0"
         alt="{{ product_1.title | default: section.settings.image_1_alt | default: 'Left column image' }}"
         src="{{ image_1 | image_url: 1000 }}"
         {% comment %} data-src="{{ image_1 | image_url }}" {% endcomment %}
         width="{{ image_1.width }}"
         height="{{ image_1.height }}"
         loading="lazy"
-        srcset="{{ img1_url_700 }} 700w,
-                {{ img1_url_900 }} 900w,
-                {{ img1_url_1200 }} 1200w,
-                {{ img1_url_1600 }} 1600w,"
+        srcset="{{ img1_700 }} 700w,
+                {{ img1_900 }} 900w,
+                {{ img1_1200 }} 1200w,
+                {{ img1_1600 }} 1600w,"
         sizes="(max-width: 767px) 100vw, 50vw"
         {% comment %} onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) {  window.loadHighResImage(this); }" {% endcomment %}
       >
@@ -55,24 +55,24 @@
     
     {% if image_2 %}
 
-      {%- assign img2_url_700 = image_2 | image_url: width: 700 -%}
-      {%- assign img2_url_900 = image_2 | image_url: width: 900 -%}
-      {%- assign img2_url_1200 = image_2 | image_url: width: 1200 -%}
-      {%- assign img2_url_1600 = image_2 | image_url: width: 1600 -%}
+      {%- assign img2_700 = image_2 | image_url: width: 700 -%}
+      {%- assign img2_900 = image_2 | image_url: width: 900 -%}
+      {%- assign img2_1200 = image_2 | image_url: width: 1200 -%}
+      {%- assign img2_1600 = image_2 | image_url: width: 1600 -%}
 
       {% comment %} TODO: update to "image_url" {% endcomment %}
       <img
-        class="w-full h-full object-cover {% if section.settings.add_padding %}p-8 md:p-0{% endif %}"
+        class="w-full h-full object-cover p-8 md:p-0"
         alt="{{ product_2.title | default: section.settings.image_2_alt | default: 'Right column image' }}"
         src="{{ image_2 | image_url: 1000 }}"
         {% comment %} data-src="{{ image_2 | image_url }}" {% endcomment %}
         width="{{ image_2.width }}"
         height="{{ image_2.height }}"
         loading="lazy"
-        srcset="{{ img2_url_700 }} 700w,
-                {{ img2_url_900 }} 900w,
-                {{ img2_url_1200 }} 1200w,
-                {{ img2_url_1600 }} 1600w,"
+        srcset="{{ img2_700 }} 700w,
+                {{ img2_900 }} 900w,
+                {{ img2_1200 }} 1200w,
+                {{ img2_1600 }} 1600w,"
         sizes="(max-width: 767px) 100vw, 500vw"
         {% comment %} onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) {  window.loadHighResImage(this); }" {% endcomment %}
       >
@@ -136,6 +136,7 @@
       max-width: 1200px;
       /* height: 90vh; */
     }
+  }
 
   @media (min-width: 1720px) {
     .side-by-side-assets {
@@ -220,12 +221,6 @@
       "id": "image_2_alt",
       "label": "Image alt text",
       "info": "Optional alt text for the image (for accessibility)"
-    },
-    {
-      "type": "checkbox",
-      "id": "add_padding",
-      "label": "Add padding to second image",
-      "default": false
     }
   ],
   "presets": [

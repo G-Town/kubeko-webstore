@@ -12,10 +12,10 @@
     "hero": {
       "type": "hero-image",
       "settings": {
-        "image": "shopify://shop_images/Image_Compressor_RedKetchup.jpg",
-        "title": "Crying Boy Collection",
-        "description": "",
-        "hero_height": "h-[65vh]"
+        "hero_height": "h-[65vh]",
+        "image": "shopify://shop_images/4_1_2.jpg",
+        "title": "CRYING BOY",
+        "description": ""
       }
     },
     "main": {
@@ -23,5 +23,8 @@
       "settings": {}
     }
   },
-  "order": ["hero", "main"]
+  "order": [
+    "hero",
+    "main"
+  ]
 }
