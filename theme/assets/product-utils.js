@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const chip = event.target.closest('.color-chip');
     if (!chip) return;
 
-    const productCardElement = chip.closest('[data-product-card]');
+    const productCardElement = chip.closest('[data-product-card-id]');
     if (!productCardElement) return;
     
     event.stopPropagation();

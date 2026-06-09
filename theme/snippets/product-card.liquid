@@ -1,14 +1,11 @@
 {% assign first_variant = product.first_available_variant | default: product.variants.first %}
 {% assign first_image = first_variant.featured_image | default: product.featured_image %}
-
 {%- assign card_sizes = image_sizes | default: "(max-width: 767px) 50vw, (max-width: 1024px) 20vw, (max-width: 1536px) 12vw, 300px" -%}
-
-{% comment %} {%- assign unique_id = product.id -%} {% endcomment %}
 {%- assign unique_id = product.id | append: '-' | append: section.id -%}
 
 <div class="group relative flex flex-col text-black
             {% if custom_aspect_ratio %}h-full{% endif %} overflow-visible "
-      data-product-card="{{ unique_id }}">
+      data-product-card-id="{{ unique_id }}">
   <!-- Hidden product data for JavaScript -->
   <div class="hidden"
         data-product-json=
@@ -25,8 +22,8 @@
       class="block relative w-full overflow-hidden product-card-link
             {% if custom_aspect_ratio %}flex-grow{% endif %}"
       style="aspect-ratio: 4 / 5;"
-      id="product-link-{{ product.id }}"
-      onclick="handleProductCardClick(event, '{{ product.id }}')">
+      data-product-card-link
+      onclick="handleProductCardClick(event)">
 
     <!-- Scrollable gallery container -->
     <div
@@ -36,7 +33,6 @@
       <!-- First slide: server-rendered by Liquid -->
       <div class="product-card-slide">
         <img
-          id="gallery-image-0-{{ product.id }}"
           alt="{{ product.title }}"
           src="{{ first_image | image_url: width: 500 }}"
           srcset="
@@ -146,7 +142,6 @@
                     data-color-name="{{ value | escape }}"
                     data-option-position="1" 
                     data-value="{{ value }}"
-                    data-product-id="{{ unique_id }}"
                     data-action="select-variant-card"
                     aria-label="Select color {{ value | escape }}"
                   ></button>
@@ -266,86 +261,6 @@
                   opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                   visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
-
-    .variant-column {
-      flex-wrap: wrap;
-      justify-content: flex-start;
-      gap: 4px;
-    }
-    
-    .variant-button {
-      margin: 0;
-      height: 24px;
-      min-height: 24px;
-    }
-    
-    .color-variant {
-      padding: 0 8px;
-      min-width: auto;
-      white-space: nowrap;
-    }
-    
-    .size-variant {
-      width: 24px;
-      min-width: 24px;
-      padding: 0;
-      justify-content: center;
-    }
-    
-    .add-to-cart-button {
-      height: 24px;
-      min-height: 24px;
-      white-space: nowrap;
-      width: auto;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-  }
-
-  /* Variant container and button styles */
-  .variant-column {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .variant-button {
-    transition: all 0.2s ease;
-    position: relative;
-    border: none;
-    outline: none;
-    background: transparent;
-    cursor: pointer;
-    text-align: inherit;
-    border-radius: 2px;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    min-width: 30px;
-    min-height: 30px;
-    width: auto;
-    height: auto;
-  }
-
-  .variant-button:hover {
-    color: black !important;
-    background-color: rgba(217, 217, 217, 0.5) !important;
-  }
-
-  .variant-button.selected {
-    background-color: rgba(217, 217, 217, 0.9) !important;
-    color: black !important;
-    font-weight: 500;
-    position: relative;
-  }
-
-  .color-variant {
-    justify-content: flex-start;
-  }
-
-  .size-variant {
-    justify-content: center;
   }
 
   /* Product dropdown styling */
@@ -366,45 +281,6 @@
     opacity: 1;
     visibility: visible;
     padding-top: 4px;
-  }
-
-  /* Add to cart button styling */
-  .add-to-cart-button {
-    transition: all 0.2s ease;
-    border-radius: 1px;
-    height: 33px;
-    min-height: 33px;
-  }
-
-  .add-to-cart-button.active {
-    background-color: #444444 !important;
-    color: white !important;
-  }
-
-  .add-to-cart-button.out-of-stock {
-    background-color: #9C9C9C !important;
-    color: white !important;
-    cursor: not-allowed;
-    opacity: 0.8 !important;
-  }
-
-  .add-to-cart-button.success {
-    background-color: #4CAF50 !important;
-    color: white !important;
-  }
-
-  .add-to-cart-button.error {
-    background-color: #F44336 !important;
-    color: white !important;
-  }
-
-  /* Inventory indicator styling */
-  .inventory-indicator {
-    color: black;
-    font-size: 0.75rem;
-    text-align: center;
-    margin-top: 0.25rem;
-    font-weight: 500;
   }
 
   .stock-status-block {
