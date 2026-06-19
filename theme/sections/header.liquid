@@ -248,6 +248,28 @@
         #header-logo.logo-hidden {
           opacity: 0 !important;
         }
+
+        .header-search-trigger {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 0;
+          border: 0;
+          background: transparent;
+          color: inherit;
+          font: inherit;
+          line-height: inherit;
+        }
+
+        .header-search-icon {
+          display: flex;
+          align-items: center;
+        }
+
+        .header-search-icon svg {
+          width: 1em;
+          height: 1em;
+        }
       </style>
       
       <!-- Mobile Header -->
@@ -283,7 +305,21 @@
           {% render 'logo' %}
         </a>
         {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
-        <div class="ml-auto flex items-center gap-">
+        <div class="ml-auto flex items-center gap-8">
+          <button type="button" class="header-search-trigger cursor-pointer text-sm uppercase hover:opacity-60 transition-opacity" aria-label="Search">
+            {% comment %} Comment out this span to preview the text-only search button. {% endcomment %}
+            <span class="header-search-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                  <path d="m21 21l-4.34-4.34" />
+                  <circle cx="11" cy="11" r="8" />
+                </g>
+              </svg>
+            </span>
+            {% comment %} Comment out this span to preview the icon-only search button. {% endcomment %}
+            <span class="header-search-label">Search</span>
+          </button>
           <div class="relative group">
             <p class="cursor-pointer text-sm uppercase hover:opacity-60 transition-opacity">
               Cart<span class="absolute -top-1 -right-2 {% if cart.item_count >= 10 %}-right-[12px]{% endif %} text-[10px] cart-count" {% if cart.item_count == 0 %}style="display: none;"{% endif %}>{{ cart.item_count }}</span>
@@ -1411,6 +1447,5 @@
     });
   }
 </script>
-
 
 

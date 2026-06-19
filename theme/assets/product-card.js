@@ -305,155 +305,32 @@ window.ProductCardObject = window.ProductCardObject || {
     }
   },
 
-  selectVariant: function (button, productCardId, optionPosition, optionValue) {
+  selectColor: function (button, productCardId, colorValue) {
     const productCardElement = button.closest(
       `[data-product-card-id="${productCardId}"]`,
     );
     if (!productCardElement) return;
 
     const productData = this.getProductData(productCardId, button);
-    if (!productData) return;
+    if (!productData || !colorValue) return;
 
-    // TODO: uncomment if other variant buttons are added
-    // Clear previous selection for this option group
-    // productCardElement
-    //   .querySelectorAll(
-    //     `.variant-button[data-option-position="${optionPosition}"]`,
-    //   )
-    //   .forEach((btn) => {
-    //     btn.classList.remove("selected");
-    //   });
+    const colorVariant = productData.variants.find(
+      (variant) => variant.option1 === colorValue,
+    );
 
-    // button.classList.add("selected");
-
-    // // Update inline styles for all variant buttons in this card
-    // productCardElement
-    //   .querySelectorAll(".variant-button.selected")
-    //   .forEach((btn) => {
-    //     // btn.style.backgroundColor = 'rgba(217, 217, 217, 0.9)';
-    //     // btn.style.color = 'black';
-    //     // btn.style.fontWeight = '500';
-    //     btn.classList.add("selected");
-    //   });
-    // productCardElement
-    //   .querySelectorAll(".variant-button:not(.selected)")
-    //   .forEach((btn) => {
-    //     btn.style.backgroundColor = "";
-    //     btn.style.color = "";
-    //     btn.style.fontWeight = "";
-    //   });
-
-    // const selections = {};
-    // productCardElement
-    //   .querySelectorAll(".variant-button.selected")
-    //   .forEach((selectedBtn) => {
-    //     const pos = selectedBtn.getAttribute("data-option-position");
-    //     const val = selectedBtn.getAttribute("data-value");
-    //     selections[`option${pos}`] = val;
-    //   });
-
-    // const totalOptions = productData.options.length;
-    // const allSelected = Object.keys(selections).length === totalOptions;
-
-    // Update images when color is selected
-    if (optionPosition === "1" && optionValue) {
-      const colorVariant = productData.variants.find(
-        (v) => v.option1 === optionValue,
+    if (colorVariant) {
+      const variantImages = this.getImagesForVariant(
+        colorVariant,
+        productData.images,
+        productData.variants,
       );
-      if (colorVariant) {
-        const variantImages = this.getImagesForVariant(
-          colorVariant,
-          productData.images,
-          productData.variants,
-        );
-        this.updateCardImages(productCardId, variantImages);
-      }
-
-      const anyAvailable = productData.variants.some(
-        (v) => v.option1 === optionValue && v.available,
-      );
-      this.updatePriceDisplay(productCardElement, anyAvailable);
+      this.updateCardImages(productCardId, variantImages);
     }
 
-    
-    // Find matching variant
-    // let matchingVariant = null;
-    // if (allSelected) {
-    //   matchingVariant = productData.variants.find((variant) =>
-    //     Object.keys(selections).every(
-    //       (optionKey) => variant[optionKey] === selections[optionKey],
-    //     ),
-    //   );
-    // }
-
-    // if (matchingVariant) {
-    //   const variantInput = productCardElement.querySelector('input[name="id"]');
-    //   if (variantInput) {
-    //     variantInput.value = matchingVariant.id;
-    //     variantInput.setAttribute("data-selected-variant", matchingVariant.id);
-    //     variantInput.dispatchEvent(new Event("change", { bubbles: true }));
-    //   }
-
-    //   // handling appearance of ADD TO CART
-    //   const addButton = productCardElement.querySelector(".add-to-cart-button");
-    //   if (addButton) {
-    //     const isAvailable = matchingVariant.available;
-    //     const inventory = matchingVariant.inventory_quantity;
-
-    //     if (isAvailable) {
-    //       addButton.disabled = false;
-    //       addButton.classList.add("active");
-    //       addButton.classList.remove("out-of-stock");
-    //       addButton.textContent = "ADD TO CART";
-
-    //       if (inventory > 0 && inventory <= 10) {
-    //         let inventoryIndicator = productCardElement.querySelector(
-    //           ".inventory-indicator",
-    //         );
-    //         if (!inventoryIndicator) {
-    //           inventoryIndicator = document.createElement("div");
-    //           inventoryIndicator.className = "inventory-indicator text-xs mt-1";
-    //           addButton.parentNode.appendChild(inventoryIndicator);
-    //         }
-    //         inventoryIndicator.textContent = `Only ${inventory} left`;
-    //       } else {
-    //         const inventoryIndicator = productCardElement.querySelector(
-    //           ".inventory-indicator",
-    //         );
-    //         if (inventoryIndicator) inventoryIndicator.remove();
-    //       }
-    //     } else {
-    //       addButton.disabled = true;
-    //       addButton.classList.remove("active");
-    //       addButton.classList.add("out-of-stock");
-    //       addButton.textContent = "SOLD OUT";
-    //       const inventoryIndicator = productCardElement.querySelector(
-    //         ".inventory-indicator",
-    //       );
-    //       if (inventoryIndicator) inventoryIndicator.remove();
-    //     }
-    //   }
-    // } else {
-    //   productCardElement
-    //     .querySelectorAll(".add-to-cart-button")
-    //     .forEach((btn) => {
-    //       if (!productData.has_only_default_variant) {
-    //         btn.disabled = true;
-    //         btn.classList.remove("active");
-    //         if (Object.keys(selections).length === totalOptions) {
-    //           btn.classList.add("out-of-stock");
-    //           btn.textContent = "SOLD OUT";
-    //         } else {
-    //           btn.classList.remove("out-of-stock");
-    //           btn.textContent = "ADD TO CART";
-    //         }
-    //         const inventoryIndicator = productCardElement.querySelector(
-    //           ".inventory-indicator",
-    //         );
-    //         if (inventoryIndicator) inventoryIndicator.remove();
-    //       }
-    //     });
-    // }
+    const anyAvailable = productData.variants.some(
+      (variant) => variant.option1 === colorValue && variant.available,
+    );
+    this.updatePriceDisplay(productCardElement, anyAvailable);
   },
 
   handleProductCardClick: function (event, productCardId) {
@@ -474,10 +351,6 @@ window.ProductCardObject = window.ProductCardObject || {
     if (!productData) return;
 
     const seenColors = new Set();
-    // const selectedBtn = card.querySelector(
-    //   '.variant-button.selected[data-option-position="1"]',
-    // );
-    // const currentColor = selectedBtn ? selectedBtn.dataset.value : null;
     const activeChip = card.querySelector(".color-chip-container.active .color-chip");
     const currentColor = activeChip ? activeChip.dataset.value : null;
 
@@ -609,37 +482,6 @@ window.ProductCardObject = window.ProductCardObject || {
 
       observer.observe(card);
     }
-
-    // auto add to cart
-    // if (productData.has_only_default_variant) {
-    //   const forms = card.querySelectorAll(
-    //     `form[data-product-form="${productId}"]`,
-    //   );
-    //   forms.forEach((form) => {
-    //     const addButton = form.querySelector(".add-to-cart-button");
-    //     if (addButton) {
-    //       const defaultVariant = productData.variants[0];
-    //       if (defaultVariant && defaultVariant.available) {
-    //         addButton.disabled = false;
-    //         addButton.classList.add("active");
-    //         if (
-    //           defaultVariant.inventory_quantity <= 10 &&
-    //           defaultVariant.inventory_quantity > 0 &&
-    //           defaultVariant.inventory_management === "shopify"
-    //         ) {
-    //           const inventoryIndicator = document.createElement("div");
-    //           inventoryIndicator.className = "inventory-indicator text-xs mt-1";
-    //           inventoryIndicator.textContent = `Only ${defaultVariant.inventory_quantity} left`;
-    //           addButton.parentNode.appendChild(inventoryIndicator);
-    //         }
-    //       } else {
-    //         addButton.disabled = true;
-    //         addButton.classList.add("out-of-stock");
-    //         addButton.textContent = "OUT OF STOCK";
-    //       }
-    //     }
-    //   });
-    // }
   },
 
   checkCardVisibility: function () {
@@ -647,15 +489,14 @@ window.ProductCardObject = window.ProductCardObject || {
   },
 };
 
-ProductUtils.registerAction("select-variant-card", (btn) => {
+ProductUtils.registerAction("select-color-card", (btn) => {
   const card = btn.closest("[data-product-card-id]");
   const productCardId = card?.getAttribute("data-product-card-id");
   if (!productCardId) return;
 
-  ProductCardObject.selectVariant(
+  ProductCardObject.selectColor(
     btn,
     productCardId,
-    btn.dataset.optionPosition,
     btn.dataset.value,
   );
 });
@@ -665,35 +506,4 @@ window.handleProductCardClick =
 
 document.addEventListener("DOMContentLoaded", function () {
   ProductCardObject.initPage();
-
-  document.addEventListener("click", function (event) {
-    if (window.innerWidth >= 767) return;
-
-    const expandedCards = document.querySelectorAll(".mobile-expanded");
-    if (expandedCards.length === 0) return;
-
-    let clickedOutside = true;
-    for (const card of expandedCards) {
-      if (card.contains(event.target)) {
-        clickedOutside = false;
-        break;
-      }
-    }
-
-    if (clickedOutside) {
-      expandedCards.forEach((card) => {
-        card.classList.remove("mobile-expanded");
-        const productCardId = card.getAttribute("data-product-card-id");
-        const thumbnailToggle = document.getElementById(
-          `thumbnail-toggle-${productCardId}`,
-        );
-        if (thumbnailToggle) thumbnailToggle.classList.add("mobile-hidden");
-        const dropdown = card.querySelector(".product-dropdown");
-        if (dropdown) {
-          dropdown.classList.remove("mobile-dropdown-visible");
-          dropdown.classList.add("mobile-dropdown-hidden");
-        }
-      });
-    }
-  });
 });

@@ -140,9 +140,8 @@
                             {% endif %}
                           "
                     data-color-name="{{ value | escape }}"
-                    data-option-position="1" 
                     data-value="{{ value }}"
-                    data-action="select-variant-card"
+                    data-action="select-color-card"
                     aria-label="Select color {{ value | escape }}"
                   ></button>
                 </div>
@@ -157,93 +156,13 @@
 
 {% style %}
   @media (max-width: 767px) {
-    .card-visible .product-dropdown,
-    .card-visible-delayed .product-dropdown {
-      opacity: 0 !important;
-      max-height: 0 !important;
-      visibility: hidden !important;
-      overflow: hidden !important;
-    }
-    
-    .card-visible,
-    .card-visible-delayed {
-      opacity: 1 !important;
-      max-height: none !important;
-    }
-    
-    .mobile-hidden {
-      display: none !important;
-    }
-    
-    .group.mobile-expanded .mobile-hidden {
-      display: block !important;
-    }
-    
-    .mobile-dropdown-hidden {
-      max-height: 0 !important;
-      opacity: 0 !important;
-      visibility: hidden !important;
-      overflow: hidden !important;
-    }
-    
-    .mobile-dropdown-visible {
-      max-height: 500px !important;
-      opacity: 1 !important;
-      visibility: visible !important;
-    }
-    
-    .product-dropdown {
-      max-height: 0 !important;
-      opacity: 0 !important;
-      visibility: hidden !important;
-      overflow: hidden !important;
-      transition: opacity 0.3s cubic-bezier(0.33, 0.66, 0.66, 1), 
-                  max-height 0.3s cubic-bezier(0.33, 0.66, 0.66, 1) !important;
-    }
-    
-    .group.mobile-expanded .product-dropdown.mobile-dropdown-visible {
-      opacity: 1 !important;
-      max-height: 500px !important;
-      visibility: visible !important;
-      transition: opacity 0.2s cubic-bezier(0.33, 0.66, 0.66, 1), 
-                  max-height 0.3s cubic-bezier(0.33, 0.66, 0.66, 1) !important;
-    }
     
     .side-by-side-column .group {
       height: 100%;
     }
-    
-    .side-by-side-column .group.mobile-expanded {
-      position: relative;
-      z-index: 100;
-    }
-
-    .group.mobile-expanded .product-dropdown-gap.mobile-dropdown-hidden {
-      max-height: 0 !important;
-    }
-    
-    .group.mobile-expanded .product-dropdown-gap.mobile-dropdown-visible {
-      max-height: 4px !important;
-    }
   }
 
   @media (min-width: 768px) {
-    .product-dropdown {
-      transition: opacity 0.3s cubic-bezier(0.33, 0.66, 0.66, 1) 0.15s, 
-                  max-height 0.3s cubic-bezier(0.33, 0.66, 0.66, 1) 0.15s,
-                  visibility 0.3s cubic-bezier(0.33, 0.66, 0.66, 1) 0.15s !important;
-      max-height: 0;
-      opacity: 0;
-      overflow: hidden;
-      visibility: hidden;
-    }
-    
-    .group:hover .product-dropdown {
-      transition-delay: 0.15s !important;
-      visibility: visible;
-      opacity: 1;
-      max-height: 500px;
-    }
 
     .group:hover .md\:group-hover\:opacity-0 {
       opacity: 0;
@@ -263,26 +182,6 @@
     }
   }
 
-  /* Product dropdown styling */
-  .product-dropdown {
-    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                padding-top 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    max-height: 0;
-    opacity: 0;
-    visibility: hidden;
-    overflow: hidden;
-    padding-top: 0;
-  }
-
-  .group:hover .product-dropdown {
-    max-height: 500px;
-    opacity: 1;
-    visibility: visible;
-    padding-top: 4px;
-  }
-
   .stock-status-block {
     background: #f4f4f4;
     text-align: center;
@@ -294,12 +193,6 @@
     font-size: 0.65rem;
     font-weight: 500;
     color: black;
-  }
-
-  /* Product dropdown gap styling */
-  .product-dropdown-gap {
-    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    overflow: hidden;
   }
 
   /* Color chip styles */
@@ -365,7 +258,7 @@
     height: 100%;
     scroll-snap-align: center;
     scroll-snap-stop: always;
-    // TODO: try to fit the image in the slide more precisely
+    /* TODO: try to fit the image in the slide more precisely */
     padding: 0px 1px;
     box-sizing: border-box;
     background-color: #f4f4f4;

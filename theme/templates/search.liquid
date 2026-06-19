@@ -19,12 +19,12 @@
     </form>
   </div>
 
-  {% if !search.performed %}
+  {% unless search.performed %}
     {% if search.results.size == 0 %}
       <p class="sm:my-auto sm:relative page-title">Sorry, there are no results for your search.
       </p>
     {% endif %}
-  {% endif %}
+  {% endunless %}
   <!-- Product Grid -->
   {% if search.performed %}
     {% comment %} if no results {% endcomment %}
