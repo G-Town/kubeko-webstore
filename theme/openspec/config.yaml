@@ -1,0 +1,84 @@
+schema: spec-driven
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+context: |
+  # Kubeko - custom Shopify Online Store 2.0 theme (no Dawn conventions).
+  # Repo root is the parent dir (theme/ is a normally tracked subdirectory).
+  # The new top-level entries are out of git for now: AGENTS.md, .opencode/,
+  # openspec/ (untracked) and .shopify/ (gitignored).
+
+  ## Stack & conventions
+  - Custom Liquid + hand-written browser JS + CSS. NO build system, NO
+    committed package.json / tailwind.config / postcss.config.
+  - assets/base.js = custom elements. Guard registrations with
+    customElements.get(); scope selectors to the component instance. All JS
+    must tolerate section reloads and partial DOM replacement.
+  - Cart refresh contract: GET /?section_id=cart-drawer. Never break.
+  - Never edit minified third-party bundles (swiper, photoswipe) unless
+    explicitly asked.
+  - Verify desktop AND mobile separately for every UI change.
+
+  ## CSS source of truth (currently fragmented)
+  - assets/index.css = hand-edited Tailwind v3 compile output (~2500 lines):
+    generated utilities ~1-1530, hand-written components ~1540-1780,
+    vendor overrides ~1780-1950. Typekit @import at line 1 is render-blocking.
+    The Tailwind pipeline was never committed; a differential rebuild is
+    planned but NOT done - treat index.css as the live source of truth.
+  - Inline <style> blocks also live in sections/ and snippets/ (~1500 lines).
+  - Dead/unused CSS: assets/main.css, style.css, style.css.liquid. Dead
+    sections/snippets exist too (e.g. sections/404pagecontent, hero-video,
+    text; snippets/accordion, close, product-buy-section, product-gallery,
+    product-shelf, recently-viewed). Don't rely on dead files.
+
+  ## Architecture facts
+  - layout/theme.liquid: document shell defects exist (missing doctype/lang/
+    main). Loads base.js, product.js, product-card.js, product-utils.js and
+    swiper-bundle on every page (perf known issue; not yet fixed).
+  - Header: sections/header.liquid (~1388 lines, position:fixed, no schema).
+    Cart dropdown + mobile menu + search all live here.
+  - Home (templates/index.json): hero-image x2, side-by-side-assets x2,
+    product-carousel (Swiper; product cards = single image + color chips,
+    hydrated by ProductCardObject in assets/product-card.js). The "main"
+    section points at sections/index-page.liquid which is an EMPTY stub
+    (vestigial).
+  - PDP: templates/product.liquid monolith (~1632 lines, no schema, 5 product
+    forms, duplicate IDs). Product area is developer-owned for now.
+  - Metafield deps - defined in .shopify/metafields.json (NOT committed):
+    product.custom.materials / size_guide / shipping_info; collection:
+    isdrop / lookbook / second_image. Code sometimes references
+    custom.shipping / size_chart (known mismatches - treat as bugs).
+  - Customer accounts: OFF for v1 - ignore templates/customers/*.
+  - Carts: dropdown pattern in header today; dead cart-drawer code exists in
+    base.js; the ?section_id=cart-drawer contract must be preserved.
+
+  ## Testing & environment
+  - PowerShell blocks .ps1: prefix Shopify CLI with `cmd /c "..."`, e.g.
+    cmd /c "shopify theme check" / cmd /c "shopify theme dev".
+  - Theme check currently ~81 offenses / 6 errors across 17 files - fixing
+    in small batches; keep it green per batch.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+rules:
+  proposal:
+    - One concern per change; keep changes small and independently reviewable.
+    - Always include a Non-goals section.
+    - Ground design decisions in file:line evidence; distinguish observed
+      behavior from assumptions.
+  tasks:
+    - Break work into small, individually verifiable steps (user inspects each).
+    - Prefer edits grouped per file to limit churn.
+    - Include verification commands (e.g. theme check) inline with steps.
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+operations:
+  apply:
+    guidance:
+      - Implement in small steps and pause for user review between steps.
+      - Respect AGENTS.md (custom elements, section-reload tolerance, no
+        minified third-party edits).
+  archive:
+    guidance:
+      - Verify specs were synced before finishing the archive.
