@@ -4,9 +4,10 @@ schema: spec-driven
 # This is shown to AI when creating artifacts.
 context: |
   # Kubeko - custom Shopify Online Store 2.0 theme (no Dawn conventions).
-  # Repo root is the parent dir (theme/ is a normally tracked subdirectory).
-  # The new top-level entries are out of git for now: AGENTS.md, .opencode/,
-  # openspec/ (untracked) and .shopify/ (gitignored).
+  # OpenSpec root: kubeko-webstore/ (repo root). theme/ is a normally
+  # tracked subdirectory containing the theme code.
+  # Git status: AGENTS.md, .opencode/, openspec/ are tracked; .shopify/ is
+  # gitignored (metafield definitions live there but are NOT committed).
 
   ## Stack & conventions
   - Custom Liquid + hand-written browser JS + CSS. NO build system, NO
