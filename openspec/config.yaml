@@ -54,8 +54,9 @@ context: |
     base.js; the ?section_id=cart-drawer contract must be preserved.
 
   ## Testing & environment
-  - PowerShell blocks .ps1: prefix Shopify CLI with `cmd /c "..."`, e.g.
-    cmd /c "shopify theme check" / cmd /c "shopify theme dev".
+  - Agent shell is Git Bash (MINGW64): run CLI tools directly - `shopify theme
+    check`, `openspec ...`. No `cmd /c` wrapper needed. (A PowerShell session
+    still blocks .ps1 and would need `cmd /c "..."`.)
   - Theme check currently ~81 offenses / 6 errors across 17 files - fixing
     in small batches; keep it green per batch.
 
