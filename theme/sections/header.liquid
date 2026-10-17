@@ -8,30 +8,6 @@
       <div class="absolute inset-0 md:h-[49px] rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]" id="header-overlay"></div>
       
       <style>
-        /* Prevent hover opacity effect for active parent links */
-        .no-hover-effect {
-          opacity: 1 !important;
-        }
-        .no-hover-effect:hover {
-          opacity: 1 !important; 
-        }
-        
-        /* New approach: use data attribute on parent to control hover */
-        nav li[data-dropdown-active="true"] a {
-          opacity: 1 !important;
-        }
-        
-        /* Add cursor pointer to links without hover effects */
-        a:not([class*="hover"]):not([class*="cursor-"]):not(:has(img)):not(img) {
-          cursor: pointer !important;
-          opacity: 1 !important;
-          transition: opacity 0.2s ease !important;
-        }
-        
-        a:not([class*="hover"]):not([class*="cursor-"]):not(:has(img)):not(img):hover {
-          opacity: 0.6 !important;
-        }
-        
         /* Menu item hover state styles - top nav */
         #header-nav li a {
           opacity: 1 !important;
@@ -61,30 +37,22 @@
         #header-nav:hover li[data-dropdown-active="true"] > a {
           opacity: 1 !important;
         }
-        
-        /* Cart hover makes nav items opaque */
-        .ml-auto .group:hover ~ #header-nav li:not(:hover) > a {
-          opacity: 0.5 !important;
+
+        .menu-dropdown::before {
+          content: '';
+          position: absolute;
+          top: -8px;
+          left: 0;
+          right: 0;
+          height: 8px;
         }
-        
-        /* When cart dropdown is open, make nav items opaque - except hovered items */
-        body:has(.cart-dropdown:not(.hidden)) #header-nav li:not(:hover) > a {
-          opacity: 0.5 !important;
+
+        .submenu-content {
+          position: relative;
         }
-        
-        /* Make cart opaque when dropdown is open - except when hovered */
-        body:has(.menu-dropdown:not(.hidden)) .ml-auto .group:not(:hover) p {
-          opacity: 0.5 !important;
-        }
-        
-        /* Ensure cart stays visible when menu item is hovered */
-        #header-nav:hover ~ .ml-auto .group:not(:hover) p {
-          opacity: 0.5 !important;
-        }
-        
-        /* Ensure cart is visible when hovered directly */
-        .ml-auto .group:hover p {
-          opacity: 1 !important;
+
+        .submenu-item {
+          width: fit-content;
         }
         
         /* Dropdown menu hover effects - default state */
@@ -223,64 +191,65 @@
             padding-top: 0 !important;
           }
         }
-        
-        /* Remove transitions for mobile menu items */
-        #mobile-menu a {
-          opacity: 1;
-        }
-        
-        #mobile-menu .mobile-parent-container > a.menu-faded {
-          opacity: 0.5;
-        }
-        
-        #mobile-menu .mobile-children a {
-          opacity: 0.5;
-        }
-        
-        #mobile-menu .mobile-children a:hover {
-          opacity: 1;
-        }
-        
-        #mobile-menu .mobile-parent-active > a {
-          opacity: 1 !important;
-        }
 
         #header-logo.logo-hidden {
           opacity: 0 !important;
         }
 
-        .header-search-trigger {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 0;
-          border: 0;
-          background: transparent;
-          color: inherit;
-          font: inherit;
-          line-height: inherit;
-        }
+        .header-actions:hover > * { opacity: 0.5; }
+        .header-actions > *:hover { opacity: 1; }
+        .header-actions > * { transition: opacity 0.2s ease; }
 
         .header-search-icon {
-          display: flex;
+          display: inline-flex;
+          align-items: center;
+          /* width: 13px;
+          height: 13px; */
+        }
+
+        .header-search-form {
+          display: inline-flex;
           align-items: center;
         }
 
-        .header-search-icon svg {
-          width: 1em;
-          height: 1em;
+        .header-search-form[hidden] {
+          display: none;
+        }
+
+        .header-search-input {
+          width: 120px;
+          padding: 0;
+          border: 0;
+          border-bottom: 1px solid currentColor;
+          background: transparent;
+          border-radius: 0;
+          color: currentColor;
+          outline: none;
+          text-transform: uppercase;
+        }
+
+        .header-search-input::placeholder {
+          color: currentColor;
+          opacity: 0.5;
         }
       </style>
       
       <!-- Mobile Header -->
       <nav class="md:hidden flex px-[15px] py-[17.5px] flex-row relative w-full items-center uppercase">
-        {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
         <button class="text-sm uppercase" id="mobile-menu-trigger">MENU</button>
         <a href="/" class="absolute left-1/2 -translate-x-1/2">
           {% render 'logo' %}
         </a>
-        {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
-        <div class="ml-auto flex items-center">
+        <div class="ml-auto flex items-center gap-5">
+          <button type="button" id="mobile-search-trigger" class="flex items-center hover:opacity-60 transition-opacity" aria-expanded="false" aria-controls="mobile-search-bar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                <path d="m21 21l-4.34-4.34" />
+                <circle cx="11" cy="11" r="8" />
+              </g>
+            </svg>
+          </button>
           <div class="relative mobile-cart-trigger">
             <p class="cursor-pointer text-sm uppercase hover:opacity-60 transition-opacity">
               Cart<span class="absolute -top-1 -right-2 {% if cart.item_count >= 10 %}-right-[12px]{% endif %} text-[10px] cart-count" {% if cart.item_count == 0 %}style="display: none;"{% endif %}>{{ cart.item_count }}</span>
@@ -290,9 +259,7 @@
       </nav>
       
       <!-- Desktop Header -->
-      {% comment %} TODO: auto margin best for centering items? try to figure out flex {% endcomment %}
       <nav class="hidden md:flex h-full flex-row relative w-full items-center px-6 uppercase max-w-[1024px] lg:max-w-[1256px] xl:max-w-[1580px] mx-auto">
-        {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
         <ul class="flex items-center gap-12 transition-all duration-30" id="header-nav">
           {% for link in linklists.main-menu.links %}
             <li class="relative group">
@@ -301,30 +268,47 @@
           {% endfor %}
         </ul>
         <a href="/" class="absolute left-1/2 -translate-x-1/2 transition-all duration-300" id="header-logo">
-          {% comment %} TODO: edit logo.liquid to adjust size {% endcomment %}
           {% render 'logo' %}
         </a>
-        {% comment %} TODO: adjust padding top for best alignment of items {% endcomment %}
-        <div class="ml-auto flex items-center gap-8">
-          <button type="button" class="header-search-trigger cursor-pointer text-sm uppercase hover:opacity-60 transition-opacity" aria-label="Search">
-            {% comment %} Comment out this span to preview the text-only search button. {% endcomment %}
-            <span class="header-search-icon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path d="M0 0h24v24H0z" fill="none" />
-                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-                  <path d="m21 21l-4.34-4.34" />
-                  <circle cx="11" cy="11" r="8" />
-                </g>
-              </svg>
-            </span>
-            {% comment %} Comment out this span to preview the icon-only search button. {% endcomment %}
-            <span class="header-search-label">Search</span>
-          </button>
-          <div class="relative group">
-            <p class="cursor-pointer text-sm uppercase hover:opacity-60 transition-opacity">
-              Cart<span class="absolute -top-1 -right-2 {% if cart.item_count >= 10 %}-right-[12px]{% endif %} text-[10px] cart-count" {% if cart.item_count == 0 %}style="display: none;"{% endif %}>{{ cart.item_count }}</span>
-            </p>
+        <div class="ml-auto flex items-center gap-8 header-actions">
+          <div class="header-search">
+            <button
+              id="desktop-search-trigger"
+              type="button"
+              class="header-action cursor-pointer text-sm uppercase transition-opacity"
+              aria-expanded="false"
+              aria-controls="header-search-form"
+            >
+              <span>Search</span>
+            </button>
+
+            <form
+              id="header-search-form"
+              class="header-search-form"
+              action="/search"
+              method="get"
+              role="search"
+              hidden
+            >
+              <input type="hidden" name="type" value="product">
+              <input
+                id="header-search-input"
+                class="header-search-input text-sm uppercase"
+                type="search"
+                name="q"
+                aria-label="Search"
+                placeholder="Search"
+                autocomplete="off"
+              >
+            </form>
           </div>
+
+          <button type="button" class="header-action desktop-cart-trigger relative cursor-pointer text-sm uppercase transition-opacity">
+            <span>Cart</span>
+            <span class="absolute -top-1 -right-2 {% if cart.item_count >= 10 %}-right-[12px]{% endif %} text-[10px] cart-count" {% if cart.item_count == 0 %}style="display: none;"{% endif %}>
+              {{ cart.item_count }}
+            </span>
+          </button>
         </div>
       </nav>
     </header>
@@ -397,6 +381,21 @@
   </div>
 </div>
 
+<!-- Mobile Search Bar -->
+<div id="mobile-search-bar" class="md:hidden hidden fixed top-[52px] left-0 w-full z-[100] bg-white px-[15px] py-[12px]">
+  <form action="/search" method="get" class="w-full">
+    <input type="hidden" name="type" value="product">
+    <input
+      id="mobile-search-input"
+      type="search"
+      name="q"
+      placeholder="Search..."
+      autocomplete="off"
+      class="w-full bg-transparent border-b border-current text-sm uppercase focus:outline-none placeholder:opacity-50 placeholder:uppercase py-1"
+    >
+  </form>
+</div>
+
 <!-- Mobile Menu Templates (Hidden) -->
 <div class="hidden" id="mobile-menu-templates">
   <!-- TODO: This section can be removed as we're no longer using the right panel -->
@@ -406,80 +405,56 @@
 {% for link in linklists.main-menu.links %}
   {% if link.links.size > 0 %}
     {% if link.title == 'Collections' or link.title == 'Collection' %}
-    <div class="w-full flex justify-center">
-      <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] relative">
-        <div data-menu="{{ link.title | handleize }}" class="absolute hidden text-sm text-black uppercase top-[43px] mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)]  left-0">
-          <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]">
-            <div class="p-[15px] pl-[15px]">
-              <div class="flex relative">
-                {% assign max_rows = 5 %}
-                {% assign total_columns = link.links.size | divided_by: max_rows | ceil %}
-                {% if total_columns == 0 %}{% assign total_columns = 1 %}{% endif %}
-                
-                <div class="flex w-1/2" id="parent-menu">
-                  {% for column_index in (1..total_columns) %}
-                    <div class="flex flex-col gap-[8px]">
-                      {% assign start_index = forloop.index0 | times: max_rows %}
-                      {% assign end_index = start_index | plus: max_rows | minus: 1 %}
-                      {% for childlink_index in (start_index..end_index) %}
-                        {% if childlink_index < link.links.size %}
-                          {% assign childlink = link.links[childlink_index] %}
-                          <div class="submenu-item" data-submenu="{{ childlink.title | handleize }}">
-                            <a href="{{ childlink.url }}" class="hover:opacity-60 transition-opacity text-black submenu-link">{{ childlink.title }}</a>
-                            {% if childlink.links.size > 0 %}
-                              <div class="submenu-children hidden">
-                                {% for grandchildlink in childlink.links %}
-                                  <a href="{{ grandchildlink.url }}" class="hover:opacity-60 transition-opacity text-[#444444]">{{ grandchildlink.title }}</a>
-                                {% endfor %}
-                              </div>
-                            {% endif %}
+      <div class="w-full flex justify-center">
+        <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] relative">
+                                                    {% comment %} hidden {% endcomment %}
+          <div data-menu="{{ link.title | handleize }}" class="fixed  text-sm text-black uppercase top-[43px] 
+              mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown max-w-[650px]">
+            <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]">
+              <div class="p-[15px]">
+                <div class="flex flex-col gap-[8px]">
+                  {% for childlink in link.links %}
+                    <div class="submenu-item w-fit">
+                      <a href="{{ childlink.url }}" class="hover:opacity-60 transition-opacity text-black submenu-link">{{ childlink.title }}</a>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="w-full flex justify-center">
+        <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] relative">
+                                                    {% comment %} hidden {% endcomment %}
+          <div data-menu="{{ link.title | handleize }}" class="fixed  text-sm text-black uppercase top-[43px] 
+              mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[650px] left-2">
+            <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]">
+              <div class="p-[15px]">
+                <div class="flex relative">
+                  <div class="flex flex-col gap-[8px] w-1/2" id="parent-menu">
+                    {% for childlink in link.links %}
+                      <div class="submenu-item" data-submenu="{{ childlink.title | handleize }}">
+                        <a href="{{ childlink.url }}" class="hover:opacity-60 transition-opacity text-black submenu-link">{{ childlink.title }}</a>
+                        {% if childlink.links.size > 0 %}
+                          <div class="submenu-children hidden">
+                            {% for grandchildlink in childlink.links %}
+                              <a href="{{ grandchildlink.url }}" class="hover:opacity-60 transition-opacity text-[#444444]">{{ grandchildlink.title }}</a>
+                            {% endfor %}
                           </div>
                         {% endif %}
-                      {% endfor %}
-                    </div>
-                  {% endfor %}
-                </div>
-                <!-- Center line reference -->
-                <div class="absolute left-1/2 top-0 bottom-0 border-r border-transparent" id="center-line-marker"></div>
-                <div class="submenu-content flex w-1/2">
+                      </div>
+                    {% endfor %}
+                  </div>
+                  <div class="submenu-content flex w-1/2">
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    {% else %}
-    <div class="w-full flex justify-center">
-      <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] relative">
-        <div data-menu="{{ link.title | handleize }}" class="fixed hidden text-sm text-black uppercase top-[43px] mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[650px] left-2">
-          <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]">
-            <div class="p-[15px] mt-[5px] pl-[15px]">
-              <div class="flex relative">
-                <div class="flex flex-col gap-[8px] w-1/2" id="parent-menu">
-                  {% for childlink in link.links %}
-                    <div class="submenu-item" data-submenu="{{ childlink.title | handleize }}">
-                      <a href="{{ childlink.url }}" class="hover:opacity-60 transition-opacity text-black submenu-link">{{ childlink.title }}</a>
-                      {% if childlink.links.size > 0 %}
-                        <div class="submenu-children hidden">
-                          {% for grandchildlink in childlink.links %}
-                            <a href="{{ grandchildlink.url }}" class="hover:opacity-60 transition-opacity text-[#444444]">{{ grandchildlink.title }}</a>
-                          {% endfor %}
-                        </div>
-                      {% endif %}
-                    </div>
-                  {% endfor %}
-                </div>
-                <!-- Center line reference -->
-                <div class="absolute left-1/2 top-0 bottom-0 border-r border-transparent" id="center-line-marker"></div>
-                <div class="submenu-content flex w-1/2">
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
     {% endif %}
   {% endif %}
 {% endfor %}
@@ -575,11 +550,114 @@
     let isOverHeader = false;
     let isOverDropdown = false;
     let lastScrollTop = 0;
+
+    function closeCurrentDropdown() {
+      if (currentDropdown) {
+        currentDropdown.classList.add('hidden');
+        currentDropdown.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
+        currentDropdown = null;
+        menuItems.forEach(menuItem => menuItem.setAttribute('data-dropdown-active', 'false'));
+      }
+    }
     
     // Initialize data-dropdown-active attribute for all menu items
     menuItems.forEach(item => {
       item.setAttribute('data-dropdown-active', 'false');
     });
+
+    // Desktop search functionality
+    const searchTrigger = document.getElementById('desktop-search-trigger');
+    const searchForm = document.getElementById('header-search-form');
+    const searchInput = document.getElementById('header-search-input');
+
+    if (searchTrigger && searchForm && searchInput) {
+      const openSearch = () => {
+        if (currentDropdown && currentDropdown !== searchForm) {
+          currentDropdown.classList.add('hidden');
+          currentDropdown = null;
+        }
+
+        searchTrigger.hidden = true;
+        searchForm.hidden = false;
+        searchTrigger.setAttribute('aria-expanded', 'true');
+        searchInput.focus();
+      };
+
+      const closeSearch = () => {
+        searchForm.hidden = true;
+        searchTrigger.hidden = false;
+        searchTrigger.setAttribute('aria-expanded', 'false');
+        searchInput.value = '';
+      };
+
+      searchTrigger.addEventListener('click', openSearch);
+
+      searchInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          closeSearch();
+        }
+      });
+
+      searchInput.addEventListener('blur', () => {
+        if (searchInput.value.trim() === '') {
+          closeSearch();
+        }
+      });
+
+      searchForm.addEventListener('submit', (event) => {
+        if (searchInput.value.trim() === '') {
+          event.preventDefault();
+          closeSearch();
+        }
+      });
+    }
+
+    // Mobile search functionality
+    const mobileSearchTrigger = document.getElementById('mobile-search-trigger');
+    const mobileSearchBar = document.getElementById('mobile-search-bar');
+    const mobileSearchInput = document.getElementById('mobile-search-input');
+
+    if (mobileSearchTrigger && mobileSearchBar && mobileSearchInput) {
+      const openMobileSearch = () => {
+        if (mobileMenu && mobileMenu.classList.contains('flex')) {
+          mobileMenu.classList.add('hidden');
+          mobileMenu.classList.remove('flex');
+        }
+        mobileSearchBar.classList.remove('hidden');
+        mobileSearchTrigger.setAttribute('aria-expanded', 'true');
+        headerOverlay.style.opacity = '1';
+        headerOverlay.style.display = 'block';
+        headerOverlay.style.backgroundColor = 'white';
+        mobileSearchInput.focus();
+      };
+
+      const closeMobileSearch = () => {
+        mobileSearchBar.classList.add('hidden');
+        mobileSearchTrigger.setAttribute('aria-expanded', 'false');
+        mobileSearchInput.value = '';
+        headerOverlay.style.backgroundColor = 'rgba(254,254,254,0.60)';
+      };
+
+      mobileSearchTrigger.addEventListener('click', () => {
+        if (mobileSearchBar.classList.contains('hidden')) {
+          openMobileSearch();
+        } else {
+          closeMobileSearch();
+        }
+      });
+
+      mobileSearchInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          closeMobileSearch();
+        }
+      });
+
+      mobileSearchInput.addEventListener('blur', () => {
+        if (mobileSearchInput.value.trim() === '') {
+          closeMobileSearch();
+        }
+      });
+    }
     
     // Set dropdown positions based on header height - disabled since we're using CSS margin now
     function updateDropdownPositions() {
@@ -810,37 +888,13 @@
       headerOverlay.style.opacity = '1';
       headerOverlay.style.display = 'block';
       updateBlendMode(true);
-    });
+    })
 
     header.addEventListener('mouseleave', () => {
       isOverHeader = false;
       setTimeout(() => {
         if (!isOverDropdown && currentDropdown) {
-          currentDropdown.classList.add('hidden');
-          currentDropdown = null;
-          
-          // Reset all nav items data attributes
-          menuItems.forEach(menuItem => {
-            menuItem.setAttribute('data-dropdown-active', 'false');
-          });
-          
-          // Check scroll position to determine if header should be hidden
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-          const isAnyDropdownOpen = 
-            (currentDropdown !== null && !currentDropdown.classList.contains('hidden')) || 
-            (mobileMenu && mobileMenu.classList.contains('flex'));
-            
-          // Keep header visible if any dropdown is open
-          if (isAnyDropdownOpen) {
-            headerOverlay.style.opacity = '1';
-            headerOverlay.style.display = 'block';
-            updateBlendMode(true);
-          } else if (scrollTop > 0) {
-            // Hide header when scrolled and no dropdowns open
-            headerOverlay.style.opacity = '0';
-            headerOverlay.style.display = 'none';
-            updateBlendMode(false);
-          }
+          closeCurrentDropdown();
         }
       }, 100);
     });
@@ -851,6 +905,10 @@
       
       const menuTitle = link.textContent.toLowerCase().trim().replace(/\s+/g, '-');
       const dropdown = document.querySelector(`[data-menu="${menuTitle}"]`);
+
+      item.addEventListener('mouseenter', () => {
+        closeCurrentDropdown();
+      });
       
       if (dropdown) {
         // Check if this is Collections/Collection and it has no children
@@ -890,13 +948,6 @@
           
           // Position the dropdown correctly when it first appears
           positionSubmenu(dropdown);
-          
-          // Initialize the first submenu item as active
-          const firstSubmenuItem = dropdown.querySelector('.submenu-item');
-          if (firstSubmenuItem) {
-            // No need to set opacity classes initially
-            showSubmenuContent(firstSubmenuItem, dropdown, 0);
-          }
         });
 
         const submenuItems = dropdown.querySelectorAll('.submenu-item');
@@ -919,31 +970,7 @@
           isOverDropdown = false;
           setTimeout(() => {
             if (!isOverHeader && currentDropdown) {
-              currentDropdown.classList.add('hidden');
-              currentDropdown = null;
-              
-              // Reset all nav items data attributes
-              menuItems.forEach(menuItem => {
-                menuItem.setAttribute('data-dropdown-active', 'false');
-              });
-              
-              // Check scroll position to determine if header should be hidden
-              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-              const isAnyDropdownOpen = 
-                (currentDropdown !== null && !currentDropdown.classList.contains('hidden')) || 
-                (mobileMenu && mobileMenu.classList.contains('flex'));
-                
-              // Keep header visible if any dropdown is open
-              if (isAnyDropdownOpen) {
-                headerOverlay.style.opacity = '1';
-                headerOverlay.style.display = 'block';
-                updateBlendMode(true);
-              } else if (scrollTop > 0) {
-                // Hide header when scrolled and no dropdowns open
-                headerOverlay.style.opacity = '0';
-                headerOverlay.style.display = 'none';
-                updateBlendMode(false);
-              }
+              closeCurrentDropdown();
             }
           }, 100);
         });
@@ -951,30 +978,25 @@
     });
 
     function showSubmenuContent(submenuItem, dropdown, index) {
-      // Reset all submenu items to default state
+      const submenuContent = dropdown.querySelector('.submenu-content');
+      const submenuChildren = submenuItem.querySelector('.submenu-children');
+
       dropdown.querySelectorAll('.submenu-item').forEach(item => {
         item.classList.remove('active');
       });
-
-      // Set active submenu
-      submenuItem.classList.add('active');
-      
-      const submenuContent = dropdown.querySelector('.submenu-content');
-      const submenuChildren = submenuItem.querySelector('.submenu-children');
-      const isCollectionMenu = dropdown.getAttribute('data-menu') === 'collection' || 
-                               dropdown.getAttribute('data-menu') === 'collections';
       
       submenuContent.innerHTML = '';
 
       if (submenuChildren && submenuChildren.children.length > 0) {
-        const children = Array.from(submenuChildren.children);
-        const maxRows = 5; // Limit to 5 rows maximum
+        submenuItem.classList.add('active');
         
         // Create wrapper that will position its content starting from the center
         const contentWrapper = document.createElement('div');
-        contentWrapper.className = 'absolute left-1/2 flex flex-col gap-[8px]';
+        contentWrapper.className = 'flex flex-col gap-[8px]';
         
-        // Add each child directly to the wrapper - no columnar layout
+        // Put children HTMLCollection in Array for array methods
+        const children = Array.from(submenuChildren.children);
+        // Add each child directly to the wrapper
         children.forEach(child => {
           const clone = child.cloneNode(true);
           contentWrapper.appendChild(clone);
@@ -995,51 +1017,27 @@
         if (!link) return false;
         return link.textContent.toLowerCase().trim().replace(/\s+/g, '-') === menuTitle;
       });
-      
+
       if (navItem) {
-        // Get the position of the navigation item
         const navItemRect = navItem.getBoundingClientRect();
-        
-        // Get the first column of the dropdown menu
-        const parentMenu = dropdown.querySelector('#parent-menu');
-        if (parentMenu && parentMenu.firstElementChild) {
-          // Align the first column with the nav item's left edge
-          parentMenu.style.paddingLeft = '8px'; // Fine-tune this value as needed
-        }
+        dropdown.style.left = navItemRect.left + 'px';
       }
     }
 
     // Cart dropdown functionality
-    const desktopCartTrigger = document.querySelector('.group p');
-    const mobileCartTrigger = document.querySelector('.mobile-cart-trigger p');
+    const desktopCartTrigger = document.querySelector('.desktop-cart-trigger');
+    const mobileCartTrigger = document.querySelector('.mobile-cart-trigger');
     let isOverCart = false;
 
     if (desktopCartTrigger && cartDropdown) {
-      desktopCartTrigger.parentElement.addEventListener('mouseenter', () => {
-        // Hide any other dropdown that might be open
-        if (currentDropdown && currentDropdown !== cartDropdown) {
-          currentDropdown.classList.add('hidden');
-        }
-        
-        // Reset all nav items data attributes when cart is hovered
-        menuItems.forEach(menuItem => {
-          menuItem.setAttribute('data-dropdown-active', 'false');
-        });
+      desktopCartTrigger.addEventListener('mouseenter', () => {
+        closeCurrentDropdown();
         
         cartDropdown.classList.remove('hidden');
         currentDropdown = cartDropdown;
         headerOverlay.style.opacity = '1';
         headerOverlay.style.display = 'block';
         updateBlendMode(true);
-        
-        // Position the cart dropdown to align with the cart link
-        const cartLink = desktopCartTrigger.parentElement;
-        const cartRect = cartLink.getBoundingClientRect();
-        const cartDropdownContent = cartDropdown.querySelector('.p-\\[5px\\]');
-        if (cartDropdownContent) {
-          cartDropdownContent.style.paddingRight = '5px';
-        }
-        
         // Update cart content when opened
         fetchAndUpdateCart();
       });
@@ -1227,6 +1225,9 @@
 
     // Listen for resize events to update dropdown appearances
     window.addEventListener('resize', () => {
+      if (currentDropdown) {
+        positionSubmenu(currentDropdown);
+      }
       // Reset background color for header overlay when resizing
       if (window.innerWidth >= 768) {
         headerOverlay.style.backgroundColor = 'rgba(254,254,254,0.60)';
@@ -1447,5 +1448,3 @@
     });
   }
 </script>
-
-

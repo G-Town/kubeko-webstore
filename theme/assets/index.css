@@ -582,6 +582,9 @@ video {
 .top-\[4px\]{
   top: 4px;
 }
+.top-\[52px\]{
+  top: 52px;
+}
 .top-\[57px\]{
   top: 57px;
 }
@@ -2045,6 +2048,12 @@ shopify-accelerated-checkout-cart {
   text-transform: capitalize;
   margin-bottom: -18px;
   margin-top: -4px;
+}
+
+.form-input {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: capitalize;
 }
 
 .card-image{
