@@ -77,13 +77,13 @@
     {% comment %} TODO: intro video {% endcomment %}
     {% comment %} {% section 'video-intro' %} {% endcomment %}
     {% section 'header' %}
+    {% comment %} TODO: complete and clean attempt to wrap content_for_layout in div with padding if needed,
+                        and use request.page_type / template.name instead of hardcoded URL {% endcomment %}
     {% comment %} TODO: min height removed? was min-h-screen {% endcomment %}
-    {% comment %} <div class="min-h- {% if canonical_url != 'https://kubeko-dev.myshopify.com/'  %} pt-10 md:pt-12 {% endif %}"> {% endcomment %}
-    <div class="min-h- {% if canonical_url != 'https://kubeko.co/'  %} pt-10 md:pt-12 {% endif %}"></div>
-    {% comment %} <div class=""> {% endcomment %}
-      {% comment %} {{canonical_url}} {% endcomment %}
-      {{ content_for_layout }}
-    </div>
+    {% comment %} <div class="min-h- {% if canonical_url != 'https://kubeko-dev.myshopify.com/'  %} pt-10 md:pt-12 {% endif %}"></div> {% endcomment %}
+    {% comment %} <div class="min-h- {% if canonical_url != 'https://kubeko.co/'  %} pt-10 md:pt-12 {% endif %}"></div> {% endcomment %}
+    {% comment %} {{canonical_url}} {% endcomment %}
+    {{ content_for_layout }}
     {% section 'footer' %}
 
     {% comment %} <script>
