@@ -37,7 +37,13 @@ context: |
     main). Loads base.js, product.js, product-card.js, product-utils.js and
     swiper-bundle on every page (perf known issue; not yet fixed).
   - Header: sections/header.liquid (~1388 lines, position:fixed, no schema).
-    Cart dropdown + mobile menu + search all live here.
+    Cart dropdown + mobile menu + the search trigger UI live here.
+  - Search: header exposes a desktop inline toggle and a mobile search bar;
+    results render in templates/search.liquid via GET /search with
+    type=product&q=... (paginated by 24 + infinite scroll). Search is
+    HALF-IMPLEMENTED and unspecced - see project.md Current state before
+    building on it. Support classes .form-input / .top-[52px] live in
+    assets/index.css.
   - Home (templates/index.json): hero-image x2, side-by-side-assets x2,
     product-carousel (Swiper; product cards = single image + color chips,
     hydrated by ProductCardObject in assets/product-card.js). The "main"
@@ -65,6 +71,9 @@ context: |
 rules:
   proposal:
     - One concern per change; keep changes small and independently reviewable.
+    - Plan in reviewable stages: a planning pass may cover several related
+      artifacts at once, but pause for user review at scope and design
+      decisions before drafting the rest.
     - Always include a Non-goals section.
     - Ground design decisions in file:line evidence; distinguish observed
       behavior from assumptions.

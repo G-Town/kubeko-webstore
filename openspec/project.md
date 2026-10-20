@@ -46,6 +46,12 @@ CSS — no Dawn conventions, no build system.
   `{% paginate %}` wrapper, PDP monolith (no schema, duplicate IDs, five
   product forms), metafield key mismatches (`custom.shipping` /
   `custom.size_chart`).
+- Header + search — **incomplete, committed as-is in `f436b50`**: the
+  desktop search toggle and mobile search bar live in
+  `sections/header.liquid`; the results page is `templates/search.liquid`,
+  with support CSS in `assets/index.css`. It works end-to-end at a basic
+  level but was never finished or `theme check`-verified, and has no spec.
+  Treat as half-done; don't build on it before it is reviewed and specced.
 - CSS fragmented: `index.css` + inline `<style>` blocks + dead
   `main.css` / `style.css`(.liquid).
 - Missing templates: 404, cart, gift_card, blog/article, password.
@@ -56,7 +62,10 @@ CSS — no Dawn conventions, no build system.
    metafield key alignment.
 2. Home: hero markup, side-by-side sizes, CSS scroll-snap carousel rail,
    performance (conditional scripts, drop Swiper), `index-page` cleanup.
-3. Header: fixed -> sticky, cleanup + schema, cart dropdown done right.
+3. Header + search (prioritized): finish the half-done search work from
+   `Current state` — desktop toggle, mobile bar, and the
+   `templates/search.liquid` results page, `theme check`-clean — then
+   header fixed -> sticky, cleanup + schema, cart dropdown done right.
 4. Cart architecture: drawer + add/remove contract
    (`?section_id=cart-drawer`).
 5. Cart page (`templates/cart`).
