@@ -24,61 +24,52 @@
   <p id="js-debug"></p>
 </div> {% endcomment %}
 
-{% comment %} Only show hero if we're not viewing a specific look {% endcomment %}
-{%- capture contentForQuerystring -%}{{ content_for_header }}{%- endcapture -%}
-{%- assign pageUrl = contentForQuerystring | split: '"pageurl":"' | last | split: '"' | first | split: '.myshopify.com' | last | replace: '\/', '/' | replace: '%20', ' ' | replace: '\u0026', '&' -%}
+{% comment %} Looks are displayed in a modal; hero always shows here {% endcomment %}
+{%- if section.settings.image != blank -%}
+  {%- assign desktop_image =  section.settings.image -%}
+  <div class="hero-image w-full relative {{ section.settings.hero_height }} ">
+    {%- assign desktop_img_url_1200 = desktop_image | image_url: width: 1200 -%}
+    {%- assign desktop_img_url_1600 = desktop_image | image_url: width: 1600 -%}
+    {%- assign desktop_img_url_2000 = desktop_image | image_url: width: 2000 -%}
+    {%- assign desktop_img_url_full = desktop_image | image_url -%}
 
-{%- assign has_look_param = false -%}
-{%- if pageUrl contains 'look=' -%}
-  {%- assign has_look_param = true -%}
-{%- endif -%}
+    {%- assign mobile_image = section.settings.mobile_image | default: desktop_image -%}
+    {%- assign mobile_img_url_tiny = mobile_image | image_url: width: 100 -%}
+    {% comment %} {%- assign mobile_img_url_400 = mobile_image | image_url: width: 400 -%}
+    {%- assign mobile_img_url_600 = mobile_image | image_url: width: 600 -%} {% endcomment %}
+    {%- assign mobile_img_url_1200 = mobile_image | image_url: width: 1200 -%}
+    {%- assign mobile_img_url_1600 = mobile_image | image_url: width: 1600 -%}
+    {%- assign mobile_img_url_2000 = mobile_image | image_url: width: 2000 -%}
 
-{% unless has_look_param %}
-  {%- if section.settings.image != blank -%}
-    {%- assign desktop_image =  section.settings.image -%}
-    <div class="hero-image w-full relative {{ section.settings.hero_height }} ">
-      {%- assign desktop_img_url_1200 = desktop_image | image_url: width: 1200 -%}
-      {%- assign desktop_img_url_1600 = desktop_image | image_url: width: 1600 -%}
-      {%- assign desktop_img_url_2000 = desktop_image | image_url: width: 2000 -%}
-      {%- assign desktop_img_url_full = desktop_image | image_url -%}
-
-      {%- assign mobile_image = section.settings.mobile_image | default: desktop_image -%}
-      {%- assign mobile_img_url_tiny = mobile_image | image_url: width: 100 -%}
-      {% comment %} {%- assign mobile_img_url_400 = mobile_image | image_url: width: 400 -%}
-      {%- assign mobile_img_url_600 = mobile_image | image_url: width: 600 -%} {% endcomment %}
-      {%- assign mobile_img_url_1200 = mobile_image | image_url: width: 1200 -%}
-      {%- assign mobile_img_url_1600 = mobile_image | image_url: width: 1600 -%}
-      {%- assign mobile_img_url_2000 = mobile_image | image_url: width: 2000 -%}
-
-      <picture>
-          <!-- Desktop image -->
-        <source
-          media="(min-width: 768px)"
-          srcset="
-            {{ desktop_img_url_1200 }} 1200w,
-            {{ desktop_img_url_1600 }} 1600w,
-            {{ desktop_img_url_2000 }} 2000w,
-            {{ desktop_img_url_full }} 2400w
-          "
-          sizes="120vw"
-          type="image/webp">
-          <!-- Mobile image -->
-        <source
-          srcset="
-            {{ mobile_img_url_1200 }} 1200w,
-            {{ mobile_img_url_1600 }} 1600w,
-            {{ mobile_img_url_2000 }} 2000w
-          "
-          sizes="150vw"
-          type="image/webp">
-        <img
-          src="{{ mobile_img_url_1200 }} 1200w"
-          width="{{ desktop_image.width }}"
-          height="{{ desktop_image.height }}"
-          loading="eager"
-          class="w-full h-full object-cover"
-          {% comment %} onload="this.dataset.loaded = true; if (this.dataset.loaded && !this.dataset.highResLoaded) { this.classList.add('blur-sm'); window.loadHighResImage(this); }"> {% endcomment %}
-      </picture>
+    <picture>
+        <!-- Desktop image -->
+      <source
+        media="(min-width: 768px)"
+        srcset="
+          {{ desktop_img_url_1200 }} 1200w,
+          {{ desktop_img_url_1600 }} 1600w,
+          {{ desktop_img_url_2000 }} 2000w,
+          {{ desktop_img_url_full }} 2400w
+        "
+        sizes="120vw"
+        type="image/webp">
+        <!-- Mobile image -->
+      <source
+        srcset="
+          {{ mobile_img_url_1200 }} 1200w,
+          {{ mobile_img_url_1600 }} 1600w,
+          {{ mobile_img_url_2000 }} 2000w
+        "
+        sizes="150vw"
+        type="image/webp">
+      <img
+        src="{{ mobile_img_url_1200 }}"
+        width="{{ desktop_image.width }}"
+        height="{{ desktop_image.height }}"
+        loading="eager"
+        class="w-full h-full object-cover"
+      >
+    </picture>
       {% comment %} blur-up - this.classList.add('blur-sm'); {% endcomment %}
 
       {%- if section.settings.title != blank or section.settings.description != blank -%}
@@ -182,7 +173,7 @@
       }
     </style>
   {%- endif -%}
-{% endunless %}
+{% comment %} {% endunless %} {% endcomment %}
 
 {% schema %}
   {

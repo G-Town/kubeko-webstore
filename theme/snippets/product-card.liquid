@@ -41,6 +41,8 @@
             {{ first_image | image_url: width: 900 }} 900w
           "
           sizes="{{ card_sizes }}"
+          width="{{ first_image.width }}"
+          height="{{ first_image.height }}"
           loading="eager"
           fetchpriority="high"
         >

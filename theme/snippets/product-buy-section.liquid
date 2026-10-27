@@ -3,7 +3,7 @@
   <div class="flex justify-between flex-col gap-[10px] sm:gap-[5px] ">
     {% comment %} get collections product is in and link to it {% endcomment %}
     <div class="flex gap-[6px]">
-      {% for collection in product.collections, i %}
+      {% for collection in product.collections %}
         {% unless collection.title == 'All' %}
           <a href="{{ collection.url }}" class="bold-body"> {{ collection.title }}</a>
           <span class="bold-body">/</span>
