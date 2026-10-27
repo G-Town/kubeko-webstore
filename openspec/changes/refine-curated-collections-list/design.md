@@ -19,6 +19,9 @@ global `.absolute` and hover CSS. Its top-level schema name is already
 **Non-Goals:**
 - Change Shopify's `list-collections` template type or customer navigation.
 - Rework shared CSS, collection cards used elsewhere, or the store's metafield model.
+- Rework the fixed header or compensate for its current overlap with section
+  content. Top spacing and any optional intro content should be decided with the
+  planned header change.
 
 ## Decisions
 
@@ -31,17 +34,20 @@ is the merchant-controlled source of truth.
 *Alternative:* iterate Shopify's `collections` object and paginate it. Rejected:
 that creates an automatic catalog rather than the intended named-collection index.
 
-### 2. Use a section-scoped CSS grid with a portrait media frame
+### 2. Use a section-scoped responsive layout with a portrait media frame
 
-The section will use local, section-instance-scoped grid and card styles for one
+The section will use local, section-instance-scoped layout and card styles for one
 column below 768px, two columns from 768px to 1023px, and three columns at 1024px
-and above. A consistent 4:5 portrait media frame preserves the existing editorial
-crop and aligns cards in each row. When no primary image resolves, the media frame
-renders as a solid `#444444` field with no placeholder copy; the collection title
-bar remains the card's content and accessible name.
+and above. Cards wrap in centered rows, so a partial row — including the current
+two collections on desktop — is centered instead of leaving a blank trailing slot.
+A consistent 4:5 portrait media frame preserves the existing editorial crop and
+aligns cards in each row. When no primary image resolves, the media frame renders
+as a solid `#444444` field with no placeholder copy; the collection title bar
+remains the card's content and accessible name.
 
-*Alternative:* retain the flex layout and `h-4/5`/`max-h` constraints. Rejected:
-they do not establish a reliable card height or responsive grid behavior.
+*Alternative:* retain the old utility-driven flex layout with `h-4/5`/`max-h`
+constraints. Rejected: it did not establish reliable card sizing or responsive
+wrapping. The new layout uses explicit `flex-basis` values at each breakpoint.
 
 ### 3. Keep hover media optional and pointer-capability-aware
 

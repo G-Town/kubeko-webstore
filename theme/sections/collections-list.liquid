@@ -1,3 +1,7 @@
+{% comment %}
+  TODO: revisit top spacing after the header no longer overlays section content.
+  Consider a merchant-editable top padding and/or an optional intro heading then.
+{% endcomment %}
 <div class="curated-collections">
   <div class="curated-collections__grid">
     {%- for block in section.blocks -%}
@@ -98,25 +102,27 @@
   }
 
   #shopify-section-{{ section.id }} .curated-collections__grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 10px;
   }
 
+  #shopify-section-{{ section.id }} .curated-collections__card {
+    flex: 0 0 100%;
+    min-width: 0;
+  }
+
   @media (min-width: 768px) {
-    #shopify-section-{{ section.id }} .curated-collections__grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    #shopify-section-{{ section.id }} .curated-collections__card {
+      flex-basis: calc((100% - 10px) / 2);
     }
   }
 
   @media (min-width: 1024px) {
-    #shopify-section-{{ section.id }} .curated-collections__grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+    #shopify-section-{{ section.id }} .curated-collections__card {
+      flex-basis: calc((100% - 20px) / 3);
     }
-  }
-
-  #shopify-section-{{ section.id }} .curated-collections__card {
-    min-width: 0;
   }
 
   #shopify-section-{{ section.id }} .curated-collections__link {
