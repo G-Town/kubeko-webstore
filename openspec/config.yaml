@@ -1,95 +1,89 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
+# Project context shown to agents when they create OpenSpec artifacts.
 context: |
-  # Kubeko - custom Shopify Online Store 2.0 theme (no Dawn conventions).
-  # OpenSpec root: kubeko-webstore/ (repo root). theme/ is a normally
-  # tracked subdirectory containing the theme code.
-  # Git status: AGENTS.md, .opencode/, openspec/ are tracked; .shopify/ is
-  # gitignored (metafield definitions live there but are NOT committed).
+  # Kubeko Webstore
 
-  ## Stack & conventions
-  - Custom Liquid + hand-written browser JS + CSS. NO build system, NO
-    committed package.json / tailwind.config / postcss.config.
-  - assets/base.js = custom elements. Guard registrations with
-    customElements.get(); scope selectors to the component instance. All JS
-    must tolerate section reloads and partial DOM replacement.
-  - Cart refresh contract: GET /?section_id=cart-drawer. Never break.
-  - Never edit minified third-party bundles (swiper, photoswipe) unless
-    explicitly asked.
-  - Verify desktop AND mobile separately for every UI change.
+  ## Product intent
+  - Kubeko is an independent clothing brand using a custom Shopify Online Store 2.0
+    theme in `theme/`. The storefront should feel editorial and image-led, using
+    Garamond + Helvetica Now, a white/black/#444 palette, and full-bleed photography.
 
-  ## CSS source of truth (currently fragmented)
-  - assets/index.css = hand-edited Tailwind v3 compile output (~2500 lines):
-    generated utilities ~1-1530, hand-written components ~1540-1780,
-    vendor overrides ~1780-1950. Typekit @import at line 1 is render-blocking.
-    The Tailwind pipeline was never committed; a differential rebuild is
-    planned but NOT done - treat index.css as the live source of truth.
-  - Inline <style> blocks also live in sections/ and snippets/ (~1500 lines).
-  - Dead/unused CSS: assets/main.css, style.css, style.css.liquid. Dead
-    sections/snippets exist too (e.g. sections/404pagecontent, hero-video,
-    text; snippets/accordion, close, product-buy-section, product-gallery,
-    product-shelf, recently-viewed). Don't rely on dead files.
+  ## Engineering priorities
+  - Prioritize correctness, maintainability, storefront performance, and a coherent,
+    merchant-editable home page, header, and cart.
+  - Work is scoped to theme development: home, header and cart dropdown, product
+    cards/carousels, PDP, collections, search, CSS, JavaScript, and OpenSpec records.
 
-  ## Architecture facts
-  - layout/theme.liquid: document shell defects exist (missing doctype/lang/
-    main). Loads base.js, product.js, product-card.js, product-utils.js and
-    swiper-bundle on every page (perf known issue; not yet fixed).
-  - Header: sections/header.liquid (~1388 lines, position:fixed, no schema).
-    Cart dropdown + mobile menu + the search trigger UI live here.
-  - Search: header exposes a desktop inline toggle and a mobile search bar;
-    results render in templates/search.liquid via GET /search with
-    type=product&q=... (paginated by 24 + infinite scroll). Search is
-    HALF-IMPLEMENTED and unspecced - see project.md Current state before
-    building on it. Support classes .form-input / .top-[52px] live in
-    assets/index.css.
-  - Home (templates/index.json): hero-image x2, side-by-side-assets x2,
-    product-carousel (Swiper; product cards = single image + color chips,
-    hydrated by ProductCardObject in assets/product-card.js). The "main"
-    section points at sections/index-page.liquid which is an EMPTY stub
-    (vestigial).
-  - PDP: templates/product.liquid monolith (~1632 lines, no schema, 5 product
-    forms, duplicate IDs). Product area is developer-owned for now.
-  - Metafield deps - defined in .shopify/metafields.json (NOT committed):
-    product.custom.materials / size_guide / shipping_info; collection:
-    isdrop / lookbook / second_image. Code sometimes references
-    custom.shipping / size_chart (known mismatches - treat as bugs).
-  - Customer accounts: OFF for v1 - ignore templates/customers/*.
-  - Carts: dropdown pattern in header today; dead cart-drawer code exists in
-    base.js; the ?section_id=cart-drawer contract must be preserved.
+  ## Technology and hard constraints
+  - The theme uses custom Liquid, hand-written browser JavaScript, and CSS; it does
+    not follow Dawn conventions and has no committed build system or JS framework.
+  - `assets/base.js` uses custom elements. Guard registrations with
+    `customElements.get()`, scope selectors to the component instance, and tolerate
+    section reloads and partial DOM replacement.
+  - Preserve the cart refresh contract: `/?section_id=cart-drawer`.
+  - Do not edit minified third-party bundles such as Swiper or PhotoSwipe unless
+    explicitly requested.
+  - Verify desktop and mobile behavior separately for every UI change.
 
-  ## Testing & environment
-  - Agent shell is Git Bash (MINGW64): run CLI tools directly - `shopify theme
-    check`, `openspec ...`. No `cmd /c` wrapper needed. (A PowerShell session
-    still blocks .ps1 and would need `cmd /c "..."`.)
-  - Theme check currently ~81 offenses / 6 errors across 17 files - fixing
-    in small batches; keep it green per batch.
+  ## v1 non-goals
+  - Customer accounts (`templates/customers/*`), multi-language or multi-market
+    support, a theme build system or JS framework, and Shopify Theme Store submission
+    are out of scope unless a change explicitly expands scope.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
+  ## Architecture watchlist
+  - `assets/index.css` is the live CSS source of truth despite being a hand-edited
+    Tailwind v3 output. Styles are fragmented between it and inline section/snippet
+    styles; the original Tailwind pipeline is not committed.
+  - The document shell conditionally loads poorly: several application and Swiper
+    assets load globally. Header is fixed and combines cart, mobile navigation, and
+    search UI. Search works at a basic level but is incomplete and unspecced; review
+    it before extending it.
+  - Home uses `templates/index.json`, image-led sections, and a Swiper product
+    carousel; its `index-page` section is vestigial. The PDP is a large monolith with
+    no schema, duplicate IDs, and multiple product forms.
+  - Metafields are defined locally in `.shopify/metafields.json` but are not committed.
+    Current Liquid references include known key mismatches; treat mismatches as bugs.
+  - The active cart is a header dropdown, while dead cart-drawer code remains in
+    `base.js`. The intended long-term direction is a consistent drawer contract.
+  - Important missing storefront templates include 404, cart, gift card, blog/article,
+    and password.
+
+  ## Legacy modernization policy
+  - Existing code is not presumed intentional, necessary, or a model to copy. It may
+    be stale, incomplete, or poorly implemented.
+  - When evidence supports a materially better result for performance, appearance,
+    accessibility, maintainability, or architecture, identify and recommend it.
+  - Keep unrelated major rewrites out of an active change: propose them as a separate
+    change or explicitly expand the current change before implementation.
+
 rules:
   proposal:
     - One concern per change; keep changes small and independently reviewable.
-    - Plan in reviewable stages: a planning pass may cover several related
-      artifacts at once, but pause for user review at scope and design
-      decisions before drafting the rest.
+    - Plan in reviewable stages and pause for user review at scope and design decisions
+      before drafting the remaining artifacts.
     - Always include a Non-goals section.
-    - Ground design decisions in file:line evidence; distinguish observed
-      behavior from assumptions.
+    - Ground design decisions in file-and-line evidence; distinguish observed behavior
+      from assumptions.
+    - Record relevant legacy or technical-debt findings and state whether each belongs
+      in the change or in a follow-up change.
+  design:
+    - When retaining an existing implementation despite an apparent improvement
+      opportunity, explicitly record why it is retained and the trade-off accepted.
   tasks:
-    - Break work into small, individually verifiable steps (user inspects each).
-    - Prefer edits grouped per file to limit churn.
-    - Include verification commands (e.g. theme check) inline with steps.
+    - Break work into small, individually verifiable steps that the user can inspect.
+    - Prefer edits grouped by file to limit churn.
+    - Include focused verification commands inline and an end-to-end verification
+      appropriate to the changed behavior.
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
 operations:
   apply:
     guidance:
       - Implement in small steps and pause for user review between steps.
-      - Respect AGENTS.md (custom elements, section-reload tolerance, no
-        minified third-party edits).
+      - Respect `theme/AGENTS.md`, including custom-element, section-reload, cart, and
+        third-party-bundle constraints.
+      - Do not fold substantial legacy remediation into an unrelated change without
+        explicit scope approval.
   archive:
     guidance:
-      - Verify specs were synced before finishing the archive.
+      - Validate the completed change and synchronize durable specs before archival.
