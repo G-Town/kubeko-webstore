@@ -1,109 +1,67 @@
-<div class="md:flex md:flex-wrap max-w-[1260px] mx-auto pt-6">
-  {% for block in section.blocks %}
-    {% assign collection = collections[block.settings.collection] %}
-    <div class="relative h-4/5 max-h-[450px] w-full  md:w-1/3 p-[5px] group flex-shrink-0 ">
-      <!-- Determine first image -->
-      {% if collection.image %}
-        {% assign first_image = collection.image %}
-      {% else %}
-        {% assign products = collection.products %}
-        {% if products.size > 0 %}
-          {% assign first_image = products.first.featured_image %}
-        {% endif %}
-      {% endif %}
-      
-      <!-- Determine second image (for hover) -->
-      {% if collection.metafields.custom.second_image %}
-        {% assign second_image = collection.metafields.custom.second_image %}
-      {% else %}
-        {% assign second_image = first_image %}
-      {% endif %}
-      {% comment %} {% if collection.products.size > 1 %}
-        {% assign second_product = collection.products[1] %}
-        {% if second_product.featured_image %}
-          {% assign second_image = second_product.featured_image %}
-        {% else %}
-          {% assign second_image = first_image %}
-        {% endif %}
-      {% else %}
-        {% assign second_image = first_image %}
-      {% endif %} {% endcomment %}
+<div class="curated-collections">
+  <div class="curated-collections__grid">
+    {%- for block in section.blocks -%}
+      {%- assign collection = collections[block.settings.collection] -%}
+      {%- if collection and collection.handle != blank -%}
+        {%- assign first_image = collection.image -%}
+        {%- if first_image == blank -%}
+          {%- assign first_image = collection.products.first.featured_image -%}
+        {%- endif -%}
+        {%- assign second_image = collection.metafields.custom.second_image -%}
 
-      
-      <div class="relative block h-full overflow-visible">
-        <a href="{{ collection.url }}" class="block h-full relative overflow-hidden">
-          <!-- First image -->
-          {% if first_image %}
-            {%- assign first_700 = first_image | image_url: width: 700 -%}
-            {%- assign first_900 = first_image | image_url: width: 900 -%}
-            {%- assign first_1200 = first_image | image_url: width: 1200 -%}
-            {%- assign first_1600 = first_image | image_url: width: 1600 -%}
-
-            <img 
-              src="{{ first_image | img_url: '800x1000', crop: 'center' }}" 
-              alt="{{ collection.title | escape }}"
-              width="800"
-              height="1000"
-              class="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-0"
-              srcset="{{ first_700 }} 700w,
-                      {{ first_900 }} 900w,
-                      {{ first_1200 }} 1200w,
-                      {{ first_1600 }} 1600w"
-              sizes="(max-width: 767px) 100vw, 00vw"
-              loading="lazy"
-              style=""
-            >
-            <!-- Second image (hover) -->
-            {%- assign second_700 = second_image | image_url: width: 700 -%}
-            {%- assign second_900 = second_image | image_url: width: 900 -%}
-            {%- assign second_1200 = second_image | image_url: width: 1200 -%}
-            {%- assign second_1600 = second_image | image_url: width: 1600 -%}
-            <img 
-              src="{{ second_image | img_url: '800x1000', crop: 'center' }}" 
-              alt="{{ collection.title | escape }} (hover)"
-              width="800"
-              height="1000"
-              class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-              srcset="{{ second_700 }} 700w,
-                      {{ second_900 }} 900w,
-                      {{ second_1200 }} 1200w,
-                      {{ second_1600 }} 1600w"
-              sizes="(max-width: 767px) 100vw, 30vw"
-              loading="lazy"
-              style="visibility: hidden;"
-              onload="this.style.visibility = 'visible';"
-            >
-          {% else %}
-            <div class="w-full h-full bg-[#f5f5f5] flex items-center justify-center">
-              <span class="text-[#999999] text-sm">No image available</span>
+        <div class="curated-collections__card">
+          <a
+            href="{{ collection.url }}"
+            class="curated-collections__link{% if first_image and second_image %} curated-collections__link--has-secondary{% endif %}"
+          >
+            <div class="curated-collections__media">
+              {%- if first_image -%}
+                <img
+                  src="{{ first_image | image_url: width: 900 }}"
+                  srcset="
+                    {{ first_image | image_url: width: 700 }} 700w,
+                    {{ first_image | image_url: width: 900 }} 900w,
+                    {{ first_image | image_url: width: 1200 }} 1200w,
+                    {{ first_image | image_url: width: 1600 }} 1600w
+                  "
+                  sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                  width="{{ first_image.width }}"
+                  height="{{ first_image.height }}"
+                  alt="{{ collection.title | escape }}"
+                  class="curated-collections__image curated-collections__image--primary"
+                  loading="lazy"
+                >
+                {%- if second_image -%}
+                  <img
+                    src="{{ second_image | image_url: width: 900 }}"
+                    srcset="
+                      {{ second_image | image_url: width: 700 }} 700w,
+                      {{ second_image | image_url: width: 900 }} 900w,
+                      {{ second_image | image_url: width: 1200 }} 1200w,
+                      {{ second_image | image_url: width: 1600 }} 1600w
+                    "
+                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    width="{{ second_image.width }}"
+                    height="{{ second_image.height }}"
+                    alt=""
+                    class="curated-collections__image curated-collections__image--secondary"
+                    loading="lazy"
+                  >
+                {%- endif -%}
+              {%- endif -%}
             </div>
-          {% endif %}
-          
-          <!-- Collection info bar (always visible, positioned over the image) -->
-          <div class="absolute bottom-0 left-0 right-0 m-[4px] z-10">
-            <div class="relative bg-[#F5F5F5]/60 backdrop-blur-[12.5px] px-4 py-3">
-              <h2 class="uppercase text-sm tracking-wider">{{ collection.title }}</h2>
-            </div>
-          </div>
-        </a>
-      </div>
-    </div>
-  {% endfor %}
-</div>
 
-{% if paginate.pages > 1 %}
-  <div class="sticky bottom-0 left-0 w-full bg-black/80 p-4 flex justify-center gap-4 z-50">
-    {% if paginate.previous %}
-      <a href="{{ paginate.previous.url }}" class="text-white hover:opacity-80">Previous</a>
-    {% endif %}
-    
-    <span class="text-white">Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
-    
-    {% if paginate.next %}
-      <a href="{{ paginate.next.url }}" class="text-white hover:opacity-80">Next</a>
-    {% endif %}
+            <div class="curated-collections__title-bar">
+              <div class="curated-collections__title-panel">
+                <h2 class="curated-collections__title">{{ collection.title }}</h2>
+              </div>
+            </div>
+          </a>
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
   </div>
-{% endif %}
+</div>
 
 {% schema %}
 {
@@ -124,7 +82,7 @@
   ],
   "presets": [
     {
-      "name": "Collections List",
+      "name": "Curated Collections",
       "category": "Collections"
     }
   ]
@@ -132,23 +90,97 @@
 {% endschema %}
 
 {% style %}
-.group:hover .group-hover\:opacity-100 {
-  opacity: 1 !important;
-  visibility: visible !important;
-}
+  #shopify-section-{{ section.id }} .curated-collections {
+    box-sizing: border-box;
+    max-width: 1260px;
+    margin: 0 auto;
+    padding: 1.5rem 5px 0;
+  }
 
-.group:hover .group-hover\:opacity-0 {
-  opacity: 0 !important;
-}
+  #shopify-section-{{ section.id }} .curated-collections__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
 
-.absolute {
-  position: absolute;
-}
+  @media (min-width: 768px) {
+    #shopify-section-{{ section.id }} .curated-collections__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
 
-.inset-0 {
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-{% endstyle %} 
+  @media (min-width: 1024px) {
+    #shopify-section-{{ section.id }} .curated-collections__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  #shopify-section-{{ section.id }} .curated-collections__card {
+    min-width: 0;
+  }
+
+  #shopify-section-{{ section.id }} .curated-collections__link {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  #shopify-section-{{ section.id }} .curated-collections__media {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: #444444;
+  }
+
+  #shopify-section-{{ section.id }} .curated-collections__image {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  #shopify-section-{{ section.id }} .curated-collections__link--has-secondary .curated-collections__image--primary {
+    transition: opacity 300ms ease;
+  }
+
+  #shopify-section-{{ section.id }} .curated-collections__link--has-secondary .curated-collections__image--secondary {
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+
+  #shopify-section-{{ section.id }} .curated-collections__title-bar {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    left: 4px;
+    z-index: 1;
+  }
+
+  #shopify-section-{{ section.id }} .curated-collections__title-panel {
+    padding: 0.75rem 1rem;
+    background: rgba(245, 245, 245, 0.6);
+    -webkit-backdrop-filter: blur(12.5px);
+    backdrop-filter: blur(12.5px);
+  }
+
+  #shopify-section-{{ section.id }} .curated-collections__title {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    #shopify-section-{{ section.id }} .curated-collections__link--has-secondary:hover .curated-collections__image--primary {
+      opacity: 0;
+    }
+
+    #shopify-section-{{ section.id }} .curated-collections__link--has-secondary:hover .curated-collections__image--secondary {
+      opacity: 1;
+    }
+  }
+{% endstyle %}
