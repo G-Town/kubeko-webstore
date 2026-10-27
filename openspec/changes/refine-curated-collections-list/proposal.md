@@ -16,7 +16,8 @@ keeps the editorial card treatment, and avoids a broader theme-style rewrite.
 - Render valid configured collection cards in a responsive grid: one column on
   mobile, two on tablet, and three on desktop.
 - Preserve collection-image and optional hover-image presentation, with a stable
-  portrait frame and hover behavior limited to devices that support hover.
+  portrait frame, a solid dark no-image field, and hover behavior limited to
+  devices that support hover.
 - Replace unscoped global hover and positioning CSS with section-scoped card
   styles, and correct responsive image selection.
 - Skip blocks whose configured collection no longer resolves, rather than
@@ -55,4 +56,5 @@ preserved; the only removed storefront element is nonfunctional pagination.
   content and ordering.
 - **Storefront behavior:** responsive collection cards link to their collections,
   use a collection image or first-product fallback, optionally reveal the curated
-  hover image, and do not display pagination.
+  hover image, render a solid dark field when no image resolves, and do not display
+  pagination.

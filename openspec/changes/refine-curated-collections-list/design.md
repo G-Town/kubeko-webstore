@@ -33,20 +33,24 @@ that creates an automatic catalog rather than the intended named-collection inde
 
 ### 2. Use a section-scoped CSS grid with a portrait media frame
 
-The section will use local, section-instance-scoped grid and card styles for
-one/two/three columns at mobile/tablet/desktop breakpoints. A consistent 4:5
-portrait media frame preserves the existing editorial crop and aligns cards in
-each row.
+The section will use local, section-instance-scoped grid and card styles for one
+column below 768px, two columns from 768px to 1023px, and three columns at 1024px
+and above. A consistent 4:5 portrait media frame preserves the existing editorial
+crop and aligns cards in each row. When no primary image resolves, the media frame
+renders as a solid `#444444` field with no placeholder copy; the collection title
+bar remains the card's content and accessible name.
 
 *Alternative:* retain the flex layout and `h-4/5`/`max-h` constraints. Rejected:
 they do not establish a reliable card height or responsive grid behavior.
 
 ### 3. Keep hover media optional and pointer-capability-aware
 
-Primary media remains visible by default. Render and transition a second image
-only when a secondary collection image is configured, and apply the transition
-only inside a hover-capable media query. The duplicate hover image is decorative
-and will not create duplicate accessible image text.
+Primary media remains visible by default. Secondary media comes from
+`collection.metafields.custom.second_image`; when that metafield is blank, render
+no second image and no hover transition, and do not fall back to the primary
+image. Apply the transition only inside a hover-capable media query. The hover
+image is decorative, uses empty alt text, and will not create duplicate
+accessible image text.
 
 *Alternative:* retain global utility overrides and inline visibility/onload
 behavior. Rejected: it leaks styles beyond the section and creates fragile image
@@ -55,8 +59,9 @@ visibility behavior.
 ### 4. Use Shopify responsive image URLs consistently
 
 Both primary and secondary media will use current `image_url` output with an
-accurate `sizes` value for the one/two/three-column layout. The existing
-`00vw` value is invalid and can lead the browser to choose unsuitable sources.
+accurate `sizes` value for the one/two/three-column layout:
+`(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw`. The existing `00vw`
+value is invalid and can lead the browser to choose unsuitable sources.
 
 *Alternative:* preserve the mixed `img_url` fallback and fixed 800x1000
 attributes. Rejected: it conflicts with the responsive source set and is not a
@@ -76,8 +81,9 @@ neither changes Shopify's system page label and both add unnecessary migration r
 
 - Hover images must load before they can be revealed -> keep them as normal image
   resources while limiting the visual transition to hover-capable devices.
-- A collection can lack both a collection image and a product fallback -> retain a
-  clear no-image card state so the collection remains reachable.
+- A collection can lack both a collection image and a product fallback -> render a
+  solid `#444444` frame with no copy; the title bar keeps the collection reachable
+  and identifiable.
 - Local CSS must coexist with the existing compiled utility CSS -> scope selectors
   to the rendered section instance and avoid global utility-class redefinitions.
 
