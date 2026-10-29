@@ -14,6 +14,9 @@ context: |
     merchant-editable home page, header, and cart.
   - Work is scoped to theme development: home, header and cart dropdown, product
     cards/carousels, PDP, collections, search, CSS, JavaScript, and OpenSpec records.
+  - Storefront performance is a first-class requirement, especially on mobile.
+    Prefer server-rendered markup over JavaScript-built markup, one renderer per UI
+    element, and no repeated work on scroll, hover, or open.
 
   ## Technology and hard constraints
   - The theme uses custom Liquid, hand-written browser JavaScript, and CSS; it does
@@ -39,13 +42,18 @@ context: |
     assets load globally. Header is fixed and combines cart, mobile navigation, and
     search UI. Search works at a basic level but is incomplete and unspecced; review
     it before extending it.
+  - Duplicate render paths exist: the header cart is rendered by Liquid and rebuilt
+    as JS template strings, and nav submenus are cloned by JS from hidden markup.
+    Treat duplicated rendering, redundant fetches, and per-event DOM rebuilding as
+    defects to record, not patterns to copy.
   - Home uses `templates/index.json`, image-led sections, and a Swiper product
     carousel; its `index-page` section is vestigial. The PDP is a large monolith with
     no schema, duplicate IDs, and multiple product forms.
   - Metafields are defined locally in `.shopify/metafields.json` but are not committed.
     Current Liquid references include known key mismatches; treat mismatches as bugs.
-  - The active cart is a header dropdown, while dead cart-drawer code remains in
-    `base.js`. The intended long-term direction is a consistent drawer contract.
+  - The active cart is a header dropdown. A standalone cart page is planned next,
+    followed by a drawer prototype to compare against the dropdown. Dead cart-drawer
+    code in `base.js` is not the current contract.
   - Important missing storefront templates include 404, cart, gift card, blog/article,
     and password.
 
@@ -71,7 +79,8 @@ rules:
     - When retaining an existing implementation despite an apparent improvement
       opportunity, explicitly record why it is retained and the trade-off accepted.
   tasks:
-    - Break work into small, individually verifiable steps that the user can inspect.
+    - Break work into small steps that the user can inspect in the running storefront.
+      Each task names what to look at and how to verify it.
     - Prefer edits grouped by file to limit churn.
     - Include focused verification commands inline and an end-to-end verification
       appropriate to the changed behavior.
@@ -79,7 +88,13 @@ rules:
 operations:
   apply:
     guidance:
-      - Implement in small steps and pause for user review between steps.
+      - Apply one task at a time. After each task, stop and report what changed,
+        which file, and where to look in the running storefront on desktop and
+        mobile. Wait for explicit approval before starting the next task. The user
+        may request tweaks to the current step first.
+      - While implementing, flag duplicated rendering, redundant requests, or work
+        repeated on scroll, hover, or open. Fix it if it is inside the current scope;
+        otherwise record it as a follow-up change.
       - Respect `theme/AGENTS.md`, including custom-element, section-reload, cart, and
         third-party-bundle constraints.
       - Do not fold substantial legacy remediation into an unrelated change without
