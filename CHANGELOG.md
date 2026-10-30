@@ -11,6 +11,8 @@
 
 ## Theme fixes
 
+- The header now sits in its own space at the top of every page instead of on top of the first section, so page content no longer starts hidden behind it.
+- The header stays pinned to the top of the page as you scroll, and its look when scrolling up or down is unchanged.
 - Restored the collection links on product pages.
 - Fixed the homepage hero image and made the hero always appear.
 - Product card images now reserve their space while loading.

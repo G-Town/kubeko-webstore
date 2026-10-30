@@ -1,10 +1,12 @@
-{% comment %} <div class="w-full flex text-black justify-center">
-  <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
-    <header class="flex items-center fixed top-[4px] md:top-[8px] w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2 z-[110] text-[#44444] font-helvetica text-sm md:h-[49px]" id="site-header"> {% endcomment %}
-<div class="z-[110] bg-white w-full flex text-black justify-center">
-  {% comment %} <div class="z-[110] fixed w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]"> {% endcomment %}
-  <div class="z-[110] fixed w-full">
-    <header class="flex items-center w-full left-1/2 z-[110] text-[#44444] font-helvetica text-sm md:h-[52px]" id="site-header">
+{% style %}
+  #shopify-section-{{ section.id }} {
+    position: sticky;
+    top: 0;
+    z-index: 110;
+  }
+{% endstyle %}
+<div class="z-[110] w-full flex text-black justify-center">
+  <header class="flex items-center w-full left-1/2 z-[110] text-[#44444] font-helvetica text-sm md:h-[52px]" id="site-header">
       <div class="absolute inset-0 md:h-[49px] rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]" id="header-overlay"></div>
       
       <style>
@@ -312,13 +314,12 @@
         </div>
       </nav>
     </header>
-  </div>
 </div>
 
 <!-- Mobile Menu Dropdown -->
 <div class="w-full flex justify-center">
   <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px]">
-    <div class="fixed top-[43px] mt-[4px] md:top-[50px] md:mt-[4px] bottom-[4px] md:bottom-[8px] z-[110] hidden flex-col rounded-[1px] bg-white w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2" id="mobile-menu">
+    <div class="fixed top-[52px] md:top-[50px] md:mt-[4px] bottom-[4px] md:bottom-[8px] z-[110] hidden flex-col rounded-[1px] bg-white w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] left-1/2 -translate-x-1/2" id="mobile-menu">
       <div class="flex flex-col p-[15px] h-full justify-between">
         <div class="flex h-full">
           <div class="w-full uppercase text-[13px] flex flex-col gap-[8px] py-2 px-2" id="mobile-menu-left">
@@ -464,7 +465,7 @@
 <div class="w-full flex justify-center">
   <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] relative">
     {% comment %} hidden {% endcomment %}
-    <div class="fixed hidden text-sm text-black uppercase top-[43px] mt-[4px] md:top-[55px] md:mt-[6px] z-[90] cart-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[650px] right-2">
+    <div class="fixed hidden text-sm text-black uppercase top-[52px] md:top-[55px] md:mt-[6px] z-[90] cart-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[650px] right-2">
       <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] md:bg-[rgba(254,254,254,0.60)] md:backdrop-blur-[12.5px] bg-white flex flex-col">
         <div class="p-[5px] pl-[5px] mt-[5px] flex flex-col h-full">
           {% if cart.item_count > 0 %}
