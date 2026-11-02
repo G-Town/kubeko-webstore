@@ -11,8 +11,9 @@
 
 ## Theme fixes
 
-- The header now sits in its own space at the top of every page instead of on top of the first section, so page content no longer starts hidden behind it.
-- The header stays pinned to the top of the page as you scroll, and its look when scrolling up or down is unchanged.
+- Navigation dropdown interaction refined: dropdown panels open with correct hover/fade behavior, active dropdowns show a chevron pointing in the direction the panel opens, the SHOP dropdown is more compact with a balanced two-column layout, and the COLLECTIONS panel is narrower.
+- The header no longer sits on top of page content; it participates in document flow and stays pinned at the top while scrolling.
+- The header's translucent white surface and centered logo behavior are preserved when scrolling up or down.
 - Restored the collection links on product pages.
 - Fixed the homepage hero image and made the hero always appear.
 - Product card images now reserve their space while loading.

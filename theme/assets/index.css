@@ -2506,3 +2506,101 @@ shopify-payment-terms{
     max-width: 1580px;
   }
 }
+
+
+/* refine-header-navigation: desktop nav interaction */
+
+/* All left nav items are full opacity by default. */
+#header-nav li > a {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+/* While the nav is hovered, non-hovered items fade to 0.4. */
+#header-nav:hover li > a {
+  opacity: 0.4;
+}
+
+/* The hovered item, and the parent whose dropdown is open, stay opaque. */
+#header-nav li:hover > a,
+#header-nav li[data-dropdown-active="true"] > a {
+  opacity: 1;
+}
+
+/* Small border-based chevron after parent links with children. No extra
+   DOM or text content, so the nav JS can still match links by textContent.
+   Applies to both top-level nav parents and SHOP submenu parents. */
+a.has-children::after {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 6px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg) translateY(-1px);
+  opacity: 0.6;
+  vertical-align: middle;
+}
+
+/* SHOP submenu parents open their children in the side pane, so point the
+   chevron right instead of down. */
+.menu-dropdown a.has-children::after {
+  transform: rotate(-45deg);
+}
+
+/* Active page item: indicate with the chevron only, never an underline. */
+#header-nav a[aria-current="page"] {
+  text-decoration: none;
+}
+
+/* Column widths shared by SHOP and COLLECTIONS; the left list keeps the
+   larger share now that the panel itself is narrower. */
+.nav-col-left {
+  width: 62.5%;
+}
+
+.nav-col-right {
+  width: 37.5%;
+}
+
+/* A group with no children leaves the right pane empty; fade it out while
+   keeping its width so the panel does not resize. */
+.submenu-content:empty {
+  opacity: 0;
+}
+
+/* SHOP is ~31% narrower than the original 560px (560 → 384, on the 8px
+   grid). The cart panel keeps the original width. */
+.menu-dropdown {
+  max-width: min(384px, calc(100vw - 16px));
+}
+
+.cart-dropdown {
+  max-width: min(560px, calc(100vw - 16px));
+}
+
+/* The COLLECTIONS panel is intentionally narrower than the SHOP panel. */
+.menu-dropdown.collections-dropdown {
+  max-width: min(280px, calc(100vw - 16px));
+}
+
+/* The active page's parent keeps its chevron at full strength. */
+#header-nav a[aria-current="page"].has-children::after {
+  opacity: 1;
+}
+
+/* Keep the fade state while the pointer is inside an open panel, even though
+   the nav itself is no longer hovered. */
+body:has(.menu-dropdown:not(.hidden)) #header-nav li:not([data-dropdown-active="true"]):not(:hover) > a {
+  opacity: 0.4;
+}
+
+body:has(.menu-dropdown:not(.hidden)) #header-nav li[data-dropdown-active="true"] > a {
+  opacity: 1;
+}
+
+/* The right pane fades when it has no children to show, keeping its width. */
+.submenu-content {
+  transition: opacity 0.2s ease;
+}

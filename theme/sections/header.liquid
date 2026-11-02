@@ -10,36 +10,6 @@
       <div class="absolute inset-0 md:h-[49px] rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]" id="header-overlay"></div>
       
       <style>
-        /* Menu item hover state styles - top nav */
-        #header-nav li a {
-          opacity: 1 !important;
-          transition: opacity 0.2s ease !important;
-        }
-        
-        /* Set all menu items to 50% opacity when hovering the nav area */
-        #header-nav:hover li a {
-          opacity: 0.5 !important;
-        }
-        
-        /* Always set hovered items to 100% opacity - highest priority rule */
-        #header-nav li:hover > a {
-          opacity: 1 !important;
-        }
-        
-        /* Keep active parent item visible when dropdown is open, and others opaque */
-        body:has(.menu-dropdown:not(.hidden)) #header-nav li:not([data-dropdown-active="true"]):not(:hover) > a {
-          opacity: 0.5 !important;
-        }
-        
-        body:has(.menu-dropdown:not(.hidden)) #header-nav li[data-dropdown-active="true"] > a {
-          opacity: 1 !important;
-        }
-        
-        /* Ensure data-dropdown-active remains visible during hovering other items */
-        #header-nav:hover li[data-dropdown-active="true"] > a {
-          opacity: 1 !important;
-        }
-
         .menu-dropdown::before {
           content: '';
           position: absolute;
@@ -198,9 +168,9 @@
           opacity: 0 !important;
         }
 
-        .header-actions:hover > * { opacity: 0.5; }
-        .header-actions > *:hover { opacity: 1; }
         .header-actions > * { transition: opacity 0.2s ease; }
+        .header-actions:hover > *:not(:hover) { opacity: 0.4; }
+        .header-actions > *:hover { opacity: 1; }
 
         .header-search-icon {
           display: inline-flex;
@@ -264,8 +234,14 @@
       <nav class="hidden md:flex h-full flex-row relative w-full items-center px-6 uppercase max-w-[1024px] lg:max-w-[1256px] xl:max-w-[1580px] mx-auto">
         <ul class="flex items-center gap-12 transition-all duration-30" id="header-nav">
           {% for link in linklists.main-menu.links %}
-            <li class="relative group">
-              <a href="{{ link.url }}" class="cursor-pointer text-sm hover:opacity-60 transition-opacity">{{ link.title }}</a>
+            {%- assign link_is_active = false -%}
+            {%- if link.active or link.child_active -%}{%- assign link_is_active = true -%}{%- endif -%}
+            <li class="relative group"{% if link_is_active %} data-page-active="true"{% endif %}>
+              <a
+                href="{{ link.url }}"
+                class="cursor-pointer text-sm hover:opacity-60 transition-opacity{% if link.links.size > 0 %} has-children{% endif %}"
+                {%- if link_is_active %} aria-current="page"{% endif %}
+              >{{ link.title }}</a>
             </li>
           {% endfor %}
         </ul>
@@ -410,12 +386,12 @@
         <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] relative">
                                                     {% comment %} hidden {% endcomment %}
           <div data-menu="{{ link.title | handleize }}" class="fixed  text-sm text-black uppercase top-[43px] 
-              mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown max-w-[650px]">
+              mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown collections-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[560px]">
             <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]">
               <div class="p-[15px]">
-                <div class="flex flex-col gap-[8px]">
+                <div class="flex flex-col gap-[8px] nav-col-left">
                   {% for childlink in link.links %}
-                    <div class="submenu-item w-fit">
+                    <div class="submenu-item w-fit"{% if childlink.active or childlink.child_active %} data-submenu-active="true"{% endif %}>
                       <a href="{{ childlink.url }}" class="hover:opacity-60 transition-opacity text-black submenu-link">{{ childlink.title }}</a>
                     </div>
                   {% endfor %}
@@ -430,14 +406,14 @@
         <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] relative">
                                                     {% comment %} hidden {% endcomment %}
           <div data-menu="{{ link.title | handleize }}" class="fixed  text-sm text-black uppercase top-[43px] 
-              mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[650px] left-2">
+              mt-[4px] md:top-[52px] md:mt-[4px] z-[90] menu-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[560px] left-2">
             <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px]">
               <div class="p-[15px]">
                 <div class="flex relative">
-                  <div class="flex flex-col gap-[8px] w-1/2" id="parent-menu">
+                  <div class="flex flex-col gap-[8px] nav-col-left" id="parent-menu">
                     {% for childlink in link.links %}
-                      <div class="submenu-item" data-submenu="{{ childlink.title | handleize }}">
-                        <a href="{{ childlink.url }}" class="hover:opacity-60 transition-opacity text-black submenu-link">{{ childlink.title }}</a>
+                      <div class="submenu-item" data-submenu="{{ childlink.title | handleize }}"{% if childlink.active or childlink.child_active %} data-submenu-active="true"{% endif %}>
+                        <a href="{{ childlink.url }}" class="hover:opacity-60 transition-opacity text-black submenu-link{% if childlink.links.size > 0 %} has-children{% endif %}">{{ childlink.title }}</a>
                         {% if childlink.links.size > 0 %}
                           <div class="submenu-children hidden">
                             {% for grandchildlink in childlink.links %}
@@ -448,7 +424,7 @@
                       </div>
                     {% endfor %}
                   </div>
-                  <div class="submenu-content flex w-1/2">
+                  <div class="submenu-content flex nav-col-right">
                   </div>
                 </div>
               </div>
@@ -465,7 +441,7 @@
 <div class="w-full flex justify-center">
   <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] relative">
     {% comment %} hidden {% endcomment %}
-    <div class="fixed hidden text-sm text-black uppercase top-[52px] md:top-[55px] md:mt-[6px] z-[90] cart-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[650px] right-2">
+    <div class="fixed hidden text-sm text-black uppercase top-[52px] md:top-[55px] md:mt-[6px] z-[90] cart-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[560px] right-2">
       <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] md:bg-[rgba(254,254,254,0.60)] md:backdrop-blur-[12.5px] bg-white flex flex-col">
         <div class="p-[5px] pl-[5px] mt-[5px] flex flex-col h-full">
           {% if cart.item_count > 0 %}
@@ -592,6 +568,10 @@
       };
 
       searchTrigger.addEventListener('click', openSearch);
+
+      // Hovering Search closes any open cart or nav dropdown.
+      searchTrigger.addEventListener('mouseenter', closeCurrentDropdown);
+      searchForm.addEventListener('mouseenter', closeCurrentDropdown);
 
       searchInput.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
@@ -949,6 +929,19 @@
           
           // Position the dropdown correctly when it first appears
           positionSubmenu(dropdown);
+
+          // Preselect the active group, or the first group with children,
+          // so the right pane is filled as soon as the panel opens.
+          const preselectItem =
+            dropdown.querySelector('[data-submenu-active="true"]') ||
+            Array.from(dropdown.querySelectorAll('.submenu-item')).find((submenuItem) => {
+              const children = submenuItem.querySelector('.submenu-children');
+              return children && children.children.length > 0;
+            });
+
+          if (preselectItem) {
+            showSubmenuContent(preselectItem, dropdown, 0);
+          }
         });
 
         const submenuItems = dropdown.querySelectorAll('.submenu-item');
@@ -1021,7 +1014,11 @@
 
       if (navItem) {
         const navItemRect = navItem.getBoundingClientRect();
-        dropdown.style.left = navItemRect.left + 'px';
+        const gutter = 8;
+        const panelWidth = dropdown.offsetWidth || 0;
+        const maxLeft = Math.max(gutter, window.innerWidth - panelWidth - gutter);
+        const left = Math.min(Math.max(navItemRect.left, gutter), maxLeft);
+        dropdown.style.left = left + 'px';
       }
     }
 
