@@ -20,7 +20,7 @@
                   >
                     {{ variant.title }}
                   </div>
-                {% elsif !product.available %}
+                {% else %}
                   <div
                     class="variant-option cta !opacity-30 sm:opacity-100 text-[#979797] !border-[#979797] pointer-events-none relative sm:line-through decoration-black decoration-1"
                     data-variant-id="{{ variant.id }}"
