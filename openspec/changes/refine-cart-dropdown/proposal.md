@@ -37,8 +37,18 @@ same line-item partial.
 - Delegate quantity and remove clicks on the panel root so handlers survive
   partial DOM replacement, and send the line item key (`item.key`) instead of
   the variant id to `/cart/change.js`.
-- Keep the rendered result visually identical: 560px maximum width, the same
-  anchor below the header, type scale, spacing, and checkout button.
+- Remove the accelerated checkout block (Shop Pay / PayPal / Google Pay) from
+  the dropdown so the panel has one primary action; those options remain on the
+  checkout page. Refine the checkout button to an outlined dark-text treatment,
+  keep the "CHECK OUT" label, group the total label with its amount on the right,
+  replace the nested line-item cards with full-bleed rows sharing one 20px inset,
+  give rows a subtle static background, align the stepper glyphs, remove the
+  non-interactive row hover, and darken only the control hover fills so those
+  states stay visible without changing the shared panel opacity.
+- Keep the dropdown's placement, panel opacity, and line-item typography
+  visually unchanged.
+- Link the line-item image to its product page, leaving the row itself
+  non-interactive. Deferred until approved.
 - Update the stale cart refresh contract note in `openspec/config.yaml`
   (`cart-drawer` → `cart-dropdown`) and add a merchant-facing changelog entry.
 
@@ -74,8 +84,10 @@ same line-item partial.
 - Removing dead `base.js` `cart-drawer` code or the unused
   `product-buy-section` / `product-form` snippets. Those are recorded as
   follow-up work, not changed here.
-- Redesigning the dropdown, its open/close interaction, or the header.
-- Checkout and accelerated checkout behavior.
+- Redesigning the dropdown's open/close interaction or the header. The panel
+  layout itself was refined as part of this change.
+- Changing the checkout page, payment providers, or checkout configuration.
+  Accelerated checkout buttons remain available on the checkout page.
 - Changing the cart's currency or money format settings.
 
 ## Recorded legacy findings
@@ -86,6 +98,11 @@ the page-load fetch, the global `fetch` wrapper, handler rebinding after
 refresh contract.
 
 Follow-up, not in this change: `base.js`'s unreachable `cart-drawer`,
-`header-cart`, and `remove-button` elements; the unused `product-form` /
-`product-buy-section` snippets; and the Liquid `additional_checkout_buttons`
-block that is currently embedded inside a JS template string.
+`header-cart`, and `remove-button` elements, and the unused `product-form` /
+`product-buy-section` snippets. The Liquid `additional_checkout_buttons` block
+that was embedded inside a JS template string is removed here along with the
+dropdown wallet buttons.
+
+Also deferred: extracting the cart CSS from `header.liquid` into a shared
+stylesheet. The same style-organization pass is expected to cover other sections
+and snippets, so it belongs in a separate change rather than this one.

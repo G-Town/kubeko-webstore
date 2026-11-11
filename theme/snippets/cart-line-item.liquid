@@ -1,0 +1,40 @@
+{% comment %}
+  cart-line-item.liquid
+  Renders one cart line item. Shared by the cart dropdown and, later, the cart
+  page.
+
+  Accepts:
+  - item: the cart line item
+{% endcomment %}
+<div class="flex cart-item h-[120px]" data-variant-id="{{ item.variant.id }}" data-line-item-key="{{ item.key }}">
+  <div class="flex-shrink-0 mr-4">
+    <img
+      src="{{ item.image | img_url: 'small' }}"
+      alt="{{ item.title }}"
+      class="w-[65px] h-[100px] object-cover"
+      width="65"
+      height="100"
+      loading="lazy"
+    >
+  </div>
+  <div class="flex flex-col justify-between flex-grow">
+    <div class="flex justify-between cart-item-top">
+      <div class="flex flex-col gap-1">
+        <p class="uppercase font-medium md:text-sm text-[13px]">{{ item.product.title }}</p>
+        <p class="text-black/50 md:text-sm text-[13px]">{{ item.variant.title }}</p>
+      </div>
+      <p class="text-right min-w-[70px] md:text-sm text-[13px]">{{ item.final_line_price | money_without_trailing_zeros }}</p>
+    </div>
+    <div class="flex justify-between mt-auto">
+      <button class="text-[13px] md:text-xs remove-item" data-variant-id="{{ item.variant.id }}" data-line-item-key="{{ item.key }}">Remove</button>
+      <div class="flex items-center gap-2">
+        <p class="text-black uppercase text-[13px] hidden md:block">QUANTITY</p>
+        <div class="flex items-center">
+          <button class="quantity-adjust text-[13px] md:text-base" data-variant-id="{{ item.variant.id }}" data-line-item-key="{{ item.key }}" data-action="decrease">−</button>
+          <span class="quantity-value text-[13px] md:text-base text-black">{{ item.quantity }}</span>
+          <button class="quantity-adjust text-[13px] md:text-base" data-variant-id="{{ item.variant.id }}" data-line-item-key="{{ item.key }}" data-action="increase">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

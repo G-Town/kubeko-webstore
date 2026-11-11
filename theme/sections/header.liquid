@@ -99,12 +99,14 @@
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 0 8px;
+          /* Nudge the +/− glyphs up 1px so their ink centers align with the
+             quantity digits. */
+          padding: 0 8px 2px;
           font-size: 16px;
         }
         
         .quantity-adjust:hover {
-          background-color: #D9D9D9;
+          background-color: #C9C9C9;
         }
 
         .quantity-value {
@@ -124,19 +126,20 @@
         }
         
         .remove-item:hover {
-          background-color: #D9D9D9;
+          background-color: #C9C9C9;
           opacity: 1 !important;
         }
         
-        /* Cart item hover effect */
+        /* Full-bleed line-item row. The row is not clickable, so it has no
+           hover state; the static tint groups rows without implying
+           interactivity. Horizontal padding matches the footer inset. */
         .cart-item {
-          transition: background-color 0.2s ease;
-          border-radius: 2px;
-          padding: 10px;
+          padding: 10px 20px;
+          background-color: rgba(255, 255, 255, 0.35);
         }
-        
-        .cart-item:hover {
-          background-color: rgba(254, 254, 254, 0.60);
+
+        .cart-item-top {
+          padding-top: 8px;
         }
         
         /* Add space for header on mobile product listing pages */
@@ -435,83 +438,6 @@
     {% endif %}
   {% endif %}
 {% endfor %}
-
-{% comment %} TODO: expand shopping cart functionality and link to separate shopping cart page {% endcomment %}
-<!-- Cart dropdown -->
-<div class="w-full flex justify-center">
-  <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] relative">
-    {% comment %} hidden {% endcomment %}
-    <div class="fixed hidden text-sm text-black uppercase top-[52px] md:top-[55px] md:mt-[6px] z-[90] cart-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[560px] right-2">
-      <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] md:bg-[rgba(254,254,254,0.60)] md:backdrop-blur-[12.5px] bg-white flex flex-col">
-        <div class="p-[5px] pl-[5px] mt-[5px] flex flex-col h-full">
-          {% if cart.item_count > 0 %}
-            <div class="flex flex-col h-full">
-              <div class="cart-items-container overflow-y-auto pr-1 md:max-h-[calc(120px*4+30px*3)] max-h-[calc(120px*3+30px*2)]">
-                <div class="flex flex-col gap-[30px]">
-                  {% for item in cart.items %}
-                    <div class="flex py-4 cart-item pr-2 h-[120px]" data-variant-id="{{ item.variant.id }}" data-line-item-key="{{ item.key }}">
-                      <div class="flex-shrink-0 mr-4">
-                        <img 
-                          src="{{ item.image | img_url: 'small' }}"
-                          alt="{{ item.title }}" 
-                          class="w-[65px] h-[100px] object-cover"
-                          width="65"
-                          height="100"
-                          loading="lazy"
-                        >
-                      </div>
-                      <div class="flex flex-col justify-between flex-grow">
-                        <div class="flex justify-between">
-                          <div class="flex flex-col gap-1">
-                            <p class="uppercase font-medium md:text-sm text-[13px]">{{ item.product.title }}</p>
-                            <p class="text-black/50 md:text-sm text-[13px]">{{ item.variant.title }}</p>
-                          </div>
-                          <p class="text-right min-w-[70px] md:text-sm text-[13px]">{{ item.final_line_price | money_without_trailing_zeros }}</p>
-                        </div>
-                        <div class="flex justify-between mt-auto">
-                          <button class="text-[13px] md:text-xs remove-item" data-variant-id="{{ item.variant.id }}">Remove</button>
-                          <div class="flex items-center gap-2">
-                            <p class="text-black uppercase text-[13px] hidden md:block">QUANTITY</p>
-                            <div class="flex items-center">
-                              <button class="quantity-adjust text-[13px] md:text-base" data-variant-id="{{ item.variant.id }}" data-action="decrease">−</button>
-                              <span class="quantity-value text-[13px] md:text-base text-black">{{ item.quantity }}</span>
-                              <button class="quantity-adjust text-[13px] md:text-base" data-variant-id="{{ item.variant.id }}" data-action="increase">+</button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  {% endfor %}
-                </div>
-              </div>
-              <div class="cart-footer mt-6 flex-shrink-0 px-[15px] pl-[15px] py-[15px]">
-                <div class="flex justify-between items-center pt-6 pb-8">
-                  <p class="uppercase font-medium text-[13px] md:text-sm">Total</p>
-                  <p class="text-[13px] md:text-sm">{{ cart.total_price | money_without_trailing_zeros }}</p>
-                </div>
-                <div class="flex flex-col gap-4">
-                  <form action="/cart" method="post">
-                    <input type="hidden" name="checkout" value="">
-                    <button type="submit" class="w-full bg-black text-white text-center py-2 uppercase hover:opacity-80 transition-opacity text-[13px] md:text-sm h-[33px]">
-                      CHECK OUT
-                    </button>
-                  </form>
-                  {% if additional_checkout_buttons %}
-                    <div class="additional-checkout-buttons--vertical">
-                      {{ content_for_additional_checkout_buttons }}
-                    </div>
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-          {% else %}
-            <p class="text-center text-black/50 text-[13px] md:text-sm">Your cart is empty</p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
@@ -823,6 +749,7 @@
       if (isVisible) {
         headerNav.classList.remove('mix-blend-difference');
         headerLogo.classList.remove('mix-blend-difference');
+        headerLogo.classList.remove('logo-hidden');
       } else {
         headerNav.classList.add('mix-blend-difference');
         headerLogo.classList.add('mix-blend-difference');
@@ -1027,6 +954,22 @@
     const mobileCartTrigger = document.querySelector('.mobile-cart-trigger');
     let isOverCart = false;
 
+    // Delegate line-item actions so they keep working after panel refreshes.
+    if (cartDropdown) {
+      cartDropdown.addEventListener('click', (event) => {
+        const quantityButton = event.target.closest('.quantity-adjust');
+        if (quantityButton && cartDropdown.contains(quantityButton)) {
+          handleQuantityAdjustment(quantityButton);
+          return;
+        }
+
+        const removeButton = event.target.closest('.remove-item');
+        if (removeButton && cartDropdown.contains(removeButton)) {
+          removeItem(removeButton);
+        }
+      });
+    }
+
     if (desktopCartTrigger && cartDropdown) {
       desktopCartTrigger.addEventListener('mouseenter', () => {
         closeCurrentDropdown();
@@ -1037,7 +980,7 @@
         headerOverlay.style.display = 'block';
         updateBlendMode(true);
         // Update cart content when opened
-        fetchAndUpdateCart();
+        refreshCartDropdown();
       });
 
       cartDropdown.addEventListener('mouseenter', () => {
@@ -1099,7 +1042,7 @@
             headerOverlay.style.backgroundColor = 'white';
           }
           
-          fetchAndUpdateCart();
+          refreshCartDropdown();
         } else {
           // Reset background
           headerOverlay.style.backgroundColor = 'rgba(254,254,254,0.60)';
@@ -1108,55 +1051,14 @@
     }
 
     // Initialize cart count display
-    updateCartCountDisplay({{ cart.item_count }});
-    
-    // Listen for add to cart events from the theme
-    document.addEventListener('product:added', function(event) {
-      fetchAndUpdateCart();
+    updateCartCountIndicators({{ cart.item_count }});
+
+    // Refresh when another component reports a cart change (for example an add).
+    document.addEventListener('cart:updated', function() {
+      refreshCartDropdown();
       showCartTemporarily();
     });
-    
-    // Also listen for variant changes
-    document.addEventListener('variant:change', function(event) {
-      fetchAndUpdateCart();
-    });
-    
-    // Listen for form submissions that might add to cart
-    document.addEventListener('submit', function(event) {
-      const form = event.target;
-      if (form.action && (form.action.includes('/cart/add') || form.getAttribute('action') === '/cart/add')) {
-        // Wait a bit to allow Shopify to process the add-to-cart
-        setTimeout(() => {
-          fetchAndUpdateCart();
-          showCartTemporarily();
-        }, 500);
-      }
-    });
-    
-    // Check for AJAX add-to-cart that may not trigger other events
-    const originalFetch = window.fetch;
-    window.fetch = function(url, options) {
-      const fetchPromise = originalFetch.apply(this, arguments);
-      
-      // If this is a cart-related request
-      if (typeof url === 'string' && url.includes('/cart/add')) {
-        fetchPromise.then(response => {
-          setTimeout(() => {
-            fetchAndUpdateCart();
-            showCartTemporarily();
-          }, 500);
-          return response;
-        });
-      } else if (typeof url === 'string' && (url.includes('/cart/change') || url.includes('/cart/update'))) {
-        fetchPromise.then(response => {
-          setTimeout(fetchAndUpdateCart, 500);
-          return response;
-        });
-      }
-      
-      return fetchPromise;
-    };
-    
+
     // Function to show cart temporarily
     let cartAutoHideTimer;
     function showCartTemporarily() {
@@ -1206,21 +1108,6 @@
       }, 3000);
     }
     
-    // Fetch cart on page load to ensure accuracy
-    fetchAndUpdateCart();
-
-    // Add event listeners to quantity buttons
-    document.querySelectorAll('.quantity-adjust').forEach(button => {
-      button.addEventListener('click', handleQuantityAdjustment);
-    });
-    
-    // Add event listeners to remove buttons
-    document.querySelectorAll('.remove-item').forEach(button => {
-      button.addEventListener('click', function() {
-        removeItem(this);
-      });
-    });
-
     // Listen for resize events to update dropdown appearances
     window.addEventListener('resize', () => {
       if (currentDropdown) {
@@ -1234,7 +1121,7 @@
   });
 
   // Function to update cart count display
-  function updateCartCountDisplay(count) {
+  function updateCartCountIndicators(count) {
     const cartCounts = document.querySelectorAll('.cart-count');
     cartCounts.forEach(cartCount => {
       if (cartCount) {
@@ -1248,141 +1135,34 @@
     });
   }
   
-  // Function to fetch and update cart content
-  async function fetchAndUpdateCart() {
+  // Refresh the cart dropdown from its server-rendered section.
+  async function refreshCartDropdown() {
+    const panel = document.querySelector('.cart-dropdown');
+    if (!panel) return;
+
     try {
-      const response = await fetch('/cart.js');
-      if (!response.ok) throw new Error('Cart fetch failed');
-      
-      const cart = await response.json();
-      updateCartCountDisplay(cart.item_count);
-      
-      // Update cart dropdown content
-      updateCartDropdownContent(cart);
-      
-      // Dispatch event for other components
-      document.dispatchEvent(new CustomEvent('cart:updated', {
-        detail: {
-          item_count: cart.item_count,
-          total_price: cart.total_price
-        }
-      }));
-    } catch (error) {
-      console.error('Error fetching cart:', error);
-    }
-  }
-  
-  // Function to update cart dropdown content
-  function updateCartDropdownContent(cart) {
-    const cartContent = document.querySelector('.cart-dropdown .p-\\[5px\\]');
-    if (!cartContent) return;
-    
-    if (cart.item_count === 0) {
-      cartContent.innerHTML = '<p class="text-center text-black/50 text-[13px] md:text-sm">Your cart is empty</p>';
-      return;
-    }
-    
-    // Create container elements
-    let html = `
-      <div class="flex flex-col h-full">
-        <div class="cart-items-container overflow-y-auto pr-1 md:max-h-[calc(120px*4+30px*3)] max-h-[calc(120px*3+30px*2)]">
-          <div class="flex flex-col gap-[30px]">
-    `;
-    
-    // Generate HTML for each item
-    cart.items.forEach(item => {
-      // Get the variant title (which should contain the size)
-      let sizeDisplay = '';
-      if (item.variant_title) {
-        sizeDisplay = item.variant_title.replace('Default Title', '');
-      }
-      
-      // Ensure we have a valid image URL
-      let imageUrl = item.image || '';
-      
-      html += `
-        <div class="flex py-2 cart-item pr-2 h-[120px]" data-variant-id="${item.variant_id}" data-line-item-key="${item.key}">
-          <div class="flex-shrink-0 mr-4">
-            <img 
-              src="${imageUrl}"
-              alt="${item.title}" 
-              class="w-[65px] h-[100px] object-cover"
-              width="65"
-              height="100"
-              loading="lazy"
-            >
-          </div>
-          <div class="flex flex-col justify-between flex-grow">
-            <div class="flex justify-between">
-              <div class="flex flex-col gap-1">
-                <p class="uppercase font-medium md:text-sm text-[13px]">${item.product_title}</p>
-                <p class="text-black/50 md:text-sm text-[13px]">${sizeDisplay}</p>
-              </div>
-              <p class="text-right min-w-[70px] md:text-sm text-[13px]">$${(item.final_price * item.quantity / 100).toFixed(0)}</p>
-            </div>
-            <div class="flex justify-between mt-auto">
-              <button class="text-[13px] md:text-xs remove-item" data-variant-id="${item.variant_id}">Remove</button>
-              <div class="flex items-center gap-2">
-                <p class="text-black uppercase text-[13px] hidden md:block">QUANTITY</p>
-                <div class="flex items-center">
-                  <button class="quantity-adjust text-[13px] md:text-base" data-variant-id="${item.variant_id}" data-action="decrease">−</button>
-                  <span class="quantity-value text-[13px] md:text-base text-black">${item.quantity}</span>
-                  <button class="quantity-adjust text-[13px] md:text-base" data-variant-id="${item.variant_id}" data-action="increase">+</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    });
-    
-    // Close items container and add vew cart and checkout buttons
-            // <a href="/cart" class="w-full bg-white text-black text-center py-2 uppercase hover:opacity-80 transition-opacity text-[13px] md:text-sm h-[33px]">
-            //   View Cart
-            // </a>
-    html += `
-          </div>
-        </div>
-        <div class="cart-footer mt-6 flex-shrink-0 px-[15px] pl-[15px] py-[15px]">
-          <div class="flex justify-between items-center pt-6 pb-8">
-            <p class="uppercase font-medium text-[13px] md:text-sm">Total</p>
-            <p class="text-[13px] md:text-sm">$${(cart.total_price / 100).toFixed(0)}</p>
-          </div>
-          <div class="flex flex-col gap-4">
-            <form action="/cart" method="post">
-              <input type="hidden" name="checkout" value="">
-              <button type="submit" class="w-full bg-black text-white text-center py-2 uppercase hover:opacity-80 transition-opacity text-[13px] md:text-sm h-[33px]">
-                CHECK OUT
-              </button>
-            </form>
-            {% if additional_checkout_buttons %}
-              <div class="additional-checkout-buttons--vertical">
-                {{ content_for_additional_checkout_buttons }}
-              </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    `;
-    
-    cartContent.innerHTML = html;
-    
-    // Add event listeners to quantity buttons
-    document.querySelectorAll('.quantity-adjust').forEach(button => {
-      button.addEventListener('click', handleQuantityAdjustment);
-    });
-    
-    // Add event listeners to remove buttons in the updated cart content
-    document.querySelectorAll('.remove-item').forEach(button => {
-      button.addEventListener('click', function() {
-        removeItem(this);
+      const response = await fetch('/?section_id=cart-dropdown', {
+        headers: { Accept: 'text/html' }
       });
-    });
+      if (!response.ok) throw new Error('Cart refresh failed');
+
+      const text = await response.text();
+      const parsed = new DOMParser().parseFromString(text, 'text/html');
+      const freshPanel = parsed.querySelector('.cart-dropdown');
+      if (!freshPanel) throw new Error('Cart panel missing from response');
+
+      panel.innerHTML = freshPanel.innerHTML;
+
+      const count = freshPanel.getAttribute('data-cart-item-count') || '0';
+      panel.setAttribute('data-cart-item-count', count);
+      updateCartCountIndicators(parseInt(count, 10));
+    } catch (error) {
+      console.error('Error refreshing cart:', error);
+    }
   }
   
   // Handle quantity adjustment
-  async function handleQuantityAdjustment(event) {
-    const button = event.currentTarget;
+  async function handleQuantityAdjustment(button) {
     const variantId = button.dataset.variantId;
     const action = button.dataset.action;
     const item = button.closest('.cart-item');
@@ -1424,7 +1204,7 @@
       if (!response.ok) throw new Error('Update item quantity failed');
       
       // Fetch and update cart after successful quantity change
-      fetchAndUpdateCart();
+      refreshCartDropdown();
       
     } catch (error) {
       console.error('Error updating quantity:', error);

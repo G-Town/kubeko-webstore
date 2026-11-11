@@ -1,0 +1,114 @@
+{% comment %}
+  cart-dropdown.liquid
+  Server-rendered cart dropdown. Refreshed through the Section Rendering API at
+  /?section_id=cart-dropdown.
+{% endcomment %}
+{% style %}
+  /* Active style: outlined. To compare with the solid fill, comment out this
+     block and uncomment the "Alternative style" block below. */
+  .cart-dropdown .cart-checkout-button {
+    height: 38px;
+    font-size: 13px;
+    font-weight: 400;
+    /* letter-spacing: 0.02em; */
+    color: #444444;
+    background-color: transparent;
+    border: 1px solid #444444;
+    border-radius: 2px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .cart-dropdown .cart-checkout-button:hover {
+    color: #ffffff;
+    background-color: #444444;
+  }
+
+  /* Alternative style: solid dark fill with light text. To compare, comment out
+     the outlined rules above and uncomment this block. Letter spacing is left
+     at the site default, matching the active style.
+  .cart-dropdown .cart-checkout-button {
+    height: 38px;
+    font-size: 13px;
+    font-weight: 400;
+    color: #ffffff;
+    background-color: #444444;
+    border: 1px solid #444444;
+    border-radius: 2px;
+    transition: background-color 0.2s ease;
+  }
+
+  .cart-dropdown .cart-checkout-button:hover {
+    background-color: #555555;
+  }
+  */
+
+  /* Full-bleed rows: the row background spans the panel, and all content
+     shares the same 20px inset as the footer and checkout button. */
+  .cart-dropdown .cart-footer {
+    padding: 20px;
+  }
+
+  .cart-dropdown .cart-total {
+    padding-bottom: 20px;
+  }
+
+  .cart-dropdown .cart-items-container {
+    max-height: calc(120px * 3 + 8px * 2);
+  }
+
+  /* Mirror the desktop QUANTITY + stepper block so TOTAL lines up with it. */
+  @media (min-width: 768px) {
+    .cart-dropdown .cart-total {
+      width: 154px;
+    }
+
+    .cart-dropdown .cart-items-container {
+      max-height: calc(120px * 4 + 8px * 3);
+    }
+  }
+{% endstyle %}
+<div class="w-full flex justify-center">
+  <div class="w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[864px] relative">
+    <div
+      class="fixed hidden text-sm text-black uppercase top-[43px] mt-[4px] md:top-[52px] md:mt-[4px] z-[90] cart-dropdown w-[calc(100%-8px)] md:w-[calc(100%-64px)] max-w-[560px] right-2"
+      data-cart-item-count="{{ cart.item_count }}"
+    >
+      <div class="rounded-[1px] bg-[rgba(254,254,254,0.60)] backdrop-blur-[12.5px] md:bg-[rgba(254,254,254,0.60)] md:backdrop-blur-[12.5px] flex flex-col">
+        <div class="flex flex-col h-full">
+          {% if cart.item_count > 0 %}
+            <div class="flex flex-col h-full">
+              <div class="cart-items-container overflow-y-auto">
+                <div class="flex flex-col gap-2">
+                  {% for item in cart.items %}
+                    {% render 'cart-line-item', item: item %}
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="cart-footer flex-shrink-0">
+                <div class="cart-total ml-auto flex justify-between items-center gap-2">
+                  <p class="uppercase font-medium text-[13px] md:text-sm">Total</p>
+                  <p class="text-[13px] md:text-sm">{{ cart.total_price | money_without_trailing_zeros }}</p>
+                </div>
+                <form action="/cart" method="post">
+                  <input type="hidden" name="checkout" value="">
+                  <button type="submit" class="cart-checkout-button flex w-full items-center justify-center uppercase">
+                    CHECK OUT
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% else %}
+            <p class="text-center text-black/50 text-[13px] md:text-sm">Your cart is empty</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Cart dropdown",
+  "settings": []
+}
+{% endschema %}

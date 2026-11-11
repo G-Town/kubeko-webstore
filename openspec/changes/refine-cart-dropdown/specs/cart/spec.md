@@ -108,12 +108,91 @@ to, and SHALL keep working after the panel contents are replaced.
 - **WHEN** the dropdown contents are replaced after a refresh
 - **THEN** the quantity and remove controls still respond without a page reload
 
-### Requirement: Cart dropdown presentation is preserved
+### Requirement: Cart dropdown primary action
 
-The refactored cart dropdown SHALL keep its existing appearance and placement.
+The dropdown SHALL present exactly one primary checkout action and SHALL NOT
+render accelerated checkout wallet buttons.
 
-#### Scenario: Panel appearance is unchanged
+#### Scenario: Only the primary checkout action appears
+
+- **WHEN** the dropdown opens with items in the cart
+- **THEN** exactly one checkout button is shown, labelled "CHECK OUT"
+- **AND** no Shop Pay, PayPal, Google Pay, or other accelerated checkout
+  controls appear in the dropdown
+
+#### Scenario: Checkout submits to Shopify checkout
+
+- **WHEN** the visitor activates the checkout button
+- **THEN** the cart is submitted to Shopify checkout
+
+### Requirement: Cart panel appearance
+
+The dropdown SHALL keep its existing placement and frosted panel opacity so it
+matches the other header menus. Its checkout button SHALL use an outlined
+dark-text treatment with the same text spacing as the rest of the panel, its
+total label and amount SHALL form one right-aligned block aligned with the
+desktop quantity group, and its line-item rows SHALL span the panel with one
+shared content inset rather than nested card padding. The stepper glyphs SHALL
+align vertically with the quantity digits. Line-item rows SHALL use a subtle
+static background to separate them from the panel, and SHALL NOT show a hover
+highlight because they are not interactive.
+
+#### Scenario: Panel placement and line items are unchanged
 
 - **WHEN** the dropdown is compared before and after this change
-- **THEN** its maximum width, position below the header, typography, spacing,
-  and checkout control are visually unchanged
+- **THEN** its maximum width, position below the header, and line-item
+  typography are visually unchanged
+- **AND** its top offset matches the other header dropdowns
+- **AND** each row spans the full panel width and all row content shares one
+  20px horizontal inset
+
+#### Scenario: Line-item text is vertically balanced
+
+- **WHEN** a line-item row renders
+- **THEN** the image and the Remove/quantity controls stay aligned to the row's
+  top and bottom edges
+- **AND** the title and price sit below the row's top edge with visible breathing
+  room
+
+#### Scenario: Line-item rows do not look clickable
+
+- **WHEN** the visitor hovers a line-item row
+- **THEN** the row background does not change
+- **AND** only the Remove and quantity controls show a hover fill
+
+#### Scenario: Line-item rows are visually grouped
+
+- **WHEN** the dropdown renders with multiple line items
+- **THEN** each row has a subtle static background that separates it from the
+  panel
+- **AND** the background is light enough that the rows do not look selected or
+  hovered
+
+#### Scenario: Checkout button is visually consistent
+
+- **WHEN** the checkout button renders
+- **THEN** its label is "CHECK OUT"
+- **AND** it uses a transparent fill, a 1px dark border, dark text, and the
+  panel's inherited letter spacing
+- **AND** hover inverts it to a dark fill with white text
+- **AND** it spans the panel width at a consistent height on desktop and mobile
+
+#### Scenario: Stepper glyphs align with the quantity value
+
+- **WHEN** the quantity stepper renders
+- **THEN** the `+` and `−` glyphs sit on the same vertical center as the
+  quantity digits
+
+#### Scenario: Total aligns with the quantity group
+
+- **WHEN** the dropdown renders with items in the cart on desktop
+- **THEN** the total label lines up with the QUANTITY label
+- **AND** the total amount sits at the right edge of the same block
+
+#### Scenario: Control hover states stay visible
+
+- **WHEN** the visitor hovers Remove or the quantity stepper
+- **THEN** the hover fill is visibly darker than the panel
+- **AND** the hover state does not disappear into light page content behind the
+  panel
+- **AND** the panel and line-item background opacities remain unchanged
